@@ -1372,7 +1372,7 @@ def readProjectsConfig():
         if not os.path.exists(options.configFile):
             print "Cannot open configuration file " + str(options.configFile)
 
-    print options.configFile
+    print "Using configuration file: %s" % options.configFile 
     execfile(options.configFile, foobar)
     sys.path.remove("config")
     return Dict2Class(foobar)
