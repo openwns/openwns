@@ -3,3 +3,5 @@ config/projects.py
 framework/*
 modules/*
 
+extern--main--1.0
+sandbox/*
