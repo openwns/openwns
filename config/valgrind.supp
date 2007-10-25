@@ -1,0 +1,25 @@
+{
+   PyObject/Cond
+   Memcheck:Cond
+   fun:PyObject*
+}
+
+{
+   PyObject/Value4
+   Memcheck:Value4
+   fun:PyObject*
+}
+
+{
+   PyObject/Addr4
+   Memcheck:Addr4
+   fun:PyObject*
+}
+
+{
+   PyObject/Leak
+   Memcheck:Leak
+   fun:realloc
+   fun:PyObject*
+}
+

@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+SOURCE_TGZ=$1
+SOURCE=$(basename $SOURCE_TGZ .tgz)
+TMP=/tmp/applypatch.$$/
+
+# the following command will fail, if there is already a directory
+# with the same name. you might want to delete the directory by hand.
+mkdir $TMP
+tar -C $TMP -xvzf $SOURCE_TGZ
+tla apply-changeset $TMP$SOURCE .
+rm -rf $TMP

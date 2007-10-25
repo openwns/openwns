@@ -1,0 +1,12 @@
+set xlabel "time"
+set ylabel "frequency"
+set zlabel "value"
+
+splot "output/Raw_2_1_rxPower.txt"
+pause -1 "Press a key !"
+splot "output/Averaged_2_1_rxPower.txt"
+pause -1 "Press a key !"
+splot "output/Filtered_3_1_rxPower.txt"
+pause -1 "Press a key !"
+plot "output/Prediction_4_1_rxPower.txt" using 1:3 with points 1, "output/Raw_4_1_rxPower.txt" using 1:3 with points 4
+pause -1 "Press a key !"

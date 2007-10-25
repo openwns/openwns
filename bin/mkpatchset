@@ -1,0 +1,13 @@
+#/bin/bash
+set -e
+ORIG=$(tla logs -f | tail -1)
+DST=$(echo $ORIG-$USER | tr / -)
+tla add-pristine $ORIG
+tla changeset $(tla find-pristine $ORIG) . /tmp/$DST
+HERE=$(pwd)
+cd /tmp
+tar -cvzf $HERE/$DST.tgz $DST
+rm -rf /tmp/$DST
+echo
+echo Generated Patchset:
+echo $HERE/$DST.tgz
