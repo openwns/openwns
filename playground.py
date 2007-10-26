@@ -823,6 +823,8 @@ def makePatchesCommand( arg = 'unused' ):
         return (project, patchsetName)
 
     patchFiles = [ ii.result for ii in foreachProject(changedProjects, createPatchset) ]
+    import pdb
+    pdb.set_trace()
     patchDir = "patchSets"
     shutil.rmtree(patchDir, ignore_errors=True)
     os.mkdir(patchDir)
@@ -832,7 +834,6 @@ def makePatchesCommand( arg = 'unused' ):
             patchlevel = "base-0"
         else:
             patchlevel = "patch-" + patchlevel
-
         shutil.move(patch, os.path.join(patchDir, os.path.basename(patch)))
 
 patchDir = os.path.abspath('patchSets')
@@ -931,7 +932,7 @@ def snapshotCommand( arg = '' ):
     scr +="# REMOVE THE FOLLOWING LINES IF YOU WANT TO UNDO THAT\n"
     scr += "pinnedProjectsDict = {}\n"
     for project in projects.all:
-        scr += "pinnedProjectsDict['%s'] = %s\n" % (project.version, project.getRCS().getPatchLevel())
+        scr += "pinnedProjectsDict['%s'] = %s\n" % (project.getRCS().getVersion(), project.getRCS().getPatchLevel())
 
     scr += "for project in all:\n"
     scr += "    project.getRCS().pinnedPatchLevel = pinnedProjectsDict[project.getRCS().getVersion()]\n"
