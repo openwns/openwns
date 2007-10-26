@@ -871,8 +871,8 @@ def applyPatchesCommand( arg = 'unused' ):
                           % project.getRCS().getVersion()) == False:
                 return
 
-        if patchName.count(arch.patchLevel) == 0: # wrong patchlevel
-            if askProceed('The patch %s has not been computed against your current patch level %s' % (patchName, arch.patchLevel)) == False:
+        if patchName.count(arch.getPatchLevel()) == 0: # wrong patchlevel
+            if askProceed('The patch %s has not been computed against your current patch level %s' % (patchName, arch.getPatchLevel())) == False:
                 return
         # Finally, do apply the patch
         os.system(wnsrc.pathToWNS+'/bin/applypatchset %s' % patchName)
@@ -907,7 +907,8 @@ def snapshotCommand( arg = '' ):
     global projects
     makePatchesCommand()
     arch = projects.root.getRCS()
-    snapshotRevision = arch.getFQRN().split("/")[-1]
+    snapshotRevision = arch.getFQRN().rstrip("/").split("/")[-1]
+
     archive = arch.getFQRN().split("/")[0]
     snapshotName = ""
     dirName = ""
