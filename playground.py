@@ -823,8 +823,6 @@ def makePatchesCommand( arg = 'unused' ):
         return (project, patchsetName)
 
     patchFiles = [ ii.result for ii in foreachProject(changedProjects, createPatchset) ]
-    import pdb
-    pdb.set_trace()
     patchDir = "patchSets"
     shutil.rmtree(patchDir, ignore_errors=True)
     os.mkdir(patchDir)
