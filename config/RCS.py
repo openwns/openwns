@@ -4,6 +4,8 @@ import commands
 import subprocess
 import StringIO
 
+import bzrlib.branch
+
 class ProjectPathError(Exception):
 
 	def __init__(self, reason):
@@ -59,9 +61,8 @@ class No(RCS):
 		self.FQRN = 'local/'+self.revision+'--patch-'+self.patchLevel
 
 class Bazaar(RCS):
-	def __init__(self, masterBranchURL, path, category, branch, revision, pinnedPatchLevel=None):
+	def __init__(self, path, category, branch, revision, pinnedPatchLevel=None):
 		self.cmd = "bzr"
-		self.masterBranchURL = masterBranchURL
 		self.category = category
 		self.branch = branch
 		self.revision = revision
@@ -85,6 +86,7 @@ class Bazaar(RCS):
 			os.chdir(self.path)
 
 		switchString = [it + "=" + switches[it] for it in switches]
+
 		finalCommand = (" ").join([self.cmd, command] + switchString + args)
 
 		p = subprocess.Popen(finalCommand, shell=True,
@@ -102,10 +104,10 @@ class Bazaar(RCS):
 		if foobar.has_key("version_info"):
 			self.patchLevel = foobar["version_info"]["revno"]
 
-	def missing(self, switches={}, revision=""):
+	def missing(self, url, switches={}, revision=""):
 		if self.pinnedPatchLevel != None:
-			return Output(StringIO.StringIO("This branch is pinned to " + str(self.masterBranchURL) + " at revision " + str(self.pinnedPatchLevel)), StringIO.StringIO())
-		retval = self.__exec("missing", {"--log-format" : "short"}, [self.masterBranchURL])
+			return Output(StringIO.StringIO("This branch is pinned to " + str(url) + " at revision " + str(self.pinnedPatchLevel)), StringIO.StringIO())
+		retval = self.__exec("missing", {"--log-format" : "short"}, [url])
 		if str(retval).endswith("Branches are up to date."):
 			return Output(StringIO.StringIO(""), StringIO.StringIO())
 		else:
@@ -128,21 +130,25 @@ class Bazaar(RCS):
 		# BZR update outputs partly on std error, we redirect this
 		return self.__exec("pull", {}, ["2>&1"])
 
-	def get(self, targetDir=None):
+	def get(self, url):
 		namedArgs = {}
-
-		if targetDir == None:
-			targetDir = self.path
 
 		if self.pinnedPatchLevel != None:
 			namedArgs = { "--revision" : str(self.pinnedPatchLevel) }
 
-		returnValue = self.__exec("branch", namedArgs, [self.masterBranchURL, targetDir])
+		returnValue = self.__exec("branch", namedArgs, [url, self.path])
 		self.updateVersionInfo()
 		return returnValue
 
+	def push(self, url):
+		pass
+
 	def getFQRN(self):
-		return self.masterBranchURL
+		branch, relpath = bzrlib.branch.Branch.open_containing(self.path)
+
+		url = branch.get_parent()
+
+		return url
 
 	def getTreeVersion(self):
 		self.updateVersionInfo()
@@ -165,7 +171,7 @@ class Bazaar(RCS):
 		return str(self.patchLevel)
 
 class GNUArch(RCS):
-	def __init__(self, archive, path, category, branch, revision, pinnedPatchLevel=None):
+	def __init__(self, path, category, branch, revision, pinnedPatchLevel=None):
 		# we prefer "tla" over "baz"
 		if commands.getstatusoutput("type tla")[0] == 0:
 			self.arch = "tla"
@@ -174,7 +180,6 @@ class GNUArch(RCS):
 		else:
 			raise ("Found none of the follwing supported GNUArch binaries: [tla, baz]")
 
-		self.archive = archive
 		self.setPath(path)
 		self.category = category
 		self.branch = branch
@@ -217,7 +222,7 @@ class GNUArch(RCS):
 		os.chdir(cwd)
 		return returnValue
 
-	def missing(self, switches = {}, version = ""):
+	def missing(self, rcsUrl, switches = {}, version = ""):
 		self.__startup()
 		switches["-d"] = self.path
 	        return self.__exec("missing", switches, [version])
@@ -270,20 +275,15 @@ class GNUArch(RCS):
 
 		return self.__exec("tag", {"--setup":""}, [self.getTreeVersion(), newBranch])
 
-	def get(self, targetDir=None):
-
-		if targetDir == None:
-			targetDir = self.path
-
-		project = self.archive + "/" + self.getVersion()
+	def get(self, url):
 
 		if self.pinnedPatchLevel != None:
 			if self.patchLevel == 0:
-				return self.__exec("get", {}, [project + "--base-" + str(self.pinnedPatchLevel), targetDir])
+				return self.__exec("get", {}, [url + "--base-" + str(self.pinnedPatchLevel), self.path])
 			else:
-				return self.__exec("get", {}, [project + "--patch-" + str(self.pinnedPatchLevel), targetDir])
+				return self.__exec("get", {}, [url + "--patch-" + str(self.pinnedPatchLevel), self.path])
 
-		return self.__exec("get", {}, [project, targetDir])
+		return self.__exec("get", {}, [url, self.path])
 
 	def lint(self, options = {}):
 		self.__startup()
@@ -327,13 +327,15 @@ class GNUArch(RCS):
 		if self.pinnedPatchLevel != None:
 			self.patchLevel = self.pinnedPatchLevel
 
+		treeVersion = self.getTreeVersion()
+
 		if self.patchLevel == None:
-			return self.archive + "/" + self.getVersion()
+			return treeVersion
 
 		if self.patchLevel == 0:
-			return self.archive + "/" + self.getVersion()+'--base-'+ str(self.patchLevel)
+			return treeVersion + '--base-'+ str(self.patchLevel)
 		else:
-			return self.archive + "/" + self.getVersion()+'--patch-'+ str(self.patchLevel)
+			return treeVersion + '--patch-'+ str(self.patchLevel)
 
 	def getTreeRoot(self):
 		return str(self.__exec("tree-root " + self.path, {}, []))

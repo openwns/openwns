@@ -255,7 +255,7 @@ def runProjectHook(project, hookName):
 def missingCommand(arg = 'unused'):
     def run(project):
         print "Missing in", project.getDir(), "..."
-        project.getRCS().missing({"-s":""}).realtimePrint("  ")
+        project.getRCS().missing(project.getRCSUrl() ,{"-s":""}).realtimePrint("  ")
 
     foreachProject(projects.all,
                    run)
