@@ -854,7 +854,7 @@ def applyPatchesCommand( arg = 'unused' ):
     def findAndApplyPatch(project):
         global patchDir
         arch = project.getRCS()
-        projName = project.revision
+        projName = project.getRCS().getVersion()
         # find if a patch matching projName is in the patchDir
         patches = glob.glob( os.path.join(patchDir,'*%s*' % projName ) )
         if len(patches) == 0:
@@ -869,7 +869,7 @@ def applyPatchesCommand( arg = 'unused' ):
         changes = changesChecker(project)
         if len(changes)>0: # module has pending changes
             if askProceed("The Module %s is not clean (It is safe to say 'Yes' here if you are installing a snapshot)"
-                          % project.revision) == False:
+                          % project.getRCS().getVersion()) == False:
                 return
 
         if patchName.count(arch.patchLevel) == 0: # wrong patchlevel
@@ -1340,8 +1340,12 @@ def getMissingProjects(missingProjects):
 
     for project in missingProjects:
 
+        basedir = os.path.abspath(os.path.join(project.getDir(), ".."))
+
+        print basedir
+
         if project.alias != None:
-            newLink = os.path.join(project.baseDir, project.alias)
+            newLink = os.path.join(basedir, project.alias)
             if os.path.exists(newLink) or os.path.islink(newLink):
                 print "\nError: For this project I need to make a symlink!!"
                 print "Symlink would be: " + project.version + " -> "  + project.alias + " in " + os.getcwd()
@@ -1349,14 +1353,17 @@ def getMissingProjects(missingProjects):
                 print "Run '" + " ".join(sys.argv) + "' afterwards again."
                 sys.exit(1)
 
-        print "Fetching project: " + project.revision
+        print "Fetching project: " + project.getRCSUrl()
 
-        project.getRCS().get()
+        project.getRCS().get(project.getRCSUrl())
 
         if project.alias != None:
             curDir = os.getcwd()
-            os.chdir(project.baseDir)
-            os.symlink(project.version, project.alias)
+            os.chdir(basedir)
+            print basedir
+            linkDest = project.getDir().split("/")[-1]
+            print linkDest
+            os.symlink(linkDest, project.alias)
             os.chdir(curDir)
 
         linkPrivatePy(project.getDir(), project)
@@ -1375,7 +1382,7 @@ def updateMissingProjects(missingProjects):
 
     print "Warning: According to 'config/projects.py' the following directories are missing:"
     for project in missingProjects:
-        print "  " + project.getDir() + " (" + project.getRCS().getFQRN() + ")"
+        print "  " + project.getDir() + " (from URL: " + project.getRCSUrl() + ")"
 
     if userFeedback.askForConfirmation("Try fetch the according projects?"):
         getMissingProjects(missingProjects)
