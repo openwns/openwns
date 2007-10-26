@@ -1360,9 +1360,7 @@ def getMissingProjects(missingProjects):
         if project.alias != None:
             curDir = os.getcwd()
             os.chdir(basedir)
-            print basedir
             linkDest = project.getDir().split("/")[-1]
-            print linkDest
             os.symlink(linkDest, project.alias)
             os.chdir(curDir)
 
