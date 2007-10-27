@@ -609,9 +609,9 @@ def upgradeCommand(arg = 'unused'):
 
     def run(project):
         arch = project.getRCS()
-        if project.patchLevel != "":
+        if project.getRCS().isPinned() != "":
             sys.stdout.write("\nSkipping module in %s, because it is pinned to %s\n\n"
-                             % (project.getDir(), project.patchLevel))
+                             % (project.getDir(), project.getRCS().getPinnedPatchLevel()))
             return
         sys.stdout.write("Checking for new patches in: %s ... " % (project.getDir()))
         sys.stdout.flush()
