@@ -43,8 +43,6 @@ for project in projects.all:
                            os.path.join(project.getDir(), "config", "private.py"))
 
         command = 'bash -c "cd ' + project.getDir() + ';'
-        if isinstance(project, projects.SDL):
-            command += " scons s2s -j1;"
 
         command += ' scons '
         if jobs != '':
