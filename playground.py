@@ -536,9 +536,9 @@ def installCommand(flavour, sandboxDir=""):
 def updateCommand(arg = 'unused'):
     global projects
     myProject = projects.root
-    if myProject.patchLevel != "":
-        sys.stdout.write("\nSkipping module in %s, because it is pinned to %s\n\n"
-                         % (myProject.getDir(), myProject.patchLevel))
+    if myProject.getRCS().isPinned():
+        sys.stdout.write("\nSkipping module in %s, because it is pinned to %i\n\n"
+                         % (myProject.getDir(), myProject.getRCS().getPinnedPatchLevel()))
         return
     sys.stdout.write("Checking for new patches in: %s ... " % ("./"))
     sys.stdout.flush()

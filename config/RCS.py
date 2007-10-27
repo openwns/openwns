@@ -170,6 +170,12 @@ class Bazaar(RCS):
 		self.updateVersionInfo()
 		return str(self.patchLevel)
 
+	def isPinned(self):
+		return not self.pinnedPatchLevel == None
+
+	def getPinnedPatchLevel(self):
+		return self.pinnedPatchLevel
+
 class GNUArch(RCS):
 	def __init__(self, path, category, branch, revision, pinnedPatchLevel=None):
 		# we prefer "tla" over "baz"
@@ -359,6 +365,12 @@ class GNUArch(RCS):
 		self.__startup()
 
 		return self.__exec("cat-log ",{}, [revision])
+
+	def isPinned(self):
+		return not self.pinnedPatchLevel == None
+
+	def getPinnedPatchLevel(self):
+		return self.pinnedPatchLevel
 
 class LogParser:
     """This class can parse the output of the tla cat-log <revision-spec> command and make
