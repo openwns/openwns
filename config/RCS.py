@@ -171,7 +171,7 @@ class Bazaar(RCS):
 		return str(self.patchLevel)
 
 	def isPinned(self):
-		return not self.pinnedPatchLevel == None
+		return self.pinnedPatchLevel != None
 
 	def getPinnedPatchLevel(self):
 		return self.pinnedPatchLevel
@@ -367,7 +367,7 @@ class GNUArch(RCS):
 		return self.__exec("cat-log ",{}, [revision])
 
 	def isPinned(self):
-		return not self.pinnedPatchLevel == None
+		return self.pinnedPatchLevel != None
 
 	def getPinnedPatchLevel(self):
 		return self.pinnedPatchLevel

@@ -609,7 +609,7 @@ def upgradeCommand(arg = 'unused'):
 
     def run(project):
         arch = project.getRCS()
-        if project.getRCS().isPinned() != "":
+        if project.getRCS().isPinned():
             sys.stdout.write("\nSkipping module in %s, because it is pinned to %s\n\n"
                              % (project.getDir(), project.getRCS().getPinnedPatchLevel()))
             return
