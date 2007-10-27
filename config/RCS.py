@@ -152,7 +152,7 @@ class Bazaar(RCS):
 
 	def getTreeVersion(self):
 		self.updateVersionInfo()
-		return self.masterBranchURL + "/" + self.version
+		return self.getFQRN()
 
 	def getVersion(self):
 		return self.version
