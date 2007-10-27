@@ -152,7 +152,7 @@ class Bazaar(RCS):
 
 	def getTreeVersion(self):
 		self.updateVersionInfo()
-		return self.masterBranchURL + "/" + self.version
+		return self.getFQRN()
 
 	def getVersion(self):
 		return self.version
@@ -169,6 +169,12 @@ class Bazaar(RCS):
 	def getPatchLevel(self):
 		self.updateVersionInfo()
 		return str(self.patchLevel)
+
+	def isPinned(self):
+		return self.pinnedPatchLevel != None
+
+	def getPinnedPatchLevel(self):
+		return self.pinnedPatchLevel
 
 class GNUArch(RCS):
 	def __init__(self, path, category, branch, revision, pinnedPatchLevel=None):
@@ -359,6 +365,12 @@ class GNUArch(RCS):
 		self.__startup()
 
 		return self.__exec("cat-log ",{}, [revision])
+
+	def isPinned(self):
+		return self.pinnedPatchLevel != None
+
+	def getPinnedPatchLevel(self):
+		return self.pinnedPatchLevel
 
 class LogParser:
     """This class can parse the output of the tla cat-log <revision-spec> command and make

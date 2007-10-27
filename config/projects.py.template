@@ -33,7 +33,7 @@ archive = "WNSBazaarIntegration@comnets.rwth-aachen.de"
 bzrBaseURL = "bzr://bazaar.comnets.rwth-aachen.de/openWNS/main"
 
 root         = Root('./',"%s/openWNS--main--1.0" % bzrBaseURL,
-                    RCS.Bazaar('.', 'openWNS', 'main','1.0'))
+                    RCS.Bazaar('.', 'openWNS', 'main', '1.0'))
 
 buildSupport = Generic('./framework/cn-scons--main--1.0',"%s/cn-scons--main--1.0" % bzrBaseURL,
                        RCS.Bazaar('./framework/cn-scons--main--1.0',

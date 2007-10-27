@@ -536,13 +536,13 @@ def installCommand(flavour, sandboxDir=""):
 def updateCommand(arg = 'unused'):
     global projects
     myProject = projects.root
-    if myProject.patchLevel != "":
-        sys.stdout.write("\nSkipping module in %s, because it is pinned to %s\n\n"
-                         % (myProject.getDir(), myProject.patchLevel))
+    if myProject.getRCS().isPinned():
+        sys.stdout.write("\nSkipping module in %s, because it is pinned to %i\n\n"
+                         % (myProject.getDir(), myProject.getRCS().getPinnedPatchLevel()))
         return
     sys.stdout.write("Checking for new patches in: %s ... " % ("./"))
     sys.stdout.flush()
-    missing = str(myProject.getRCS().missing({"-s":""}))
+    missing = str(myProject.getRCS().missing(myProject.getRCSUrl(), {"-s":""}))
     if(missing != ""):
         print "Found:"
         print missing
@@ -557,7 +557,7 @@ def updateCommand(arg = 'unused'):
 
     sys.stdout.write("Checking for new patches in: %s ... " % ("./framework/buildSupport"))
     sys.stdout.flush()
-    missing = str(projects.buildSupport.getRCS().missing({"-s":""}))
+    missing = str(projects.buildSupport.getRCS().missing(projects.buildSupport.getRCSUrl(), {"-s":""}))
     if(missing != ""):
         print "Found:"
         print missing
@@ -609,13 +609,13 @@ def upgradeCommand(arg = 'unused'):
 
     def run(project):
         arch = project.getRCS()
-        if project.patchLevel != "":
+        if project.getRCS().isPinned():
             sys.stdout.write("\nSkipping module in %s, because it is pinned to %s\n\n"
-                             % (project.getDir(), project.patchLevel))
+                             % (project.getDir(), project.getRCS().getPinnedPatchLevel()))
             return
         sys.stdout.write("Checking for new patches in: %s ... " % (project.getDir()))
         sys.stdout.flush()
-        missing = str(project.getRCS().missing({"-s":""}))
+        missing = str(project.getRCS().missing(project.getRCSUrl(), {"-s":""}))
         if(missing != ""):
             print "Found:"
             print missing
@@ -747,7 +747,7 @@ def cleanCommand(option):
 def replayCommand(arg = 'unused'):
     sys.stdout.write("Checking for new patches in: %s ... " % ("./"))
     sys.stdout.flush()
-    missing = str(projects.root.getRCS().missing({"-s":""}))
+    missing = str(projects.root.getRCS().missing(project.root.getRCSUrl(), {"-s":""}))
     if(missing != ""):
         print "Found:"
         print missing
@@ -762,7 +762,7 @@ def replayCommand(arg = 'unused'):
 
     sys.stdout.write("Checking for new patches in: %s ... " % ("./framework/buildSupport"))
     sys.stdout.flush()
-    missing = str(projects.buildSupport.getRCS().missing({"-s":""}))
+    missing = str(projects.buildSupport.getRCS().missing(projects.buildSupport.getRCSUrl(),{"-s":""}))
     if(missing != ""):
         print "Found:"
         print missing
@@ -780,7 +780,7 @@ def replayCommand(arg = 'unused'):
     def run(project):
         sys.stdout.write("Checking for new patches in: %s ... " % (project.getDir()))
         sys.stdout.flush()
-        missing = str(project.getRCS().missing({"-s":""}))
+        missing = str(project.getRCS().missing(project.getRCSUrl(), {"-s":""}))
         if(missing != ""):
             print "Found:"
             print missing
@@ -871,8 +871,8 @@ def applyPatchesCommand( arg = 'unused' ):
                           % project.getRCS().getVersion()) == False:
                 return
 
-        if patchName.count(arch.patchLevel) == 0: # wrong patchlevel
-            if askProceed('The patch %s has not been computed against your current patch level %s' % (patchName, arch.patchLevel)) == False:
+        if patchName.count(arch.getPatchLevel()) == 0: # wrong patchlevel
+            if askProceed('The patch %s has not been computed against your current patch level %s' % (patchName, arch.getPatchLevel())) == False:
                 return
         # Finally, do apply the patch
         os.system(wnsrc.pathToWNS+'/bin/applypatchset %s' % patchName)
@@ -907,7 +907,8 @@ def snapshotCommand( arg = '' ):
     global projects
     makePatchesCommand()
     arch = projects.root.getRCS()
-    snapshotRevision = arch.getFQRN().split("/")[-1]
+    snapshotRevision = arch.getFQRN().rstrip("/").split("/")[-1]
+
     archive = arch.getFQRN().split("/")[0]
     snapshotName = ""
     dirName = ""
