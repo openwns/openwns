@@ -542,7 +542,7 @@ def updateCommand(arg = 'unused'):
         return
     sys.stdout.write("Checking for new patches in: %s ... " % ("./"))
     sys.stdout.flush()
-    missing = str(myProject.getRCS().missing({"-s":""}))
+    missing = str(myProject.getRCS().missing(myProject.getRCSUrl(), {"-s":""}))
     if(missing != ""):
         print "Found:"
         print missing
@@ -557,7 +557,7 @@ def updateCommand(arg = 'unused'):
 
     sys.stdout.write("Checking for new patches in: %s ... " % ("./framework/buildSupport"))
     sys.stdout.flush()
-    missing = str(projects.buildSupport.getRCS().missing({"-s":""}))
+    missing = str(projects.buildSupport.getRCS().missing(projects.buildSupport.getRCSUrl(), {"-s":""}))
     if(missing != ""):
         print "Found:"
         print missing
@@ -615,7 +615,7 @@ def upgradeCommand(arg = 'unused'):
             return
         sys.stdout.write("Checking for new patches in: %s ... " % (project.getDir()))
         sys.stdout.flush()
-        missing = str(project.getRCS().missing({"-s":""}))
+        missing = str(project.getRCS().missing(project.getRCSUrl(), {"-s":""}))
         if(missing != ""):
             print "Found:"
             print missing
@@ -747,7 +747,7 @@ def cleanCommand(option):
 def replayCommand(arg = 'unused'):
     sys.stdout.write("Checking for new patches in: %s ... " % ("./"))
     sys.stdout.flush()
-    missing = str(projects.root.getRCS().missing({"-s":""}))
+    missing = str(projects.root.getRCS().missing(project.root.getRCSUrl(), {"-s":""}))
     if(missing != ""):
         print "Found:"
         print missing
@@ -762,7 +762,7 @@ def replayCommand(arg = 'unused'):
 
     sys.stdout.write("Checking for new patches in: %s ... " % ("./framework/buildSupport"))
     sys.stdout.flush()
-    missing = str(projects.buildSupport.getRCS().missing({"-s":""}))
+    missing = str(projects.buildSupport.getRCS().missing(projects.buildSupport.getRCSUrl(),{"-s":""}))
     if(missing != ""):
         print "Found:"
         print missing
@@ -780,7 +780,7 @@ def replayCommand(arg = 'unused'):
     def run(project):
         sys.stdout.write("Checking for new patches in: %s ... " % (project.getDir()))
         sys.stdout.flush()
-        missing = str(project.getRCS().missing({"-s":""}))
+        missing = str(project.getRCS().missing(project.getRCSUrl(), {"-s":""}))
         if(missing != ""):
             print "Found:"
             print missing
