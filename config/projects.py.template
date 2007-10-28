@@ -43,11 +43,28 @@ buildSupport = Generic('./framework/cn-scons--main--1.0',"%s/cn-scons--main--1.0
 supportLibs  = Library('./extern--main--1.0', "%s/extern--main--1.0" % bzrBaseURL,
                        RCS.Bazaar('./extern--main--1.0', 'extern', 'main', '1.0'))
 
+libwns       = Library('./framework/libwns--main--1.0',"%s/libwns--main--1.0" % bzrBaseURL,
+                       RCS.Bazaar('framework/libwns--main--1.0',
+                                  'libwns', 'main', '1.0'),
+                       [supportLibs])
+
+openWNS_core = Binary('./framework/openWNS-core--main--1.0', "%s/openWNS-core--main--1.0" % bzrBaseURL,
+                      RCS.Bazaar('framework/openWNS-core--main--1.0',
+                                 'openWNS-core', 'main', '1.0'),
+                      [libwns, supportLibs])
+
+pywns        = Python("./framework/PyWNS--main--1.0", "%s/PyWNS--main--1.0" % bzrBaseURL,
+                      RCS.Bazaar('framework/PyWNS--main--1.0',
+                                 "PyWNS", "main", "1.0"))
+
 all = [ root,
         buildSupport,
 	supportLibs,
+        libwns,
+        openWNS_core,
+        pywns
         ]
 
 # commands to prepare the sandbox for playground.py
 # list of tuples, where tuples are (command, directory to execute command in)
-prereqCommands = []
+prereqCommands = [('scons', 'framework/PyWNS--main--1.0')]
