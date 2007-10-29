@@ -26,8 +26,8 @@
 #
 ##############################################################################
 
-from playgroundSupport import *
-import RCS
+from wnsbase.playgroundSupport import *
+import wnsbase.RCS as RCS
 
 archive = "WNSBazaarIntegration@comnets.rwth-aachen.de"
 bzrBaseURL = "bzr://bazaar.comnets.rwth-aachen.de/openWNS/"

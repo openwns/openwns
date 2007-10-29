@@ -27,6 +27,7 @@
 ##############################################################################
 
 import os
+import commands
 import shutil
 import sys
 import glob
@@ -53,16 +54,29 @@ def installEnvironment():
         print
         sys.exit(1)
 
+    # Install all files in wnsbase to sandbox
+    sandboxSrcSubDir = os.path.join("default", "lib", "python2.4", "site-packages", "wnsbase")
+    if commands.getstatusoutput("rm -rf sandbox/" + str(sandboxSrcSubDir))[0] != 0:
+        print "\nERROR:"
+        print "Unable to remove path for wnsbase Python module in sandbox"
+
+    if commands.getstatusoutput("mkdir -p sandbox/" + str(sandboxSrcSubDir))[0] != 0:
+        print "\nERROR:"
+        print "Unable to create path for wnsbase Python module in sandbox"
+
+    if commands.getstatusoutput("cp -R wnsbase/* sandbox/" + str(sandboxSrcSubDir))[0] != 0:
+        print "\nERROR:"
+        print "Unable to install wnsbase files to sandbox"
+
 installEnvironment()
 
 import subprocess
 import optparse
 import re
 import sets
-import commands
 import datetime
 import wnsrc
-
+print sys.path
 class UserMadeDecision:
 
     def askForConfirmation(self, question):
