@@ -6,7 +6,8 @@ class Project(object):
 
     def __init__ (self,
                   directory,
-                  rcsUrl,
+                  rcsSubDir,
+                  rcsBaseUrl,
                   rcs,
                   dependencies,
                   executable,
@@ -16,7 +17,11 @@ class Project(object):
 
         self.directory = directory
 
-        self.rcsUrl = rcsUrl
+        self.rcsSubDir = rcsSubDir
+
+        self.rcsBaseUrl = rcsBaseUrl
+
+        self.rcsUrl = rcsBaseUrl.rstrip("/") + "/" + rcsSubDir
 
         self.rcs = rcs
 
@@ -42,6 +47,12 @@ class Project(object):
     def getExe(self):
         return self.executable
 
+    def getRCSBaseUrl(self):
+        return self.rcsBaseUrl
+
+    def getRCSSubDir(self):
+        return self.rcsSubDir
+
     def getRCSUrl(self):
         return self.rcsUrl
 
@@ -55,17 +66,19 @@ class Project(object):
 
 
 class Library(Project):
-    def __init__(self, directory, rcsUrl, rcs, dependencies = []):
+    def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, dependencies = []):
         super(Library, self).__init__(directory = directory,
-                                      rcsUrl = rcsUrl,
+                                      rcsSubDir = rcsSubDir,
+                                      rcsBaseUrl = rcsBaseUrl,
                                       rcs = rcs,
                                       dependencies = dependencies,
                                       executable = 'lib')
 
 class AddOn(Library):
-    def __init__(self, baseProject, rcsUrl, rcs, addOnDir = "addOn"):
+    def __init__(self, baseProject, rcsSubDir, rcsBaseUrl, rcs, addOnDir = "addOn"):
         super(AddOn, self).__init__(os.path.join(baseProject.getDir(), addOnDir),
-                                    rcsUrl = rcsUrl,
+                                    rcsSubDir = rcsSubDir,
+                                    rcsBaseUrl = rcsBaseUrl,
 				    rcs = rcs,
                                     dependencies = baseProject.dependencies + [baseProject])
         # handled by the "master" project
@@ -75,35 +88,39 @@ class AddOn(Library):
         self.rcs.setPath(self.getDir())
 
 class Binary(Project):
-    def __init__(self, directory, rcsUrl, rcs, dependencies= []):
+    def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, dependencies= []):
         super(Binary, self).__init__(directory = directory,
-                                      rcsUrl = rcsUrl,
-                                      rcs = rcs,
-                                      dependencies = dependencies,
-                                      executable = 'bin')
+                                     rcsSubDir = rcsSubDir,
+                                     rcsBaseUrl = rcsBaseUrl,
+                                     rcs = rcs,
+                                     dependencies = dependencies,
+                                     executable = 'bin')
 
 class Python(Project):
-    def __init__(self, directory, rcsUrl, rcs, generateDoc = True):
+    def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, generateDoc = True):
         super(Python, self).__init__(directory = directory,
-                                     rcsUrl = rcsUrl,
+                                     rcsSubDir = rcsSubDir,
+                                     rcsBaseUrl = rcsBaseUrl,
                                      rcs = rcs,
                                      dependencies = [],
                                      executable = 'python',
                                      generateDoc = generateDoc)
 
 class SystemTest(Project):
-    def __init__(self, directory, rcsUrl, rcs):
+    def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs):
         super(SystemTest, self).__init__(directory = directory,
-                                         rcsUrl = rcsUrl,
+                                         rcsSubDir = rcsSubDir,
+                                         rcsBaseUrl = rcsBaseUrl,
                                          rcs = rcs,
                                          dependencies = [],
                                          executable = None,
                                          generateDoc = False)
 
 class Generic(Project):
-    def __init__(self, directory, rcsUrl, rcs, alias = None):
+    def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, alias = None):
         super(Generic, self).__init__(directory = directory,
-                                      rcsUrl = rcsUrl,
+                                      rcsSubDir = rcsSubDir,
+                                      rcsBaseUrl = rcsBaseUrl,
                                       rcs = rcs,
                                       alias = alias,
                                       dependencies = [],

@@ -141,7 +141,7 @@ class Bazaar(RCS):
 		return returnValue
 
 	def push(self, url):
-		pass
+		return self.__exec("push", {}, ["--create-prefix", url, "2>&1"])
 
 	def getFQRN(self):
 		branch, relpath = bzrlib.branch.Branch.open_containing(self.path)

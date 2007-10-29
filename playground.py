@@ -667,6 +667,15 @@ def lintCommand(arg = 'unused'):
             print
             print
 
+def pushCommand(arg = "unused"):
+
+    def run(project):
+        print project.getRCS().push(options.url + "/" + project.getRCSSubDir())
+
+    print "Pushing all projects to " + str(options.url)
+
+    foreachProject(projects.all, run)
+
 def foreachCommand(command):
     def run(project):
         print "Running '%s' in %s ..." % (command, project.getDir())
@@ -1501,6 +1510,11 @@ if __name__ == "__main__":
                       callback_args = (lintCommand,),
                       help="lint project trees (-f, --if)")
 
+    parser.add_option("", "--push",
+                      action="callback", callback = queue.append,
+                      callback_args = (pushCommand,),
+                      help="push project trees (--url)")
+
     parser.add_option("", "--update",
                       action="callback", callback = queue.append,
                       callback_args = (updateCommand,),
@@ -1563,6 +1577,10 @@ if __name__ == "__main__":
     parser.add_option("-n", "--nickName",
                       type="string", dest = "nickName", metavar = "NICKNAME", default = "WNS",
                       help = "Give a NickName to your WNS snapshot")
+
+    parser.add_option("", "--url",
+                      type="string", dest = "url", metavar = "URL", default = "",
+                      help = "Give the destination to push to")
 
     parser.add_option("", "--snapshotFilename",
                       type="string", dest = "snapshotFilename", metavar = "FILENAME", default = '',

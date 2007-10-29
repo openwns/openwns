@@ -30,30 +30,30 @@ from playgroundSupport import *
 import RCS
 
 archive = "WNSBazaarIntegration@comnets.rwth-aachen.de"
-bzrBaseURL = "bzr://bazaar.comnets.rwth-aachen.de/openWNS/main"
+bzrBaseURL = "bzr://bazaar.comnets.rwth-aachen.de/openWNS/"
 
-root         = Root('./',"%s/openWNS--main--1.0" % bzrBaseURL,
+root         = Root('./',"main/openWNS--main--1.0", bzrBaseURL,
                     RCS.Bazaar('.', 'openWNS', 'main', '1.0'))
 
-buildSupport = Generic('./framework/cn-scons--main--1.0',"%s/cn-scons--main--1.0" % bzrBaseURL,
+buildSupport = Generic('./framework/cn-scons--main--1.0',"main/cn-scons--main--1.0", bzrBaseURL,
                        RCS.Bazaar('./framework/cn-scons--main--1.0',
                                   'cn-scons', 'main', '1.0'),
                        alias="buildSupport")
 
-supportLibs  = Library('./extern--main--1.0', "%s/extern--main--1.0" % bzrBaseURL,
+supportLibs  = Library('./extern--main--1.0', "main/extern--main--1.0", bzrBaseURL,
                        RCS.Bazaar('./extern--main--1.0', 'extern', 'main', '1.0'))
 
-libwns       = Library('./framework/libwns--main--1.0',"%s/libwns--main--1.0" % bzrBaseURL,
+libwns       = Library('./framework/libwns--main--1.0',"main/libwns--main--1.0", bzrBaseURL,
                        RCS.Bazaar('framework/libwns--main--1.0',
                                   'libwns', 'main', '1.0'),
                        [supportLibs])
 
-openWNS_core = Binary('./framework/openWNS-core--main--1.0', "%s/openWNS-core--main--1.0" % bzrBaseURL,
+openWNS_core = Binary('./framework/openWNS-core--main--1.0', "main/openWNS-core--main--1.0", bzrBaseURL,
                       RCS.Bazaar('framework/openWNS-core--main--1.0',
                                  'openWNS-core', 'main', '1.0'),
                       [libwns, supportLibs])
 
-pywns        = Python("./framework/PyWNS--main--1.0", "%s/PyWNS--main--1.0" % bzrBaseURL,
+pywns        = Python("./framework/PyWNS--main--1.0", "main/PyWNS--main--1.0", bzrBaseURL,
                       RCS.Bazaar('framework/PyWNS--main--1.0',
                                  "PyWNS", "main", "1.0"))
 
