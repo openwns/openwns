@@ -5,21 +5,38 @@ import unittest
 
 sandboxPath = '../../../sandbox'
 
+class SubdirWithTests:
+
+    def __init__(self, pathToScan, pythonPath):
+        self.pathToScan = pathToScan
+        self.pythonPath = pythonPath
+
 class PythonUnitTests:
-    path = sandboxPath + '/dbg/lib/PyConfig'
+    subdirs = [ SubdirWithTests(sandboxPath + '/dbg/lib/PyConfig',
+                                sandboxPath + '/dbg/lib/PyConfig'),
+                SubdirWithTests(sandboxPath + '/default/lib/python2.4/site-packages/wnsbase',
+                                sandboxPath + '/default/lib/python2.4/site-packages')
+                ]
+
     allTests = unittest.TestSuite()
 
     def __init__(self):
-        sys.path.append(self.path)
-        for root, dirs, files in os.walk(self.path):
+        for subdir in self.subdirs:
+            sys.path.append(subdir.pythonPath)
+            self.addSubdir(subdir)
+
+    def addSubdir(self, subdir):
+
+        for root, dirs, files in os.walk(subdir.pathToScan):
             if root.find('/tests') != -1:
                 for fileName in files:
                     if fileName.endswith('py') and fileName != '__init__.py':
                         pathName = os.path.join(root, fileName)
-                        self.addModule(pathName)
+                        self.addModule(subdir, pathName)
 
-    def addModule(self, modulePath):
-        moduleName = modulePath.replace(self.path + '/', '').replace('.py', '').replace('/', '.')
+    def addModule(self, subdir, modulePath):
+
+        moduleName = modulePath.replace(subdir.pythonPath + '/', '').replace('.py', '').replace('/', '.')
         mod = __import__(moduleName, globals(), locals(), [''])
         suite = unittest.defaultTestLoader.loadTestsFromModule(mod)
         self.allTests.addTest(suite)
