@@ -76,7 +76,7 @@ import re
 import sets
 import datetime
 import wnsrc
-print sys.path
+
 class UserMadeDecision:
 
     def askForConfirmation(self, question):
@@ -1649,7 +1649,7 @@ if __name__ == "__main__":
     updateMissingProjects(missingProjects)
 
     sys.path.append('framework/buildSupport')
-    import RCS
+    import wnsbase.RCS as RCS
     import FilePatcher
     sys.path.remove('framework/buildSupport')
 
