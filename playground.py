@@ -1253,7 +1253,7 @@ def runTestsCommand(arg = "unused"):
 
     # Add PyConfig unit tests
     pyUnit = pywns.WNSUnit.ExternalProgram(dirname = "tests/unit/PythonUnitTests/",
-                                           command = "./runPythonUnitTests.py",
+                                           command = "./runPythonUnitTests.py -v",
                                            description = "PyConfig Unit Tests",
                                            includeStdOut = True)
     testCollector.addTest(pyUnit)
