@@ -72,13 +72,12 @@ class Interface(object):
                 methodSignature += method.__name__
                 methodSignature += "(" + ", ".join(methodArguments) + ")"
 
-                raise TypeError, ("Abstract method '%s.%s.%s' not implemented " +
-                                  "in '%s':\n\n%s :\n%s"
-                                  % (abstractInModule,
-                                     abstractInClass,
-                                     method.__name__,
-                                     method.im_class.__name__,
-                                     methodSignature,
-                                     method.__doc__))
+                raise TypeError, ("Abstract method '%s.%s.%s' not implemented in '%s':\n\n%s :\n%s"
+                                  % (str(abstractInModule),
+                                     str(abstractInClass),
+                                     str(method.__name__),
+                                     str(method.im_class.__name__),
+                                     str(methodSignature),
+                                     str(method.__doc__)))
 
         return obj
