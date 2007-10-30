@@ -7,3 +7,7 @@ extern--main--1.0
 sandbox/*
 tests/unit/unitTests/output
 .sconsign.dblite
+tests/unit/PythonUnitTests/stderr.log
+tests/unit/PythonUnitTests/stdout.log
+tests/unit/unitTests/stderr.log
+tests/unit/unitTests/stdout.log
