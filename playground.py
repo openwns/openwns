@@ -479,6 +479,7 @@ def installCommand(flavour, sandboxDir=""):
         print "Installing", project.getDir(), "..."
 
         linkPrivatePy("./", project)
+        linkPushMailRecipientsPy("./", project)
 
         parallel_compiles = ''
         if options.jobs:
@@ -1375,7 +1376,7 @@ def getMissingProjects(missingProjects):
             newLink = os.path.join(basedir, project.alias)
             if os.path.exists(newLink) or os.path.islink(newLink):
                 print "\nError: For this project I need to make a symlink!!"
-                print "Symlink would be: " + project.version + " -> "  + project.alias + " in " + os.getcwd()
+                print "Symlink would be: " + project.getDir() + " -> "  + project.alias + " in " + os.getcwd()
                 print "Error: " + project.alias + " already exists. Please move it out of the way."
                 print "Run '" + " ".join(sys.argv) + "' afterwards again."
                 sys.exit(1)
@@ -1392,7 +1393,7 @@ def getMissingProjects(missingProjects):
             os.chdir(curDir)
 
         linkPrivatePy(project.getDir(), project)
-
+        linkPushMailRecipientsPy(project.getDir(), project)
 
 def linkPrivatePy(path, project):
     if not project.getExe() in ["bin", "lib"]:
@@ -1400,6 +1401,11 @@ def linkPrivatePy(path, project):
     if not os.path.exists(os.path.join(path, "config", "private.py")) and os.path.exists(os.path.join(path, "config")):
         os.symlink(os.path.join(relativePathToTestbed(project.getDir()), "..", "config", "private.py"),
                    os.path.join(path, "config", "private.py"))
+
+def linkPushMailRecipientsPy(path, project):
+    if not os.path.exists(os.path.join(path, "config", "pushMailRecipients.py")) and os.path.exists(os.path.join(path, "config")):
+        os.symlink(os.path.join(relativePathToTestbed(project.getDir()), "..", "config", "pushMailRecipients.py"),
+                   os.path.join(path, "config", "pushMailRecipients.py"))
 
 def updateMissingProjects(missingProjects):
     if not len(missingProjects):
