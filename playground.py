@@ -338,7 +338,7 @@ def createTestbedDocu(projects):
     for i in file(os.path.join("doc", "config", "Doxyfile")):
         stdin.write(i)
     stdin.write('PROJECT_NAME="'+ rcs.getVersion() + '"\n')
-    stdin.write('PROJECT_NUMBER="'+ rcs.getPatchLevel() + '<br>(archive: '+ rcs.getArchive() +')"\n')
+    stdin.write('PROJECT_NUMBER="'+ rcs.getPatchLevel() + '<br>(archive: '+ rcs.getFQRN() +')"\n')
     stdin.close()
     line = stdout.readline()
     while line:
@@ -394,7 +394,7 @@ def writeDoxygenHeader(projects):
     <body>
     <table border=0 cellpadding=0 cellspacing=10 width=100%>
     <tr>
-    <td width=25%><img src="WNS/images/WNS-3.png"></td>
+    <td width=25%><img src="WNS/images/openWNS.png"></td>
     <td width=50% valign=bottom align=center>
     <font size=+2><b>WNS - The Wireless Network Simulator</b></font>
     </td>
@@ -1358,7 +1358,6 @@ def Stripper(something):
 def checkForMissingProjects(projects):
     """iterate over the projects in p, return a list of missing directory names.
     """
-
     return [project for project in projects if not os.path.isdir(project.getDir())]
 
 
