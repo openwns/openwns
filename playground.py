@@ -1253,18 +1253,23 @@ def runTestsCommand(arg = "unused"):
 
     # Add PyConfig unit tests
     pyUnit = pywns.WNSUnit.ExternalProgram(dirname = "tests/unit/PythonUnitTests/",
-                                           command = "./runPythonUnitTests.py",
+                                           command = "./runPythonUnitTests.py -v",
                                            description = "PyConfig Unit Tests",
                                            includeStdOut = True)
     testCollector.addTest(pyUnit)
 
 
     # Add C++ unit tests
-    cppUnit = pywns.WNSUnit.ExternalProgram(dirname = "tests/unit/unitTests/",
-                                            command = "./wns-core -f config.py -t -y'WNS.masterLogger.backtrace.enabled=True'",
-                                            description = "C++ unit tests",
-                                            includeStdOut = True)
-    testCollector.addTest(cppUnit)
+    if os.path.exists("tests/unit/unitTests/wns-core"):
+        cppUnit = pywns.WNSUnit.ExternalProgram(dirname = "tests/unit/unitTests/",
+                                                command = "./wns-core -f config.py -t -y'WNS.masterLogger.backtrace.enabled=True'",
+                                                description = "C++ unit tests",
+                                                includeStdOut = True)
+        testCollector.addTest(cppUnit)
+
+    else:
+        print "WARNING: Could not find wns-core! Cannot execute unittests"
+        print "Normally this should always fail. To be removed when unittests are available"
 
     pywns.WNSUnit.verbosity = 2
 
