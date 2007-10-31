@@ -372,7 +372,7 @@ def writeDoxygenHeader(projects):
     # index.htm
     index = file(os.path.join("sandbox", "default", "doc", "index.htm"), "w")
     index.write("""
-    <html><head><title>WNS - The Wireless Network Simulator</title></head>
+    <html><head><title>openWNS - The Wireless Network Simulator</title></head>
     <frameset rows="105,*">
     <frame marginwidth=0 marginheight=0 frameborder=0 src="head.htm">
     <frameset cols="250,*,250">
@@ -387,7 +387,7 @@ def writeDoxygenHeader(projects):
     # head.htm
     head = file(os.path.join("sandbox", "default", "doc", "head.htm"), "w")
     head.write("""
-    <html><head><title>WNS - The Wireless Network Simulator</title>
+    <html><head><title>openWNS - The Wireless Network Simulator</title>
     <link href="WNS/doxygen.css" rel="stylesheet" type="text/css">
     <link href="WNS/tabs.css" rel="stylesheet" type="text/css">
     </head>
@@ -396,7 +396,7 @@ def writeDoxygenHeader(projects):
     <tr>
     <td width=25%><img src="WNS/images/openWNS.png"></td>
     <td width=50% valign=bottom align=center>
-    <font size=+2><b>WNS - The Wireless Network Simulator</b></font>
+    <font size=+2><b>openWNS - The Wireless Network Simulator</b></font>
     </td>
     <td width=25% align=right><img src="WNS/images/RWTHAachen-ComNets.png"></td>
     </tr>
@@ -411,7 +411,7 @@ def writeDoxygenHeader(projects):
     # right.htm (Menu on the right side)
     right = file(os.path.join("sandbox", "default", "doc", "right.htm"), "w")
     right.write("""
-    <html><head><title>WNS - Right Menu</title>
+    <html><head><title>openWNS - Right Menu</title>
     <link href="WNS/doxygen.css" rel="stylesheet" type="text/css">
     <link href="WNS/tabs.css" rel="stylesheet" type="text/css">
     </head>
