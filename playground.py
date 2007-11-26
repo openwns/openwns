@@ -1311,7 +1311,7 @@ def runLongTestsCommand(arg = "unused"):
 
 def memcheckUnitTestsCommand(arg = "unused"):
     import pywns.MemCheck
-    r = pywns.MemCheck.Runner(args=["./wns-core", "-tv"], cwd="tests/unit/unitTests")
+    r = pywns.MemCheck.Runner(args=["./openwns", "-tv"], cwd="tests/unit/unitTests")
     returncode = r.run()
     sys.exit(returncode)
 
