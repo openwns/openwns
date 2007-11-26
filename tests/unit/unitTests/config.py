@@ -1,12 +1,11 @@
 # import the WNS module. Contains all sub-classes needed for
 # configuration of WNS
-import wns.WNS
+import openwns.OpenWNS
 
 # create an instance of the WNS configuration
 # The variable must be called WNS!!!!
-WNS = wns.WNS.WNS()
+WNS = openwns.OpenWNS.OpenWNS()
 
-WNS.outputStrategy = wns.WNS.OutputStrategy.DELETE
 WNS.masterLogger.enabled = False
 # set this to zero in the tests to avoid starting the PeriodicRealTimeout
 # 1) if gui is enabled a PeriodicRealTimeout will be started
