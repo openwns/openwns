@@ -1261,16 +1261,11 @@ def runTestsCommand(arg = "unused"):
 
 
     # Add C++ unit tests
-    if os.path.exists("tests/unit/unitTests/wns-core"):
-        cppUnit = pywns.WNSUnit.ExternalProgram(dirname = "tests/unit/unitTests/",
-                                                command = "./wns-core -f config.py -t -y'WNS.masterLogger.backtrace.enabled=True'",
-                                                description = "C++ unit tests",
-                                                includeStdOut = True)
-        testCollector.addTest(cppUnit)
-
-    else:
-        print "WARNING: Could not find wns-core! Cannot execute unittests"
-        print "Normally this should always fail. To be removed when unittests are available"
+    cppUnit = pywns.WNSUnit.ExternalProgram(dirname = "tests/unit/unitTests/",
+                                            command = "./openwns -f config.py -t -y'WNS.masterLogger.backtrace.enabled=True'",
+                                            description = "C++ unit tests",
+                                            includeStdOut = True)
+    testCollector.addTest(cppUnit)
 
     pywns.WNSUnit.verbosity = 2
 
