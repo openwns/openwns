@@ -9,10 +9,10 @@ jobs = ARGUMENTS.get('j', '')
 nc = ARGUMENTS.get('no-color', '0')
 ni = ARGUMENTS.get('no-inf', '0')
 nf = ARGUMENTS.get('no-filter', '0')
-noAddOns = ARGUMENTS.get('no-addOns', '0')=='1'
-pda = ARGUMENTS.get('project-dependent-aliases', '0')=='1'
+noAddOns = ARGUMENTS.get('no-addOns', '0')
+pda = ARGUMENTS.get('project-dependent-aliases', '0')
 flavour = ARGUMENTS.get('flavour', 'dbg')
-static = ARGUMENTS.get('static', '0')=='1'
+static = ARGUMENTS.get('static', '0')
 sandboxDir = ARGUMENTS.get('sandboxDir', '')
 
 options = "no-color='%s' no-inf='%s' no-filter='%s' project-dependent-aliases='%s' flavour='%s' static='%s' sandboxDir='%s' no-addOns='%s'" % (nc, ni, nf, pda, flavour, static, sandboxDir, noAddOns)
