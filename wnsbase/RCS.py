@@ -31,10 +31,11 @@ import subprocess
 import StringIO
 
 from rcs.RCSInterface import RCS
+from rcs.Output import *
 from rcs.Bazaar import Bazaar
 
 class No(RCS):
-	def __init__(self, category, branch, revision, patchLevel):
+	def __init__(self, category="Unknown", branch="Unknown", revision="Unknown", patchLevel="Unknown"):
 		self.category = category
 		self.branch = branch
 		self.revision = revision
@@ -42,6 +43,56 @@ class No(RCS):
 		self.version = '--'.join([self.category, self.branch, self.revision])
 		self.FQRN = 'local/'+self.revision+'--patch-'+self.patchLevel
 
+        def setPath(self, path):
+                pass
+
+        def getPath(self):
+                pass
+
+        def missing(self, url, switches={}, revision=""):
+                pass
+
+        def status(self, switches={}):
+                pass
+
+        def lint(self):
+                pass
+
+        def update(self):
+                pass
+
+        def get(self, url):
+                pass
+
+        def push(self, url):
+                pass
+
+        def getFQRN(self):
+                return self.FQRN
+
+        def getTreeVersion(self):
+                return self.FQRN
+
+        def getVersion(self):
+                return self.version
+
+        def getCategory(self):
+                return self.category
+
+        def getBranch(self):
+                return self.branch
+
+        def getRevision(self):
+                pass
+
+        def getPatchLevel(self):
+                return self.patchLevel
+
+        def isPinned(self):
+                return False
+
+        def getPinnedPatchLevel(self):
+                pass
 
 class GNUArch(RCS):
 	def __init__(self, path, category, branch, revision, pinnedPatchLevel=None):
@@ -157,6 +208,9 @@ class GNUArch(RCS):
 				return self.__exec("get", {}, [url + "--patch-" + str(self.pinnedPatchLevel), self.path])
 
 		return self.__exec("get", {}, [url, self.path])
+
+        def push(self, url):
+                pass
 
 	def lint(self, options = {}):
 		self.__startup()
