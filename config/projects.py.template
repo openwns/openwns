@@ -47,15 +47,15 @@ documentation= Generic('./WNS-Documentation--main--1.0', 'main/WNS-Documentation
                        RCS.Bazaar('./WNS-Documentation--main--1.0', 'WNS-Documentation', 'main', '1.0'),
                        alias ='doc')
 
-#libwns       = Library('./framework/libwns--main--1.0',"main/libwns--main--1.0", bzrBaseURL,
-#                       RCS.Bazaar('framework/libwns--main--1.0',
-#                                  'libwns', 'main', '1.0'),
-#                       [supportLibs])
+libwns       = Library('./framework/libwns--main--1.0',"main/libwns--rc1--1.0", bzrBaseURL,
+                       RCS.Bazaar('framework/libwns--main--1.0',
+                                  'libwns', 'main', '1.0'),
+                       [supportLibs])
 
-#openWNS_core = Binary('./framework/openWNS-core--main--1.0', "main/openWNS-core--main--1.0", bzrBaseURL,
-#                      RCS.Bazaar('framework/openWNS-core--main--1.0',
-#                                 'openWNS-core', 'main', '1.0'),
-#                      [libwns, supportLibs])
+openWNS_core = Binary('./framework/openWNS-core--main--1.0', "main/openWNS-core--main--1.0", bzrBaseURL,
+                      RCS.Bazaar('framework/openWNS-core--main--1.0',
+                                 'openWNS-core', 'main', '1.0'),
+                      [libwns, supportLibs])
 
 pywns        = Python("./framework/PyWNS--main--1.0", "main/PyWNS--main--1.0", bzrBaseURL,
                       RCS.Bazaar('framework/PyWNS--main--1.0',
@@ -63,10 +63,10 @@ pywns        = Python("./framework/PyWNS--main--1.0", "main/PyWNS--main--1.0", b
 
 all = [ root,
         buildSupport,
-	supportLibs,
+        supportLibs,
         documentation,
-#        libwns,
-#        openWNS_core,
+        libwns,
+        openWNS_core,
         pywns
         ]
 
