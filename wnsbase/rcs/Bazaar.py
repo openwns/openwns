@@ -123,6 +123,10 @@ class Bazaar(RCS):
 
 		url = branch.get_parent()
 
+                if url==None:
+                        # We have no known parent branch location.
+                        # We are our own parent, Fry ;)
+                        return self.path
 		return url
 
 	def getTreeVersion(self):
