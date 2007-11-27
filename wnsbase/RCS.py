@@ -83,7 +83,7 @@ class No(RCS):
                 return self.branch
 
         def getRevision(self):
-                pass
+                return self.revision
 
         def getPatchLevel(self):
                 return self.patchLevel
