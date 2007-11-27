@@ -1261,8 +1261,9 @@ def runTestsCommand(arg = "unused"):
 
 
     # Add C++ unit tests
+
     cppUnit = pywns.WNSUnit.ExternalProgram(dirname = "tests/unit/unitTests/",
-                                            command = "./openwns -f config.py -t -y'WNS.masterLogger.backtrace.enabled=True'",
+                                            command = options.executable + " -f config.py -t -y'WNS.masterLogger.backtrace.enabled=True'",
                                             description = "C++ unit tests",
                                             includeStdOut = True)
     testCollector.addTest(cppUnit)
@@ -1502,17 +1503,17 @@ if __name__ == "__main__":
     parser.add_option("", "--runTests",
                       action="callback", callback = queue.append,
                       callback_args = (runTestsCommand,),
-                      help="runs the tests found in 'tests' (None)")
+                      help="runs the tests found in 'tests' (--executable)")
 
     parser.add_option("", "--runLongTests",
                       action="callback", callback = queue.append,
                       callback_args = (runLongTestsCommand,),
-                      help="runs the tests found in 'longTests' (None)")
+                      help="runs the tests found in 'longTests' (--executable)")
 
     parser.add_option("", "--memcheckUnitTests",
                       action="callback", callback = queue.append,
                       callback_args = (memcheckUnitTestsCommand,),
-                      help="runs memory check (leaks, uninitialized reads, ...) for unit tests (None)")
+                      help="runs memory check (leaks, uninitialized reads, ...) for unit tests (--executable)")
 
     parser.add_option("", "--replay",
                       action="callback", callback = queue.append,
@@ -1636,6 +1637,10 @@ if __name__ == "__main__":
     parser.add_option("", "--noAsk",
                       action = "store_true", dest = "noAsk", default = False,
                       help = "Do not ask user. Accept all default answers. Use this for automation.")
+
+    parser.add_option("", "--executable",
+                      type="string", dest = "executable", default = "./openwns",
+                      help = "The executable that is to be called by the respective command (default : \"./openWNS\")")
 
     options, args = parser.parse_args()
     if len(args):
