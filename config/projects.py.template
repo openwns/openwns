@@ -35,6 +35,10 @@ bzrBaseURL = "bzr://bazaar.comnets.rwth-aachen.de/openWNS/"
 root         = Root('./',"main/openWNS--main--1.0", bzrBaseURL,
                     RCS.Bazaar('.', 'openWNS', 'main', '1.0'))
 
+unitTests = Generic('./tests/unit', 'main/unitTest--main--1.0', bzrBaseURL,
+                    RCS.Bazaar('./tests/unit',
+                               'unitTest', 'main', '1.0'))
+
 buildSupport = Generic('./framework/cn-scons--main--1.0',"main/cn-scons--main--1.0", bzrBaseURL,
                        RCS.Bazaar('./framework/cn-scons--main--1.0',
                                   'cn-scons', 'main', '1.0'),
@@ -62,6 +66,7 @@ pywns        = Python("./framework/PyWNS--main--1.0", "main/PyWNS--main--1.0", b
                                  "PyWNS", "main", "1.0"))
 
 all = [ root,
+        unitTests,
         buildSupport,
         supportLibs,
         documentation,
