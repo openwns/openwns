@@ -14,3 +14,13 @@ tests/unit/unitTests/stdout.log
 WNS-Documentation--main--1.0
 doc
 tests/unit
+modules/al/*
+modules/dll/*
+modules/mock/*
+modules/nl/*
+modules/phy/*
+modules/loadgen/*
+modules/rrm/*
+modules/tl/*
+tests/system/*
+patchSets
