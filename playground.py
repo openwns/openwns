@@ -266,7 +266,7 @@ def runProjectHook(project, hookName):
     print "Running '%s' hook for project %s" % (hookName, project.getDir())
     return hook()
 
-def missingCommand(arg = 'unused'):
+def missingCommand(playgroundEnvironment, arg = 'unused'):
     def run(project):
         print "Missing in", project.getDir(), "..."
         project.getRCS().missing(project.getRCSUrl() ,{"-s":""}).realtimePrint("  ")
@@ -294,7 +294,7 @@ def changesChecker(project):
     return changes
 
 
-def statusCommand(arg = 'unused'):
+def statusCommand(playgroundEnvironment, arg = 'unused'):
     def run(project):
         return changesChecker(project)
 
@@ -310,7 +310,7 @@ def statusCommand(arg = 'unused'):
                 print "  " + change
 
 
-def docuCommand(arg = 'unused'):
+def docuCommand(playgroundEnvironment, arg = 'unused'):
     def run(project):
         if not project.generateDoc:
             return
@@ -471,7 +471,7 @@ def writeDoxygenHeader(projects):
     left.write("</ul></font><body></html>")
 
 
-def installCommand(flavour, sandboxDir=""):
+def installCommand(playgroundEnvironment, flavour, sandboxDir=""):
     def run(project):
         if project.getExe() == None:
             return
@@ -548,8 +548,10 @@ def installCommand(flavour, sandboxDir=""):
         reorderedListOfProjects += [it for it in projects.all if it not in reorderedListOfProjects]
     foreachProject(reorderedListOfProjects, run)
 
-def updateCommand(arg = 'unused'):
-    global projects
+def updateCommand(playgroundEnvironment):
+    projects = playgroundEnvironment['projects']
+    checkForConflictsAndExit = playgroundEnvironment['checkForConflictsAndExit']
+
     myProject = projects.root
     if myProject.getRCS().isPinned():
         sys.stdout.write("\nSkipping module in %s, because it is pinned to %i\n\n"
@@ -590,36 +592,15 @@ def updateCommand(arg = 'unused'):
     # re-read projects configuration
     projects = readProjectsConfig()
 
-
-
-def linkDocuCommand(arg = 'unused'):
-    print "Linking documentation from"
-    print "  ./sandbox/default/doc"
-    print "to"
-    print "  http://docs.comnets.rwth-aachen.de (/srv/www/vhosts/docs.comnets.rwth-aachen.de/myDocs/"+os.environ['USER']+")"
-    runCommand('rm -f /srv/www/vhosts/docs.comnets.rwth-aachen.de/myDocs/$USER; ln -sf $(pwd)/sandbox/default/doc /srv/www/vhosts/docs.comnets.rwth-aachen.de/myDocs/$USER')
-    print "Done."
-
-
-def loghelperCommand(arg = 'unused'):
-    def run(project):
-        runCommand("""
-        for i in `tla changes | grep 'M '` ; do
-        if [ $i != "M" ]; then
-                meld $i `tla file-find $i`
-        fi
-        done
-        """)
-
-    foreachProject(projects.all,
-                   run)
-
-
-def upgradeCommand(arg = 'unused'):
-    updateCommand()
+def upgradeCommand(playgroundEnvironment, arg = 'unused'):
+    updateCommand(playgroundEnvironment)
 
     # there may be new projects since config/projects.py got updated
-    missingProjects = checkForMissingProjects(projects.all)
+    theProjects = playgroundEnvironment['projects']
+    userFeedback = playgroundEnvironment['userFeedback']
+    checkForConflictsAndExit = playgroundEnvironment['checkForConflictsAndExit']
+
+    missingProjects = checkForMissingProjects(theProjects.all)
     updateMissingProjects(missingProjects)
 
     def run(project):
@@ -658,7 +639,7 @@ def upgradeCommand(arg = 'unused'):
                    run)
 
 
-def lintCommand(arg = 'unused'):
+def lintCommand(playgroundEnvironment, arg = 'unused'):
     def run(project):
         return linter(project)
 
@@ -671,8 +652,10 @@ def lintCommand(arg = 'unused'):
             sys.stdout.write(" Fail\n")
         return result
 
+    theProjects = playgroundEnvironment['projects']
+
     print "Linting all project trees. A summary will be listed at the end ..."
-    lintedResults = foreachProject(projects.all, run)
+    lintedResults = foreachProject(theProjects.all, run)
     print
     print
     for ii in lintedResults:
@@ -682,16 +665,7 @@ def lintCommand(arg = 'unused'):
             print
             print
 
-def pushCommand(arg = "unused"):
-
-    def run(project):
-        print project.getRCS().push(options.url + "/" + project.getRCSSubDir())
-
-    print "Pushing all projects to " + str(options.url)
-
-    foreachProject(projects.all, run)
-
-def foreachCommand(command):
+def foreachCommand(playgroundEnvironment, command):
     def run(project):
         print "Running '%s' in %s ..." % (command, project.getDir())
         runCommand(command)
@@ -699,11 +673,7 @@ def foreachCommand(command):
     foreachProject(projects.all,
                    run)
 
-def forsomeCommand(command):
-    print "please use --foreach='%s' --if=ask instead." % command
-
-
-def cleanCommand(option):
+def cleanCommand(playgroundEnvironment, option):
     def remove(base, directory):
         delDir = os.path.join(base, directory)
         if os.path.exists(base):
@@ -768,7 +738,7 @@ def cleanCommand(option):
 	foreachProject(projects.all,
 	               runCleanBuildDirs)
 
-def replayCommand(arg = 'unused'):
+def replayCommand(playgroundEnvironment, arg = 'unused'):
     sys.stdout.write("Checking for new patches in: %s ... " % ("./"))
     sys.stdout.flush()
     missing = str(projects.root.getRCS().missing(project.root.getRCSUrl(), {"-s":""}))
@@ -830,415 +800,7 @@ def replayCommand(arg = 'unused'):
     foreachProject(projects.all,
                    run)
 
-def makePatchesCommand( arg = 'unused' ):
-    """Generate Patchsets from all Modules that have changes and write them to a directory called 'patchSets' """
-
-    def getChanges(project):
-        return (project, changesChecker(project))
-
-    changedProjects = [ ii.result[0] for ii in foreachProject(projects.all, getChanges) if len(ii.result[1])>0 ]
-
-    def createPatchset(project):
-        command = wnsrc.pathToWNS+"/bin/mkpatchset"
-        sin, sout, serr = os.popen3(command)
-        lastLine = ''
-        for line in sout: lastLine = line
-        patchsetName = lastLine.strip()
-        return (project, patchsetName)
-
-    patchFiles = [ ii.result for ii in foreachProject(changedProjects, createPatchset) ]
-    patchDir = "patchSets"
-    shutil.rmtree(patchDir, ignore_errors=True)
-    os.mkdir(patchDir)
-    for project, patch in patchFiles:
-        patchlevel = project.getRCS().getPatchLevel()
-        if patchlevel == 0:
-            patchlevel = "base-0"
-        else:
-            patchlevel = "patch-" + patchlevel
-        shutil.move(patch, os.path.join(patchDir, os.path.basename(patch)))
-
-patchDir = os.path.abspath('patchSets')
-def applyPatchesCommand( arg = 'unused' ):
-    """Walk over all modules, check whether the 'patchSets' directory contains a patch for that module and apply it.
-
-    Before applying the patch, this routine does the following:
-    1.) Check that there are no other changes to the module, if so,
-        you are prompted whether to proceed
-    2.) Check that the patch was computed against the same patchlevel of
-        the module that you have. If this is not the case, you are prompted
-        whether to proceed
-    """
-    def askProceed(message):
-        print message
-        print
-        return userFeedback.askForConfirmation("Do you want to proceed?")
-
-    def findAndApplyPatch(project):
-        global patchDir
-        arch = project.getRCS()
-        projName = project.getRCS().getVersion()
-        # find if a patch matching projName is in the patchDir
-        patches = glob.glob( os.path.join(patchDir,'*%s*' % projName ) )
-        if len(patches) == 0:
-            print "Nothing to be done in", project.getDir()
-            return
-        elif len(patches) > 1:
-            print patches
-            raise "Ambiguous Patches in 'patchSets' dir!"
-        patchName = patches[0]
-
-        print "Applying patchFile:", patchName
-        changes = changesChecker(project)
-        if len(changes)>0: # module has pending changes
-            if askProceed("The Module %s is not clean (It is safe to say 'Yes' here if you are installing a snapshot)"
-                          % project.getRCS().getVersion()) == False:
-                return
-
-        if patchName.count(arch.getPatchLevel()) == 0: # wrong patchlevel
-            if askProceed('The patch %s has not been computed against your current patch level %s' % (patchName, arch.getPatchLevel())) == False:
-                return
-        # Finally, do apply the patch
-        os.system(wnsrc.pathToWNS+'/bin/applypatchset %s' % patchName)
-
-    foreachProject(projects.all,
-                   findAndApplyPatch)
-
-def getSnapshotName():
-    global projects
-    arch = projects.root.getRCS()
-    archive = arch.getFQRN()
-    if options.snapshotFilename =='':
-        dirName = "-".join(["snapshot",
-                            options.nickName,
-                            archive,
-                            os.getenv("USER")])
-        dirName = dirName + ".tgz"
-        dirName = dirName.replace(":","_")
-        dirName = dirName.replace("/","_")
-        dirName = dirName.replace("~","-")
-    else:
-        dirName = options.snapshotFilename
-
-    return dirName
-
-def snapshotCommand( arg = '' ):
-    """
-    1.) Generate Patchfiles for un-commited changes
-    2.) For each project, adds the current patchlevel to a modified version of projects.py
-    3.) Creates a tar-archive with the modified projects.py and the patches plus an installer routine
-    """
-    global projects
-    makePatchesCommand()
-    arch = projects.root.getRCS()
-    snapshotRevision = arch.getFQRN().rstrip("/").split("/")[-1]
-
-    archive = arch.getFQRN().split("/")[0]
-    snapshotName = ""
-    dirName = ""
-    if arg == '' or arg == None:
-        snapshotName = getSnapshotName()
-        dirName = os.path.basename(snapshotName).replace(".tgz", "")
-    elif arg == 'tryout':
-        snapshotName = getSnapshotName()
-        dirName = "__snapshot__"
-    else:
-        raise "Unknown Arg : " + str(arg)
-
-    absDirName = os.path.abspath(dirName)
-    shutil.rmtree(absDirName, ignore_errors=True)
-    os.mkdir(absDirName)
-    os.system('mv patchSets/ %s' % absDirName)
-    shutil.copy('config/projects.py', '%s/projects.py'%dirName)
-
-    scr = "# THE PROJECTS ARE PINNED BY THE SNAPSHOT COMMAND\n"
-    scr +="# REMOVE THE FOLLOWING LINES IF YOU WANT TO UNDO THAT\n"
-    scr += "pinnedProjectsDict = {}\n"
-    for project in projects.all:
-        scr += "pinnedProjectsDict['%s'] = %s\n" % (project.getRCS().getVersion(), project.getRCS().getPatchLevel())
-
-    scr += "for project in all:\n"
-    scr += "    project.getRCS().pinnedPatchLevel = pinnedProjectsDict[project.getRCS().getVersion()]\n"
-
-    projectFile = open(absDirName + "/projects.py", 'a')
-    projectFile.write(scr)
-    projectFile.close()
-
-    getCommand = ""
-    if isinstance(arch, RCS.GNUArch):
-        getCommand = "tla get"
-    if isinstance(arch, RCS.Bazaar):
-        getCommand = "bzr branch"
-
-    installScript = """#!/usr/bin/env bash
-
-# check out WNS (maybe you need to register the archive first)
-""" + getCommand + " " + arch.getFQRN() + """
-OUT=$?
-if [ $OUT -neq 0 ]
-then
-    exit $OUT
-fi
-
-# patch the list of projects
-cp ./projects.py """ + snapshotRevision + """/config/projects.py.pinned
-
-# move the patchSets to the right place
-mv patchSets/ """ + snapshotRevision + """/
-
-# get the correct revision/patchlevel of everything
-cd """ + snapshotRevision + """
-./playground.py --configFile=config/projects.py.pinned --noAsk --missing
-OUT=$?
-if [ $OUT -ne 0 ]
-then
-    exit $OUT
-fi
-
-# and apply the patches
-./playground.py --configFile=config/projects.py.pinned --apply-patchsets
-OUT=$?
-if [ $OUT -ne 0 ]
-then
-    exit $OUT
-fi
-
-cd ..
-
-# do some renaming to the config files
-mv """ + snapshotRevision + """/config/projects.py """ + snapshotRevision + """/config/projects.py.original
-mv """ + snapshotRevision + """/config/projects.py.pinned """ + snapshotRevision + """/config/projects.py
-
-"""
-
-    if arg=="tryout":
-        installScript += "# move to simple directory because buildslave does not know about original name.\n"
-        installScript += "mv %s WNS\n" %snapshotRevision
-
-    outFileName = os.path.join(absDirName,"install.sh")
-    outFile = file(outFileName,"w")
-    outFile.write(installScript)
-    outFile.close()
-    os.system("chmod 755 %s" % (outFileName) )
-
-    readMe = file(os.path.join(absDirName,"README"), "w")
-    readMe.write("""This snapshot (nicknamed '%s')of WNS was created by %s on %s.
-
- run ./install.sh to install it into a subDir called %s
-
- Enjoy!\n""" % ( options.nickName, os.getenv("USER"),  datetime.datetime.now().isoformat(), snapshotRevision ))
-    readMe.close()
-
-    archiveCommand = "tar cvfz %s %s" % (snapshotName, dirName )
-    os.system(archiveCommand)
-    os.system("rm -fr %s" % dirName)
-
-    print "Successfully created:\n%s\n" % ( snapshotName )
-
-def tryoutCommand( arg = None ):
-
-    if commands.getstatusoutput("type baz")[0] == 0:
-        archExe = "baz"
-    elif commands.getstatusoutput("type tla")[0] == 0:
-        archExe = "tla"
-    else:
-        raise ("Found none of the following supported GNUArch binaries: [tla, baz]")
-
-    stdin, stdout = os.popen4(archExe + " my-id")
-    username = stdout.readline()
-    username = username.replace("\n","")
-    username = "'" + username + "'"
-    snapshotCommand("tryout")
-
-    archiveName = os.path.abspath(getSnapshotName())
-
-    scpCommand = "scp %s intranet.comnets.rwth-aachen.de:/tmp/%s" % (archiveName, getSnapshotName())
-    print "Using SCP to move file to buildmaster. Please give password."
-    os.system(scpCommand)
-    sendCommand = "buildbot sendchange --username=change --master=intranet.comnets.rwth-aachen.de:9990 --branch=WNS--precommit--3.0 %s /tmp/%s" % (username, getSnapshotName())
-    os.system(sendCommand)
-
-def prepareSimulationCampaign(directory):
-    """ Prepare a directory with a dbg and an opt version.
-
-    A directory 'directory' and the sub-directories 'sandbox' as well
-    as 'simulations' will be created. 'sandbox' will contain all
-    necessary libraries and the wns-core. After installation the
-    directory will be changed to read-only mode in order to prevent
-    accidently removing the directory or altering its content. The
-    simulations directory is empty. Directories for different
-    simulations should be placed here.
-    """
-
-    print "Preparing simulation campaign. Please wait..."
-
-    versionInformation = ""
-
-    def createVersionInformation(project):
-        return project.getRCS().getTreeVersion() + "--" + \
-               project.getRCS().getPatchLevel() + "\n" + \
-               str(project.getRCS().status())
-
-    versionInformation += str().join(createVersionInformation(projects.root))
-    versionInformation += str().join([ii.result for ii in foreachProject(projects.all, createVersionInformation)])
-
-    absSandboxDir = os.path.abspath(os.path.join(directory, "sandbox"))
-    campaignName = os.path.basename(os.path.abspath(directory))
-    logFile = os.path.join(directory, campaignName + ".history")
-
-    useDbServer = False
-
-    answer = userFeedback.askForReject('Do you want to use the database server for storing simulation campaign related data?')
-
-    if not answer:
-        answer2 = raw_input( 'NOTICE: The database server is still in alpha stage. Hence, the consistency of the data stored\n'\
-                             'in the database cannot be guarranted. A complete loss of data is also possible.\n'\
-                             'If you are sure you want to continue, please type \'yes\': ')
-        if answer2.lower() == 'yes':
-            useDbServer = True
-        else:
-            sys.exit(1)
-
-    # use sqlite
-    if useDbServer == False:
-        updating = False
-
-        if os.path.exists(directory):
-            if os.path.exists(logFile):
-                print "Found simulation campaign in directory %s." % directory
-                answer = userFeedback.askForReject("Shall I try to update sandbox and python dir?")
-                if not answer:
-                    if os.path.exists(absSandboxDir):
-                        os.system("chmod -R u+w " + absSandboxDir)
-                        os.system("rm -rf " + absSandboxDir)
-                    if os.path.exists(logFile):
-                        os.system("chmod u+w " + logFile)
-                    logFileHandle = file(logFile, 'a')
-                    updating = True
-                else:
-                    sys.exit(0)
-            else:
-                print "Directory %s already exists and does not seem to be a simulation campaign directory." % directory
-                print "Please remove the directory or use a different name and try again."
-                sys.exit(0)
-        else:
-            os.mkdir(directory)
-            os.mkdir(os.path.join(directory, "simulations"))
-            logFileHandle = file(logFile, 'w')
-            logFileHandle.write("Do NOT remove this file!\n\n")
-            shutil.copy(wnsrc.wnsrc.rootSign, directory)
-
-        logFileHandle.write("---START---" + datetime.datetime.today().strftime('%d.%m.%y %H:%M:%S') + "---\n\n")
-        logFileHandle.write("Setting up simulation campaign directory...\n\n")
-
-        # install fresh version
-        print "running ./playground.py --install=dbg -f " + options.configFile
-        installCommand("dbg", absSandboxDir)
-        # save old state
-        oldStatic = options.static
-        # enabled static
-        options.static = True
-        print "running ./playground.py --install=opt --static -f " + options.configFile
-        installCommand("opt", absSandboxDir)
-        # restore old state
-        options.static = oldStatic
-
-        if not updating:
-            shutil.copy(os.path.join("framework", "PyWNS--main--1.0", "pywns", "campaignConfiguration.py.template"),
-                        os.path.join(directory, "simulations", "campaignConfiguration.py"))
-        shutil.copy(os.path.join("bin", "simcontrol.py"),
-                    os.path.join(directory, "simulations"))
-        shutil.copy(os.path.join("bin", "sim.py"),
-                    directory)
-
-        logFileHandle.write("Simulation campaign directory successfully set up.\n\n")
-        logFileHandle.write("Installed module versions:\n" + versionInformation + "\n")
-        logFileHandle.write("---END---" + datetime.datetime.today().strftime('%d.%m.%y %H:%M:%S') + "---\n")
-        logFileHandle.close()
-
-        snapshotCommand()
-        archiveName = os.path.abspath(getSnapshotName())
-        destination = os.path.join(directory, getSnapshotName())
-        shutil.rmtree(destination, ignore_errors=True)
-        print "Moving '%s' to '%s' ..." % ( archiveName, destination )
-        shutil.move(archiveName, destination)
-
-        # make read only
-        os.system("chmod -R u-w,g-w,o-w " + absSandboxDir)
-        os.system("chmod u-w,g-w,o-w " + logFile)
-
-    else:
-        # use db server
-        import pywns.simdb.PrepareCampaign as PrepareCampaign
-
-        updating = False
-
-        if os.path.exists(directory):
-            if os.path.exists(logFile):
-                print "Found simulation campaign in directory %s." % directory
-                answer = raw_input("Shall I try to (U)pdate the sandbox or do you want to (C)reate a new sub campaign? Type \'e\' to exit (u/c/e) [e]: ")
-                answer = answer.lower()
-                if answer == "u":
-                    if os.path.exists(absSandboxDir):
-                        os.system("chmod -R u+w " + absSandboxDir)
-                        os.system("rm -rf " + absSandboxDir)
-                    if os.path.exists(logFile):
-                        os.system("chmod u+w " + logFile)
-                    logFileHandle = file(logFile, 'a')
-                    updating = True
-                elif answer == "c":
-                    PrepareCampaign.createNewSubCampaign(directory)
-                    sys.exit(0)
-                else:
-                    sys.exit(0)
-            else:
-                print "Directory %s already exists and does not seem to be a simulation campaign directory." % directory
-                print "Please remove the directory or use a different name and try again."
-                sys.exit(0)
-        else:
-            os.mkdir(directory)
-            logFileHandle = file(logFile, 'w')
-            logFileHandle.write("Do NOT remove this file!\n\n")
-            shutil.copy(wnsrc.wnsrc.rootSign, directory)
-
-        logFileHandle.write("---START---" + datetime.datetime.today().strftime('%d.%m.%y %H:%M:%S') + "---\n\n")
-        logFileHandle.write("Setting up simulation campaign directory...\n\n")
-
-        if not updating:
-            PrepareCampaign.createNewSubCampaign(directory)
-
-        # install fresh version
-        print "running ./playground.py --install=dbg -f " + options.configFile
-        installCommand("dbg", absSandboxDir)
-        # save old state
-        oldStatic = options.static
-        # enabled static
-        options.static = True
-        print "running ./playground.py --install=opt --static -f " + options.configFile
-        installCommand("opt", absSandboxDir)
-        # restore old state
-        options.static = oldStatic
-
-        PrepareCampaign.updateSubCampaigns(directory)
-        shutil.copy(os.path.join("sandbox", "default", "lib", "python2.4", "site-packages", "pywns", "simdb", "scripts", "sim.py"), directory)
-
-        logFileHandle.write("Simulation campaign directory successfully set up.\n\n")
-        logFileHandle.write("Installed module versions:\n" + versionInformation + "\n")
-        logFileHandle.write("---END---" + datetime.datetime.today().strftime('%d.%m.%y %H:%M:%S') + "---\n")
-        logFileHandle.close()
-
-        snapshotCommand()
-        archiveName = os.path.abspath(getSnapshotName())
-        destination = os.path.join(directory, getSnapshotName())
-        shutil.rmtree(destination, ignore_errors=True)
-        print "Moving '%s' to '%s' ..." % ( archiveName, destination )
-        shutil.move(archiveName, destination)
-
-        # make read only
-        os.system("chmod -R u-w,g-w,o-w " + absSandboxDir)
-        os.system("chmod u-w,g-w,o-w " + logFile)
-
-def runTestsCommand(arg = "unused"):
+def runTestsCommand(playgroundEnvironment, arg = "unused"):
     # create test collector
     import pywns.WNSUnit
 
@@ -1282,7 +844,7 @@ def runTestsCommand(arg = "unused"):
     else:
         sys.exit(1)
 
-def runLongTestsCommand(arg = "unused"):
+def runLongTestsCommand(playgroundEnvironment, arg = "unused"):
     # create test collector
     import pywns.WNSUnit
 
@@ -1310,13 +872,13 @@ def runLongTestsCommand(arg = "unused"):
     else:
         sys.exit(1)
 
-def memcheckUnitTestsCommand(arg = "unused"):
+def memcheckUnitTestsCommand(playgroundEnvironment, arg = "unused"):
     import pywns.MemCheck
     r = pywns.MemCheck.Runner(args=["./openwns", "-tv"], cwd="tests/unit/unitTests")
     returncode = r.run()
     sys.exit(returncode)
 
-def sanityCheckCommand(arg = "unused"):
+def sanityCheckCommand(playgroundEnvironment, arg = "unused"):
 
     def sanityCheckRunner(fun, message, arg = "unused"):
         print message
@@ -1454,8 +1016,33 @@ class CommandQueue:
         self.queue.append((command, arg, option))
 
     def run(self):
+        global projects
         for command, arg, option in self.queue:
-            command(arg)
+            command(globals(), arg)
+
+def loadPlugins(parser, queue):
+    def loadPluginsInDir(pluginsDir, parser, queue):
+        if os.path.exists(pluginsDir):
+            for (dirname, plugins, files) in os.walk(pluginsDir):
+                break
+
+            sys.path.append(pluginsDir)
+            for plugin in plugins:
+                try:
+                    exec "import " + str(plugin) in globals(), locals()
+                    funcPtr = eval(str(plugin) + ".addCommandLineOptions")
+                    funcPtr(parser, queue)
+                except:
+                    print "WARNING: Unable to load " + str(plugin) + " plugin. Ignored."
+                    print sys.exc_info()[0]
+                    print sys.exc_info()[1]
+                    print sys.exc_info()[2].tb_frame
+
+        sys.path.pop()
+
+    # Add plugins
+    loadPluginsInDir(os.path.join(".", "framework", "PyWNS--main--1.0", "playgroundPlugins"), parser, queue)
+    loadPluginsInDir(os.path.join(os.environ["HOME"], ".wns", "playgroundPlugins"), parser, queue)
 
 if __name__ == "__main__":
 
@@ -1465,6 +1052,9 @@ if __name__ == "__main__":
     parser = optparse.OptionParser(usage = usage)
 
     queue = CommandQueue()
+
+    options = None
+    projects = None
 
     # commands
     parser.add_option("", "--install",
@@ -1493,12 +1083,6 @@ if __name__ == "__main__":
                       action="callback", callback = queue.append,
                       callback_args = (sanityCheckCommand,),
                       help="Runs: --lint, --changes, --install=dbg, --install=opt, --runTests (None)")
-
-    parser.add_option("", "--prepareSimulationCampaign",
-                      type="string", metavar = "DIR",
-                      action="callback", callback = queue.append,
-                      callback_args = (prepareSimulationCampaign,),
-                      help="prepares DIR to be used for a simulation campaign (-f)")
 
     parser.add_option("", "--runTests",
                       action="callback", callback = queue.append,
@@ -1530,11 +1114,6 @@ if __name__ == "__main__":
                       callback_args = (lintCommand,),
                       help="lint project trees (-f, --if)")
 
-    parser.add_option("", "--push",
-                      action="callback", callback = queue.append,
-                      callback_args = (pushCommand,),
-                      help="push project trees (--url)")
-
     parser.add_option("", "--update",
                       action="callback", callback = queue.append,
                       callback_args = (updateCommand,),
@@ -1550,62 +1129,13 @@ if __name__ == "__main__":
                       action="callback", callback = queue.append,
                       callback_args = (cleanCommand,),
                       help = "clean up OPTION: [pristine-trees, objs, sandbox, docu, extern, build-dirs, all] (-f, --if, --flavour, --static)")
-
-    parser.add_option("", "--loghelper",
-                      action="callback", callback = queue.append,
-                      callback_args = (loghelperCommand,),
-                      help="helps writing log files by showing differences in each project (-f, --if)")
-
-    parser.add_option("", "--link-docu",
-                      action="callback", callback = queue.append,
-                      callback_args = (linkDocuCommand,),
-                      help="link the documentation of the sandbox to http://docs.comnets.rwth-aachen.de/myDocs/"+os.environ["USER"] + " (None)")
-
     parser.add_option("", "--foreach",
                       type="string", metavar = "COMMAND",
                       action="callback", callback = queue.append,
                       callback_args = (foreachCommand,),
                       help="execute COMMAND in each project (-f, --if)")
 
-    parser.add_option("", "--forsome",
-                      type="string", metavar = "COMMAND",
-                      action="callback", callback = queue.append,
-                      callback_args = (forsomeCommand,),
-                      help="ask, and if yes, execute COMMAND in each project (-f, --if)")
-
-    parser.add_option("", "--make-patchsets",
-                      action = "callback", callback = queue.append,
-                      callback_args = (makePatchesCommand,),
-                      help="store patchSets for all changed modules in the directory 'patchSets'")
-
-    parser.add_option("", "--apply-patchsets",
-                      action = "callback", callback = queue.append,
-                      callback_args = (applyPatchesCommand,),
-                      help="apply patches in the directory 'patchSets' to their respective modules")
-
-    parser.add_option("", "--snapshot",
-                      action="callback", callback = queue.append,
-                      callback_args = (snapshotCommand,),
-                      help="Creates an instantaneous snapshot of your current version and archives it into a .tgz")
-
-    parser.add_option("", "--tryout",
-                      action = "callback", callback = queue.append,
-                      callback_args = (tryoutCommand,),
-                      help="Sends a snapshot of your current version to the buildbot for evaluation.")
-
     # modifying options
-    parser.add_option("-n", "--nickName",
-                      type="string", dest = "nickName", metavar = "NICKNAME", default = "WNS",
-                      help = "Give a NickName to your WNS snapshot")
-
-    parser.add_option("", "--url",
-                      type="string", dest = "url", metavar = "URL", default = "",
-                      help = "Give the destination to push to")
-
-    parser.add_option("", "--snapshotFilename",
-                      type="string", dest = "snapshotFilename", metavar = "FILENAME", default = '',
-                      help = "Give the complete filename of your WNS snapshot")
-
     parser.add_option("-f", "--configFile",
                       type="string", dest = "configFile", metavar = "FILE", default = "config/projects.py",
                       help = "choose a configuration file (e.g., --configFile=config/projects.py)")
@@ -1641,6 +1171,8 @@ if __name__ == "__main__":
     parser.add_option("", "--executable",
                       type="string", dest = "executable", default = "./openwns",
                       help = "The executable that is to be called by the respective command (default : \"./openWNS\")")
+
+    loadPlugins(parser, queue)
 
     options, args = parser.parse_args()
     if len(args):
