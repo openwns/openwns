@@ -1026,6 +1026,9 @@ def loadPlugins(parser, queue):
             for (dirname, plugins, files) in os.walk(pluginsDir):
                 break
 
+            if plugins.count('.arch-ids') > 0:
+                plugins.remove('.arch-ids')
+
             sys.path.append(pluginsDir)
             for plugin in plugins:
                 try:
