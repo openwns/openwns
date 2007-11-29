@@ -125,25 +125,23 @@ class Tester:
         return self.project.getExe() is None
 
     def changed(self):
-        f = os.popen('tla changes -d ' + self.project.getDir() + " 2>&1")
-        output = f.read()
-        result = f.close()
-        if result is None:
-            return False
-        if os.WEXITSTATUS(result) != 1:
-            print "Warning: Excluding dirty project", self.project.getDir()
-            print output
-            print
-            print "Warning: Consider using ./playground --lint in advance."
-            print
-            return False
-        return True
+        if len(changesChecker(self.project)) > 0:
+            return True
+        return False
 
     def scons(self):
         return os.path.exists(os.path.join(self.project.getDir(), 'SConstruct'))
 
     def ask(self):
         return userFeedback.askForConfirmation("Execute command for project " + self.project.getDir() + " ?")
+
+    def tla(self):
+        if isinstance(self.project.getRCS(), RCS.GNUArch):
+            return True
+
+    def bzr(self):
+        if isinstance(self.project.getRCS(), RCS.Bazaar):
+            return True
 
 def includeProject(project):
     if options.if_expr is None:
