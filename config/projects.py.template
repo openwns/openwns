@@ -26,7 +26,7 @@
 #
 ##############################################################################
 
-from wnsbase.playgroundSupport import *
+from wnsbase.playground.Project import *
 import wnsbase.RCS as RCS
 
 archive = "WNSBazaarIntegration@comnets.rwth-aachen.de"
