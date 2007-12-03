@@ -80,7 +80,7 @@ class Core:
             elif a == "--flavour":
                 self.buildFlavour = a.split("=")[1]
             elif a.startswith("--scons"):
-                self.sconsOptions = a.split("=")[1]
+                self.sconsOptions = "=".join(a.split("=")[1:])
             elif a.startswith("-j=") or a.startswith("--jobs"):
                 self.numJobs = int(a.split("=")[1])
             else:
