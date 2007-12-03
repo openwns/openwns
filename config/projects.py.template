@@ -51,7 +51,7 @@ documentation= Generic('./WNS-Documentation--main--1.0', 'main/WNS-Documentation
                        RCS.Bazaar('./WNS-Documentation--main--1.0', 'WNS-Documentation', 'main', '1.0'),
                        alias ='doc')
 
-libwns       = Library('./framework/libwns--main--1.0',"main/libwns--rc1--1.0", bzrBaseURL,
+libwns       = Library('./framework/libwns--main--1.0',"main/libwns--main--1.0", bzrBaseURL,
                        RCS.Bazaar('framework/libwns--main--1.0',
                                   'libwns', 'main', '1.0'),
                        [supportLibs])
