@@ -1,90 +1,43 @@
-###############################################################################
-# This file is part of openWNS (open Wireless Network Simulator)
-# _____________________________________________________________________________
-#
-# Copyright (C) 2004-2007
-# Chair of Communication Networks (ComNets)
-# Kopernikusstr. 16, D-52074 Aachen, Germany
-# phone: ++49-241-80-27910,
-# fax: ++49-241-80-22242
-# email: info@openwns.org
-# www: http://www.openwns.org
-# _____________________________________________________________________________
-#
-# openWNS is free software; you can redistribute it and/or modify it under the
-# terms of the GNU Lesser General Public License version 2 as published by the
-# Free Software Foundation;
-#
-# openWNS is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-# A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
-# details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-##############################################################################
 import os
 import CNBuildSupport
 import commands
 import platform
 import wnsrc
 
-Import('commonEnv')
+Import('commonEnvs', 'cleanEnv')
 
-privateEnv = commonEnv.Copy()
-privateEnv.Replace(SANDBOXES=[wnsrc.pathToSandbox])
+for flavour, env in commonEnvs.iteritems():
 
-# if we are on beast, we can try to use the fast SCSI RAID for our
-# object files
-if platform.node().startswith("beast"):
-	privateEnv.setExternalObjDir(os.path.join("/local2", ".objs"))
+        # if we are on beast, we can try to use the fast SCSI RAID for our
+        # object files
+        if platform.node().startswith("beast"):
+                env.setExternalObjDir(os.path.join("/local2", ".objs"))
 
-# use ICECC if iceccd is running
-ps = os.popen("ps ax") # is there a python way to get the processes?
-iceccds = [p for p in ps if "iceccd" in p]
-ps.close()
+        # use ICECC if iceccd is running
+        ps = os.popen("ps ax") # is there a python way to get the processes?
+        iceccds = [p for p in ps if "iceccd" in p]
+        ps.close()
 
-if len(iceccds) > 0 and not platform.machine() == "x86_64":
-	# use distribution's icecc
-	privateEnv.Replace(ICECC='icecc')
-	# have some default number of jobs to be run in parallel ...
-        privateEnv.SetOption('num_jobs', 40)
+        if len(iceccds) > 0 and not platform.machine() == "x86_64":
+                # use distribution's icecc
+                env.Replace(ICECC='icecc')
+                # have some default number of jobs to be run in parallel ...
+                env.SetOption('num_jobs', 40)
 
-else:
-	# ...using default compiler
-	# run jobs in parallel depending on processor count
-	privateEnv.SetOption('num_jobs', os.sysconf('SC_NPROCESSORS_ONLN') + 1)
+        else:
+                # ...using default compiler
+                # run jobs in parallel depending on processor count
+                env.SetOption('num_jobs', os.sysconf('SC_NPROCESSORS_ONLN') + 1)
 
-# ... do you need another compiler ...
-privateEnv.configureCompiler(cc='/usr/bin/gcc', cxx='/usr/bin/g++')
+        # ... do you need another compiler ...
+        env.configureCompiler(cc='/usr/bin/gcc', cxx='/usr/bin/g++')
 
-# the projects need special treatment
-if privateEnv['PROJNAME'] in ['swarp', 'uris']:
-       privateEnv.Append(CPPPATH=[os.path.join(privateEnv['SANDBOXES'][0], 'default', 'include', 'INTERFACE')])
+        # set all defines that have to be shared by all projects
+        # if they are defined here all projects use the same defines which is a good idea
+        # env.AppendUnique(CPPDEFINES={'xxx':'1'})
 
-# the projects need special treatment
-if privateEnv['PROJNAME'] in ['swarp', 'applications', 'uris']:
-       privateEnv.Append(CPPPATH=[os.path.join(privateEnv['SANDBOXES'][0], 'default', 'include', 'SPEETCL')])
+        #privateEnv.AppendUnique(CXXFLAGS=["-E"])
 
-
-# set all defines that have to be shared by all projects (defines for SPEETCL, WNS, ...)
-# if they are defined here all projects use the same defines which is a good idea
-privateEnv.AppendUnique(CPPDEFINES={'SPEETCL_SIMTIME_64_BIT':'1',
-                                    'xx_LRE_IMPROVEMENT':'1',
-                                    'xx_USE_PROBES':'1',
-                                    'xx_USE_MSG':'1',
-                                    #'xx_ASSERT':'1',
-                                    'xx_ASSURE':'1',
-                                    'xx_DBGACT':'1',
-                                    'NOMAIN':'1'})
-
-#privateEnv.AppendUnique(CXXFLAGS=["-E"])
-
-# create dict with all environment
-envs = dict()
-for name in ['default', 'dbg', 'opt', 'optPentium4', 'optPentium64', 'optPentiumM', 'optAthlonMP', 'optK8', 'profOpt', 'prof', 'size', 'massif', 'optAssure', 'optMsg', 'optAssureMsg']:
-       envs[name] = privateEnv.Copy()
-       envs[name].configure(name)
+envs = commonEnvs
 
 Return('envs')
