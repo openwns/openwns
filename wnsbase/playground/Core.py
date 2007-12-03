@@ -200,7 +200,7 @@ class Core:
                 os.symlink(linkDest, project.alias)
                 os.chdir(curDir)
 
-            self.fixConfigurationLinks()
+        self.fixConfigurationLinks()
 
     def fixConfigurationLinks(self):
         self.foreachProject(self._linkPrivatePy)
