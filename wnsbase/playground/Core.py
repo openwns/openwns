@@ -190,7 +190,7 @@ class Core:
             self.commands[command.name] = command
 
     def isStaticBuild(self):
-        return self.isStaticBuild
+        return self.staticBuild
 
     def getBuildFlavour(self):
         return self.buildFlavour
