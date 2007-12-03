@@ -79,7 +79,7 @@ class Core:
                 self.staticBuild = True
             elif a == "--flavour":
                 self.buildFlavour = a.split("=")[1]
-            elif a == "--scons":
+            elif a.startswith("--scons"):
                 self.sconsOptions = a.split("=")[1]
             elif a.startswith("-j=") or a.startswith("--jobs"):
                 self.numJobs = int(a.split("=")[1])
@@ -136,7 +136,7 @@ class Core:
         print "\n\nThere are some global options that are available for all commands"
         self.optParser.print_help()
 
-        sys.exit(0)
+        sys.exit(1)
 
     def _loadBuiltins(self):
         self.loadPluginsInDir("./wnsbase/playground/builtins", "wnsbase.playground.builtins")
