@@ -34,8 +34,8 @@ core = wnsbase.playground.Core.getCore()
 
 if not core.hasPlugin("Lint"):
     core.registerPlugin("Lint")
-    optParser.add_option("", "--lint",
-                         action="callback", callback = commandQueue.append,
-                         callback_args = (Lint.lintCommand,),
-                         help="lint project trees (-f, --if)")
+
+    lintCommand = Lint.LintCommand()
+
+    core.registerCommand(lintCommand)
 

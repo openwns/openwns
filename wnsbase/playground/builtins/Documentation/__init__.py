@@ -34,7 +34,7 @@ core = wnsbase.playground.Core.getCore()
 
 if not core.hasPlugin("Documentation"):
     core.registerPlugin("Documentation")
-    optParser.add_option("", "--docu",
-                         action="callback", callback = commandQueue.append,
-                         callback_args = (Documentation.docuCommand,),
-                         help="create documentation for all projects (-f, --if)")
+
+    docuCommand = Documentation.DocuCommand()
+
+    core.registerCommand(docuCommand)

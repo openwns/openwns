@@ -28,12 +28,25 @@
 from wnsbase.playground.Tools import *
 
 import wnsbase.playground.Core
+import wnsbase.playground.plugins.Command
 core = wnsbase.playground.Core.getCore()
 
-def foreachCommand(command):
-    def run(project):
-        print "Running '%s' in %s ..." % (command, project.getDir())
-        runCommand(command)
+class ForEachCommand(wnsbase.playground.plugins.Command.Command):
 
-    core.foreachProject(run)
+    def __init__(self):
+        usage = "\n%prog foreach [switches] COMMAND\n\n"
+        rationale = "Execute a command on multiple projects."
+
+        usage += rationale
+        wnsbase.playground.plugins.Command.Command.__init__(self, "foreach", rationale, usage)
+
+    def run(self):
+
+        command = " ".join(self.args)
+
+        def run(project):
+            print "Running '%s' in %s ..." % (command, project.getDir())
+            runCommand(command)
+
+        core.foreachProject(run)
 

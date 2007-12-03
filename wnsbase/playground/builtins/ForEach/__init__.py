@@ -28,14 +28,11 @@
 import wnsbase.playground.Core
 import ForEach
 
-optParser = wnsbase.playground.Core.getCore().getOptParser()
-commandQueue = wnsbase.playground.Core.getCore().getCommandQueue()
 core = wnsbase.playground.Core.getCore()
 
 if not core.hasPlugin("ForEach"):
     core.registerPlugin("ForEach")
-    optParser.add_option("", "--foreach",
-                         type="string", metavar = "COMMAND",
-                         action="callback", callback = commandQueue.append,
-                         callback_args = (ForEach.foreachCommand,),
-                         help="execute COMMAND in each project (-f, --if)")
+
+    foreachCommand = ForEach.ForEachCommand()
+
+    core.registerCommand(foreachCommand)

@@ -34,17 +34,16 @@ core = wnsbase.playground.Core.getCore()
 
 if not core.hasPlugin("Testing"):
     core.registerPlugin("Testing")
-    optParser.add_option("", "--runTests",
-                         action="callback", callback = commandQueue.append,
-                         callback_args = (Testing.runTestsCommand,),
-                         help="runs the tests found in 'tests' (--executable)")
 
-    optParser.add_option("", "--runLongTests",
-                         action="callback", callback = commandQueue.append,
-                         callback_args = (Testing.runLongTestsCommand,),
-                         help="runs the tests found in 'longTests' (--executable)")
+    runtestsCommand = Testing.RunTestsCommand()
 
-    optParser.add_option("", "--memcheckUnitTests",
-                         action="callback", callback = commandQueue.append,
-                         callback_args = (Testing.memcheckUnitTestsCommand,),
-                         help="runs memory check (leaks, uninitialized reads, ...) for unit tests (--executable)")
+    runlongtestsCommand = Testing.RunLongTestsCommand()
+
+    memcheckCommand = Testing.MemcheckCommand()
+
+    core.registerCommand(runtestsCommand)
+
+    core.registerCommand(runlongtestsCommand)
+
+    core.registerCommand(memcheckCommand)
+

@@ -27,38 +27,57 @@
 
 import sys
 from wnsbase.playground.Tools import *
+import wnsbase.playground.plugins.Command
 
-from wnsbase.playground.builtins.Update.Update import updateCommand
+from wnsbase.playground.builtins.Update.Update import UpdateCommand
 
 import wnsbase.playground.Core
 core = wnsbase.playground.Core.getCore()
 
-def upgradeCommand(arg = 'unused'):
-    updateCommand()
+class UpgradeCommand(wnsbase.playground.plugins.Command.Command):
 
-    def run(project):
-        arch = project.getRCS()
-        if project.getRCS().isPinned():
-            sys.stdout.write("\nSkipping module in %s, because it is pinned to %s\n\n"
-                             % (project.getDir(), project.getRCS().getPinnedPatchLevel()))
-            return
-        sys.stdout.write("Checking for new patches in: %s ... " % (project.getDir()))
-        sys.stdout.flush()
-        missing = str(project.getRCS().missing(project.getRCSUrl(), {"-s":""}))
-        if(missing != ""):
-            print "Found:"
-            print missing
-            checkForConflictsAndExit(".")
-            print "\nRetrieving new patches for '" + project.getDir() + "' ..."
-            gnuArch = project.getRCS()
+    def __init__(self):
+        usage = "\n%prog upgrade\n\n"
+        rationale = "Update the whole project tree and all its modules."
 
-            try:
-                gnuArch.update().realtimePrint()
+        usage += rationale
+
+        usage += """
+
+Upgrade first uses the update command to update the project base. Afterwards
+all project listed in the project configuration file will be update with new
+patches from the remote repository (if any are available).
+"""
+        wnsbase.playground.plugins.Command.Command.__init__(self, "upgrade", rationale, usage)
+
+    def run(self):
+        updateCommand = UpdateCommand()
+        updateCommand.startup([""])
+        updateCommand.run()
+
+        def upgrade(project):
+            arch = project.getRCS()
+            if project.getRCS().isPinned():
+                sys.stdout.write("\nSkipping module in %s, because it is pinned to %s\n\n"
+                                 % (project.getDir(), project.getRCS().getPinnedPatchLevel()))
+                return
+            sys.stdout.write("Checking for new patches in: %s ... " % (project.getDir()))
+            sys.stdout.flush()
+            missing = str(project.getRCS().missing(project.getRCSUrl(), {"-s":""}))
+            if(missing != ""):
+                print "Found:"
+                print missing
                 checkForConflictsAndExit(".")
-            except:
-                print "An TLA error occured."
-                sys.exit(1)
-        else:
-            print "None"
+                print "\nRetrieving new patches for '" + project.getDir() + "' ..."
+                gnuArch = project.getRCS()
 
-    core.foreachProject(run)
+                try:
+                    gnuArch.update().realtimePrint()
+                    checkForConflictsAndExit(".")
+                except:
+                    print "An TLA error occured."
+                    sys.exit(1)
+            else:
+                print "None"
+
+        core.foreachProject(upgrade)

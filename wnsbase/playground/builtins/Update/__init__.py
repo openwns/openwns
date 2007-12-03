@@ -35,8 +35,7 @@ core = wnsbase.playground.Core.getCore()
 if not core.hasPlugin("Update"):
     core.registerPlugin("Update")
 
-    optParser.add_option("", "--update",
-                         action="callback", callback = commandQueue.append,
-                         callback_args = (Update.updateCommand,),
-                         help="update playground (None)")
+    updateCommand = Update.UpdateCommand()
+
+    core.registerCommand(updateCommand)
 

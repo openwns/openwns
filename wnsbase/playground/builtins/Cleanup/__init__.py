@@ -28,15 +28,12 @@
 import wnsbase.playground.Core
 import Cleanup
 
-optParser = wnsbase.playground.Core.getCore().getOptParser()
-commandQueue = wnsbase.playground.Core.getCore().getCommandQueue()
+
 core = wnsbase.playground.Core.getCore()
 
 if not core.hasPlugin("Cleanup"):
     core.registerPlugin("Cleanup")
 
-    optParser.add_option("", "--clean",
-                         type="string", metavar = "OPTION",
-                         action="callback", callback = commandQueue.append,
-                         callback_args = (Cleanup.cleanCommand,),
-                         help = "clean up OPTION: [pristine-trees, objs, sandbox, docu, extern, build-dirs, all] (-f, --if, --flavour, --static)")
+    cleanupCommand = Cleanup.CleanupCommand()
+
+    core.registerCommand(cleanupCommand)

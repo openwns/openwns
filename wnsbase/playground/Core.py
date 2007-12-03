@@ -35,7 +35,7 @@ import exceptions
 from wnsbase.playground.Tools import *
 
 import builtins
-import plugins
+import plugins.Command
 
 class Core:
     """ This the core of the openWNS project tree management tool 'playground'. It
@@ -44,27 +44,48 @@ class Core:
     """
 
     def __init__(self):
-        usage  = "usage: %prog command [options]\n\n"
-        usage += "The list below shows all commands and available options.\n"
-        usage += "The options that might be used together with a command are list in brackets."
+        usage = ""
+        usage += "The list below shows global available options.\n"
 
         self.optParser = optparse.OptionParser(usage = usage)
         self.commandQueue = CommandQueue()
         self.plugins = []
+        self.commands = {}
+        self.ifExpr = None
+        self.buildFlavour = "dbg"
+        self.staticBuild = False
+        self.sconsOptions = ""
+        self.numJobs = 10
 
     def startup(self):
         self._loadBuiltins()
         self._setupCommandLineOptions()
+        self.configFile = "config/projects.py"
+        self.userFeedback = AcceptDefaultDecision()
 
-        self.options, self.args = self.optParser.parse_args()
-        if len(self.args):
-            optParser.print_help()
-            sys.exit(1)
+        argv = sys.argv
 
-        if self.options.noAsk:
-            self.userFeedback = AcceptDefaultDecision()
-        else:
-            self.userFeedback = UserMadeDecision()
+        self.pluginArgs = []
+        i = 1
+        while i < len(argv):
+            a = argv[i]
+            if a.startswith('--configFile'):
+                self.configFile = a.split("=")[1]
+            elif a == "--noAsk":
+                self.userFeedback = AcceptDefaultDecision()
+            elif a.startswith("--if"):
+                self.ifExpr = a.split("=")[1]
+            elif a == "--static":
+                self.staticBuild = True
+            elif a == "--flavour":
+                self.buildFlavour = a.split("=")[1]
+            elif a == "--scons":
+                self.sconsOptions = a.split("=")[1]
+            elif a.startswith("-j=") or a.startswith("--jobs"):
+                self.numJobs = int(a.split("=")[1])
+            else:
+                self.pluginArgs.append(a)
+            i += 1
 
         self.projects = self.readProjectsConfig()
 
@@ -87,9 +108,16 @@ class Core:
                 os.chdir(savedDir)
 
     def run(self):
-        if not len(self.commandQueue.queue):
-            self.optParser.print_help()
-            sys.exit(0)
+        if len(self.pluginArgs) > 0:
+            commandName = self.pluginArgs[0]
+            if self.commands.has_key(commandName):
+                command = self.commands[commandName]
+                command.startup(self.pluginArgs[1:])
+                command.run()
+            else:
+                self.printUsage()
+        else:
+            self.printUsage()
 
         self.commandQueue.run()
 
@@ -97,6 +125,18 @@ class Core:
 
     def shutdown(self):
         pass
+
+    def printUsage(self):
+        print "\nUsage : playground COMMAND options"
+        print "\n\nYou can use one of following commands. Use COMMAND --help to get"
+        print "detailed help for the command\n\n"
+        for commandname, command in self.commands.items():
+            print "   " + commandname.ljust(20) + ":\t" + command.rationale
+
+        print "\n\nThere are some global options that are available for all commands"
+        self.optParser.print_help()
+
+        sys.exit(0)
 
     def _loadBuiltins(self):
         self.loadPluginsInDir("./wnsbase/playground/builtins", "wnsbase.playground.builtins")
@@ -118,9 +158,9 @@ class Core:
                     sys.exit(1)
                 except:
                     print "WARNING: Unable to load " + str(plugin) + " plugin. Ignored."
-                    print sys.exc_info()[0]
-                    print sys.exc_info()[1]
-                    print sys.exc_info()[2].tb_frame
+                    print "   " + str(sys.exc_info()[0])
+                    print "   " + str(sys.exc_info()[1])
+                    print "   " + str(sys.exc_info()[2].tb_frame)
 
             sys.path.pop()
 
@@ -132,11 +172,34 @@ class Core:
             print "Error! Pluging %s already registered." % pluginName
             print
             print "This could happen if you have a plugin installed to several places that are"
-            print "read py playground. Some plugin did violate the hasPlugin/registerPlugin"
+            print "read by playground. Some plugin did violate the hasPlugin/registerPlugin"
             print "protocol of playground."
             sys.exit(1)
         else:
             self.plugins.append(pluginName)
+
+    def registerCommand(self, command):
+        if self.commands.has_key(command.name) > 0:
+            print "Error! Command %s already registered." % command.name
+            print
+            print "This could happen if you have a plugin installed to several places that are"
+            print "read by playground or if two plugins try to register a command with the same"
+            print "name."
+            sys.exit(1)
+        else:
+            self.commands[command.name] = command
+
+    def isStaticBuild(self):
+        return self.isStaticBuild
+
+    def getBuildFlavour(self):
+        return self.buildFlavour
+
+    def getSconsOptions(self):
+        return self.sconsOptions
+
+    def getNumJobs(self):
+        return self.numJobs
 
     def getOptParser(self):
         return self.optParser
@@ -230,7 +293,7 @@ class Core:
         return results
 
     def includeProject(self, project):
-        if self.getOptions().if_expr is None:
+        if self.ifExpr is None:
             return True
 
         # we evaluate --if expressions using the python eval function.
@@ -254,7 +317,7 @@ class Core:
         #
         # -> get python2.4 now, dude! \o/
 
-        token = re.split('\W+', self.getOptions().if_expr)
+        token = re.split('\W+', self.ifExpr)
         token = [it for it in token if it not in ('and', 'or', 'not', '')]
         token = sets.Set(token)
 
@@ -268,7 +331,7 @@ class Core:
             context[testName] = getattr(tester, testName)()
 
         try:
-            return eval(self.getOptions().if_expr, context)
+            return eval(self.ifExpr, context)
         except SyntaxError, e:
             print "Syntax error in --if expression:", e
             sys.exit(1)
@@ -286,16 +349,15 @@ class Core:
     def readProjectsConfig(self):
         sys.path.append("config")
         foobar = {}
-        if (self.options.configFile == "config/projects.py"):
+        if (self.configFile == "config/projects.py"):
             # Default value
-            if not os.path.exists(self.options.configFile):
+            if not os.path.exists(self.configFile):
                 os.symlink('projects.py.template', "config/projects.py")
         else:
-            if not os.path.exists(self.options.configFile):
-                print "Cannot open configuration file " + str(self.options.configFile)
+            if not os.path.exists(self.configFile):
+                print "Cannot open configuration file " + str(self.configFile)
 
-        print "Using configuration file: %s" % self.options.configFile
-        execfile(self.options.configFile, foobar)
+        execfile(self.configFile, foobar)
         sys.path.remove("config")
         return Dict2Class(foobar)
 
@@ -323,10 +385,6 @@ class Core:
                                   type = "int", dest = "jobs", default = 0,
                                   help = "use JOBS parallel compilation jobs", metavar = "JOBS")
 
-        self.optParser.add_option("", "--diffs",
-                                  action = "store_const", dest = "diffs", const = '--diffs', default = '',
-                                  help=" when using --changes, show diffs of changed files.")
-
         self.optParser.add_option("", "--flavour",
                                   type="string", dest = "flavour", metavar = "TYPE", default = "dbg",
                                   help = "choose a flavour (TYPE=[dbg|opt|prof|...]) to operate with.")
@@ -346,10 +404,6 @@ class Core:
         self.optParser.add_option("", "--noAsk",
                                   action = "store_true", dest = "noAsk", default = False,
                                   help = "Do not ask user. Accept all default answers. Use this for automation.")
-
-        self.optParser.add_option("", "--executable",
-                                  type="string", dest = "executable", default = "./openwns",
-                                  help = "The executable that is to be called by the respective command (default : \"./openWNS\")")
 
 
 theCore = Core()

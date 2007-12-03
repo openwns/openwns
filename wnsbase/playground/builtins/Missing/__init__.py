@@ -34,8 +34,9 @@ core = wnsbase.playground.Core.getCore()
 
 if not core.hasPlugin("Missing"):
     core.registerPlugin("Missing")
-    optParser.add_option("", "--missing",
-                         action="callback", callback = commandQueue.append,
-                         callback_args = (Missing.missingCommand,),
-                         help="search for missing patches (-f, --if)")
+
+    missingCommand = Missing.MissingCommand()
+
+    core.registerCommand(missingCommand)
+
 

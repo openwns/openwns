@@ -33,79 +33,133 @@ import pywns.WNSUnit
 import wnsbase.playground.Core
 core = wnsbase.playground.Core.getCore()
 
-def runTestsCommand(arg = "unused"):
-    # create test collector
-    import pywns.WNSUnit
+class RunTestsCommand(wnsbase.playground.plugins.Command.Command):
 
-    tests = []
-    for project in core.getProjects().all:
-        if os.path.normpath(project.getDir()).split(os.sep)[0] == "tests" and \
-               os.path.normpath(project.getDir()).split(os.sep)[1] == "system":
-            tests.append(project)
+    def __init__(self):
+        usage = "\n%prog runtests\n\n"
+        rationale = "Runs the test suite."
 
-    testCollector = pywns.WNSUnit.SystemTestCollector(suiteConfig = "systemTest.py",
-                                                      suiteName = "testSuite")
-    testCollector.setTests(tests)
+        usage += rationale
 
-    # Add PyConfig unit tests
-    pyUnit = pywns.WNSUnit.ExternalProgram(dirname = "tests/unit/PythonUnitTests/",
-                                           command = "./runPythonUnitTests.py -v",
-                                           description = "PyConfig Unit Tests",
-                                           includeStdOut = True)
-    testCollector.addTest(pyUnit)
+        usage += """
+Runs all the tests. This includes unittests for both Python and C++
+and the system tests.
+"""
+        wnsbase.playground.plugins.Command.Command.__init__(self, "runtests", rationale, usage)
+
+        self.addOption("", "--executable",
+                       type="string", dest = "executable", default = "./openwns",
+                       help = "The executable that is to be called (default : \"./openWNS\")")
+    def run(self):
+        # create test collector
+        import pywns.WNSUnit
+
+        tests = []
+        for project in core.getProjects().all:
+            if os.path.normpath(project.getDir()).split(os.sep)[0] == "tests" and \
+                    os.path.normpath(project.getDir()).split(os.sep)[1] == "system":
+                tests.append(project)
+
+        testCollector = pywns.WNSUnit.SystemTestCollector(suiteConfig = "systemTest.py",
+                                                          suiteName = "testSuite")
+        testCollector.setTests(tests)
+
+        # Add PyConfig unit tests
+        pyUnit = pywns.WNSUnit.ExternalProgram(dirname = "tests/unit/PythonUnitTests/",
+                                               command = "./runPythonUnitTests.py -v",
+                                               description = "PyConfig Unit Tests",
+                                               includeStdOut = True)
+        testCollector.addTest(pyUnit)
 
 
-    # Add C++ unit tests
+        # Add C++ unit tests
 
-    cppUnit = pywns.WNSUnit.ExternalProgram(dirname = "tests/unit/unitTests/",
-                                            command = core.getOptions().executable + " -f config.py -t -y'WNS.masterLogger.backtrace.enabled=True'",
-                                            description = "C++ unit tests",
-                                            includeStdOut = True)
-    testCollector.addTest(cppUnit)
+        cppUnit = pywns.WNSUnit.ExternalProgram(dirname = "tests/unit/unitTests/",
+                                                command = self.options.executable + " -f config.py -t -y'WNS.masterLogger.backtrace.enabled=True'",
+                                                description = "C++ unit tests",
+                                                includeStdOut = True)
+        testCollector.addTest(cppUnit)
 
-    pywns.WNSUnit.verbosity = 2
+        pywns.WNSUnit.verbosity = 2
 
-    # you can get the beast even more verbose by enabling this:
-    # testCollector.testRunner.verbosity = 2
+        # you can get the beast even more verbose by enabling this:
+        # testCollector.testRunner.verbosity = 2
 
-    print "Starting test suites ..."
-    print "NOTE: you may see slow progress since the tests run simulations"
+        print "Starting test suites ..."
+        print "NOTE: you may see slow progress since the tests run simulations"
 
-    result = testCollector.run()
-    if (len(result.errors) == 0) and (len(result.failures) == 0):
-        sys.exit(0)
-    else:
-        sys.exit(1)
+        result = testCollector.run()
+        if (len(result.errors) == 0) and (len(result.failures) == 0):
+            sys.exit(0)
+        else:
+            sys.exit(1)
 
-def runLongTestsCommand(arg = "unused"):
-    # create test collector
-    import pywns.WNSUnit
+class RunLongTestsCommand(wnsbase.playground.plugins.Command.Command):
 
-    tests = []
-    for project in core.getProjects().all:
-        if os.path.normpath(project.getDir()).split(os.sep)[0] == "tests" and \
-               os.path.normpath(project.getDir()).split(os.sep)[1] == "system":
-            tests.append(project)
+    def __init__(self):
+        usage = "\n%prog runlongtests\n\n"
+        rationale = "Runs the 'long' test suite."
 
-    testCollector = pywns.WNSUnit.SystemTestCollector(suiteConfig = "systemLongTest.py",
-                                                      suiteName = "testSuite")
-    testCollector.setTests(tests)
+        usage += rationale
 
-    pywns.WNSUnit.verbosity = 2
+        usage += """
+Runs all the tests in the long test suite.
+"""
+        wnsbase.playground.plugins.Command.Command.__init__(self, "runlongtests", rationale, usage)
 
-    # you can get the beast even more verbose by enabling this:
-    # testCollector.testRunner.verbosity = 2
+        self.addOption("", "--executable",
+                       type="string", dest = "executable", default = "./openwns",
+                       help = "The executable that is to be called (default : \"./openWNS\")")
+    def run(self):
+        # create test collector
+        import pywns.WNSUnit
 
-    print "Starting test suites ..."
-    print "NOTE: you may see slow progress since the tests run simulations"
+        tests = []
+        for project in core.getProjects().all:
+            if os.path.normpath(project.getDir()).split(os.sep)[0] == "tests" and \
+                    os.path.normpath(project.getDir()).split(os.sep)[1] == "system":
+                tests.append(project)
 
-    result = testCollector.run()
-    if (len(result.errors) == 0) and (len(result.failures) == 0):
-        sys.exit(0)
-    else:
-        sys.exit(1)
+        testCollector = pywns.WNSUnit.SystemTestCollector(suiteConfig = "systemLongTest.py",
+                                                          suiteName = "testSuite")
+        testCollector.setTests(tests)
 
-def memcheckUnitTestsCommand(arg = "unused"):
-    r = pywns.MemCheck.Runner(args=[core.getOptions().executable, "-tv"], cwd="tests/unit/unitTests")
-    returncode = r.run()
-    sys.exit(returncode)
+        pywns.WNSUnit.verbosity = 2
+
+        # you can get the beast even more verbose by enabling this:
+        # testCollector.testRunner.verbosity = 2
+
+        print "Starting test suites ..."
+        print "NOTE: you may see slow progress since the tests run simulations"
+
+        result = testCollector.run()
+        if (len(result.errors) == 0) and (len(result.failures) == 0):
+            sys.exit(0)
+        else:
+            sys.exit(1)
+
+class MemcheckCommand(wnsbase.playground.plugins.Command.Command):
+
+    def __init__(self):
+        usage = "\n%prog memcheck\n\n"
+        rationale = "Run the memchecker valgrind on the unit tests."
+
+        usage += rationale
+
+        usage += """
+Runs the unittests under the memory checker valgrind. Use this to detect
+memory leaks or memory access errors. Upstream patches must be free of any
+memory errors.
+Note that with this command certain errors from third party libraries are
+suppressed since these are out our of control.
+"""
+        wnsbase.playground.plugins.Command.Command.__init__(self, "memcheck", rationale, usage)
+
+        self.addOption("", "--executable",
+                       type="string", dest = "executable", default = "./openwns",
+                       help = "The executable that is to be called (default : \"./openWNS\")")
+
+    def run(self):
+        r = pywns.MemCheck.Runner(args=[self.options.executable, "-tv"], cwd="tests/unit/unitTests")
+        returncode = r.run()
+        sys.exit(returncode)

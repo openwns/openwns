@@ -31,26 +31,43 @@ import sys
 import wnsbase.playground.Core
 core = wnsbase.playground.Core.getCore()
 
-def lintCommand(arg = 'unused'):
-    def run(project):
-        return linter(project)
+class LintCommand(wnsbase.playground.plugins.Command.Command):
 
-    def linter(project):
-        sys.stdout.write ("Linting" + project.getDir() + " ... ")
-        result = str(project.getRCS().lint())
-        if result == "":
-            sys.stdout.write(" OK\n")
-        else:
-            sys.stdout.write(" Fail\n")
-        return result
+    def __init__(self):
+        usage = "\n%prog lint\n\n"
+        rationale = "Check for inconsistencies in version control."
 
-    print "Linting all project trees. A summary will be listed at the end ..."
-    lintedResults = core.foreachProject(run)
-    print
-    print
-    for ii in lintedResults:
-        if ii.result != "":
-            print "Lints in " + ii.dirname + ":"
-            print ii.result
-            print
-            print
+        usage += rationale
+        usage += """
+
+lint gives you an overview of the health of your source tree. It shows you files
+that are not managed by your version control systems. Names that violate naming
+conventions or unknown files. This command is very usefull before committing you
+changes somewhere. You should always use this before committing, to see that you
+did not miss anything.
+"""
+        wnsbase.playground.plugins.Command.Command.__init__(self, "lint", rationale, usage)
+
+    def run(self):
+        def lint(project):
+            return linter(project)
+
+        def linter(project):
+            sys.stdout.write ("Linting" + project.getDir() + " ... ")
+            result = str(project.getRCS().lint())
+            if result == "":
+                sys.stdout.write(" OK\n")
+            else:
+                sys.stdout.write(" Fail\n")
+            return result
+
+        print "Linting all project trees. A summary will be listed at the end ..."
+        lintedResults = core.foreachProject(lint)
+        print
+        print
+        for ii in lintedResults:
+            if ii.result != "":
+                print "Lints in " + ii.dirname + ":"
+                print ii.result
+                print
+                print

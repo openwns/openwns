@@ -30,71 +30,84 @@ from wnsbase.playground.Tools import *
 
 core = wnsbase.playground.Core.getCore()
 
-def docuCommand(arg = 'unused'):
+class DocuCommand(wnsbase.playground.plugins.Command.Command):
 
-    def run(project):
-        if not project.generateDoc:
-            return
+    def __init__(self):
+        usage = "\n%prog docu\n\n"
+        rationale = "Build project documentation."
 
-        if not core.userFeedback.askForConfirmation("Do you want to install documentation for '" + project.getDir() + "'?"):
-            return
-
-        print "\nInstalling documentation for", project.getDir(), "..."
-
-        command = 'scons %s docu; scons %s install-docu' % (core.getOptions().scons, core.getOptions().scons,)
-        print "Executing:", command
-        result = runCommand(command)
-        if not result == None:
-            raise "Documentation for " + project.getDir() +  " failed"
+        usage += rationale
+        usage += """ Build the documentation for the whole project. The created documentation will
+be placed in sandbox/default/doc .
+"""
+        wnsbase.playground.plugins.Command.Command.__init__(self, "docu", rationale, usage)
 
 
-    core.foreachProject(run)
+    def run(self):
 
-    createTestbedDocu()
+        def run(project):
+            if not project.generateDoc:
+                return
+
+            if not core.userFeedback.askForConfirmation("Do you want to install documentation for '" + project.getDir() + "'?"):
+                return
+
+            print "\nInstalling documentation for", project.getDir(), "..."
+
+            command = 'scons %s docu; scons %s install-docu' % (core.getSconsOptions(), core.getSconsOptions(),)
+            print "Executing:", command
+            result = runCommand(command)
+            if not result == None:
+                raise "Documentation for " + project.getDir() +  " failed"
 
 
-def createTestbedDocu():
-    projects = core.getProjects()
-    stdin, stdout = os.popen4('doxygen -')
-    rcs = projects.root.getRCS()
-    for i in file(os.path.join("doc", "config", "Doxyfile")):
-        stdin.write(i)
-    stdin.write('PROJECT_NAME="'+ rcs.getVersion() + '"\n')
-    stdin.write('PROJECT_NUMBER="'+ rcs.getPatchLevel() + '<br>(archive: '+ rcs.getFQRN() +')"\n')
-    stdin.close()
-    line = stdout.readline()
-    while line:
-        print line.strip()
+        core.foreachProject(run)
+
+        createTestbedDocu()
+
+
+    def createTestbedDocu(self):
+        projects = core.getProjects()
+        stdin, stdout = os.popen4('doxygen -')
+        rcs = projects.root.getRCS()
+        for i in file(os.path.join("doc", "config", "Doxyfile")):
+            stdin.write(i)
+        stdin.write('PROJECT_NAME="'+ rcs.getVersion() + '"\n')
+        stdin.write('PROJECT_NUMBER="'+ rcs.getPatchLevel() + '<br>(archive: '+ rcs.getFQRN() +')"\n')
+        stdin.close()
         line = stdout.readline()
+        while line:
+            print line.strip()
+            line = stdout.readline()
 
-    # copy all ppt stuff
-    if os.path.isdir(os.path.join("sandbox", "default", "doc", "WNS", "ppt")):
-        shutil.rmtree(os.path.join("sandbox", "default", "doc", "WNS", "ppt"))
-    shutil.copytree(os.path.join("doc", "ppt"), os.path.join("sandbox", "default", "doc", "WNS", "ppt"))
+        # copy all ppt stuff
+        if os.path.isdir(os.path.join("sandbox", "default", "doc", "WNS", "ppt")):
+            shutil.rmtree(os.path.join("sandbox", "default", "doc", "WNS", "ppt"))
+        shutil.copytree(os.path.join("doc", "ppt"), os.path.join("sandbox", "default", "doc", "WNS", "ppt"))
 
-    # copy all pdf stuff
-    if os.path.isdir(os.path.join("sandbox", "default", "doc", "WNS", "pdf")):
-        shutil.rmtree(os.path.join("sandbox", "default", "doc", "WNS", "pdf"))
-    shutil.copytree(os.path.join("doc", "pdf"), os.path.join("sandbox", "default", "doc", "WNS", "pdf"))
+        # copy all pdf stuff
+        if os.path.isdir(os.path.join("sandbox", "default", "doc", "WNS", "pdf")):
+            shutil.rmtree(os.path.join("sandbox", "default", "doc", "WNS", "pdf"))
+        shutil.copytree(os.path.join("doc", "pdf"), os.path.join("sandbox", "default", "doc", "WNS", "pdf"))
 
-    # copy all images
-    if os.path.isdir(os.path.join("sandbox", "default", "doc", "WNS", "images")):
-        shutil.rmtree(os.path.join("sandbox", "default", "doc", "WNS", "images"))
-    shutil.copytree(os.path.join("doc", "images"), os.path.join("sandbox", "default", "doc", "WNS", "images"))
+        # copy all images
+        if os.path.isdir(os.path.join("sandbox", "default", "doc", "WNS", "images")):
+            shutil.rmtree(os.path.join("sandbox", "default", "doc", "WNS", "images"))
+        shutil.copytree(os.path.join("doc", "images"), os.path.join("sandbox", "default", "doc", "WNS", "images"))
 
-    # copy all flash movies
-    if os.path.isdir(os.path.join("sandbox", "default", "doc", "WNS", "flash")):
-        shutil.rmtree(os.path.join("sandbox", "default", "doc", "WNS", "flash"))
-    shutil.copytree(os.path.join("doc", "flash"), os.path.join("sandbox", "default", "doc", "WNS", "flash"))
+        # copy all flash movies
+        if os.path.isdir(os.path.join("sandbox", "default", "doc", "WNS", "flash")):
+            shutil.rmtree(os.path.join("sandbox", "default", "doc", "WNS", "flash"))
+        shutil.copytree(os.path.join("doc", "flash"), os.path.join("sandbox", "default", "doc", "WNS", "flash"))
 
-    writeDoxygenHeader(core)
+        writeDoxygenHeader()
 
-def writeDoxygenHeader(core):
-    projects = core.getProjects()
+    def writeDoxygenHeader(self):
+        projects = core.getProjects()
 
-    # index.htm
-    index = file(os.path.join("sandbox", "default", "doc", "index.htm"), "w")
-    index.write("""
+        # index.htm
+        index = file(os.path.join("sandbox", "default", "doc", "index.htm"), "w")
+        index.write("""
     <html><head><title>openWNS - The Wireless Network Simulator</title></head>
     <frameset rows="105,*">
     <frame marginwidth=0 marginheight=0 frameborder=0 src="head.htm">
@@ -107,9 +120,9 @@ def writeDoxygenHeader(core):
     </html>
     """)
 
-    # head.htm
-    head = file(os.path.join("sandbox", "default", "doc", "head.htm"), "w")
-    head.write("""
+        # head.htm
+        head = file(os.path.join("sandbox", "default", "doc", "head.htm"), "w")
+        head.write("""
     <html><head><title>openWNS - The Wireless Network Simulator</title>
     <link href="WNS/doxygen.css" rel="stylesheet" type="text/css">
     <link href="WNS/tabs.css" rel="stylesheet" type="text/css">
@@ -131,9 +144,9 @@ def writeDoxygenHeader(core):
     </html>
     """)
 
-    # right.htm (Menu on the right side)
-    right = file(os.path.join("sandbox", "default", "doc", "right.htm"), "w")
-    right.write("""
+        # right.htm (Menu on the right side)
+        right = file(os.path.join("sandbox", "default", "doc", "right.htm"), "w")
+        right.write("""
     <html><head><title>openWNS - Right Menu</title>
     <link href="WNS/doxygen.css" rel="stylesheet" type="text/css">
     <link href="WNS/tabs.css" rel="stylesheet" type="text/css">
@@ -142,37 +155,37 @@ def writeDoxygenHeader(core):
     <font size=-1>
     """)
 
-    right.write("<b>Framwork Documentation:</b><ul>")
-    listOfProjects = []
-    for i in projects.all:
-        if os.path.normpath(i.getDir()).split(os.sep)[0] == "framework":
-            rcs = i.getRCS()
-            if os.path.exists(os.path.join("sandbox", "default", "doc", rcs.getVersion())):
-                listOfProjects.append('<li><a target="body" href="'+rcs.getVersion()+'/index.htm">'+rcs.getVersion()+'</a>\n')
+        right.write("<b>Framwork Documentation:</b><ul>")
+        listOfProjects = []
+        for i in projects.all:
+            if os.path.normpath(i.getDir()).split(os.sep)[0] == "framework":
+                rcs = i.getRCS()
+                if os.path.exists(os.path.join("sandbox", "default", "doc", rcs.getVersion())):
+                    listOfProjects.append('<li><a target="body" href="'+rcs.getVersion()+'/index.htm">'+rcs.getVersion()+'</a>\n')
 
-    listOfProjects.sort()
-    for p in listOfProjects: right.write(p)
-    right.write("""</ul>
+        listOfProjects.sort()
+        for p in listOfProjects: right.write(p)
+        right.write("""</ul>
     <b>Modules Documentation:</b>
     <ul>""")
-    listOfProjects = []
-    for i in projects.all:
-        if os.path.normpath(i.getDir()).split(os.sep)[0] == "modules":
-            rcs = i.getRCS()
-            if os.path.exists(os.path.join("sandbox", "default", "doc", rcs.getVersion())):
-                listOfProjects.append('<li><a target="body" href="'+rcs.getVersion()+'/index.htm">'+rcs.getVersion()+'</a>\n')
+        listOfProjects = []
+        for i in projects.all:
+            if os.path.normpath(i.getDir()).split(os.sep)[0] == "modules":
+                rcs = i.getRCS()
+                if os.path.exists(os.path.join("sandbox", "default", "doc", rcs.getVersion())):
+                    listOfProjects.append('<li><a target="body" href="'+rcs.getVersion()+'/index.htm">'+rcs.getVersion()+'</a>\n')
 
-    listOfProjects.sort()
-    for p in listOfProjects: right.write(p)
-    right.write("</ul>")
-    right.write("""
+        listOfProjects.sort()
+        for p in listOfProjects: right.write(p)
+        right.write("</ul>")
+        right.write("""
     </font></body>
     </html>
     """)
 
-    # left.htm (Menu on the left side
-    left = file(os.path.join("sandbox", "default", "doc", "left.htm"), 'w')
-    left.write("""
+        # left.htm (Menu on the left side
+        left = file(os.path.join("sandbox", "default", "doc", "left.htm"), 'w')
+        left.write("""
     <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
     <html><head><meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1">
     <title>WNS - Left Menu</title>
@@ -185,10 +198,10 @@ def writeDoxygenHeader(core):
     <li><a target="body" href="WNS/index.htm">Home</a></li>
     """)
 
-    # generate from doc/pages.htm
-    for line in file(os.path.join('sandbox', 'default', 'doc', 'WNS', 'pages.htm')):
-        if line.startswith("<li>"):
-            line = line.replace('class="el"', '')
-            left.write(line.replace('href="', 'target="body" href="WNS/'))
+        # generate from doc/pages.htm
+        for line in file(os.path.join('sandbox', 'default', 'doc', 'WNS', 'pages.htm')):
+            if line.startswith("<li>"):
+                line = line.replace('class="el"', '')
+                left.write(line.replace('href="', 'target="body" href="WNS/'))
 
-    left.write("</ul></font><body></html>")
+        left.write("</ul></font><body></html>")

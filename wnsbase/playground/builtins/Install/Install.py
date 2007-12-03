@@ -32,93 +32,125 @@ import wnsrc
 import wnsbase.playground.Core
 core = wnsbase.playground.Core.getCore()
 
-def installCommand(flavour, sandboxDir=""):
+class InstallCommand(wnsbase.playground.plugins.Command.Command):
 
-    def run(project):
-        if project.getExe() == None:
-            return
+    def __init__(self):
+        usage = "\n%prog install [FLAVOUR]\n\n"
+        rationale = "Compile and install all projects to the sandbox"
 
-        print "Installing", project.getDir(), "..."
+        usage += rationale
+        usage += """This command starts the build process and installs all files
+to the sandbox. FLAVOUR selects a build flavour. Choose one of the following:
 
-        parallel_compiles = ''
-        if core.getOptions().jobs:
-            parallel_compiles = '-j %d' % options.jobs
+dbg (default) : Build with debug symbols
+opt           : Build optimized version without debug symbols and assures
+optPentium4   :
+optPentium64  :
+optPentiumM   :
+optAthlonMP   :
+optK8         :
+prof          : Build version with profiling information for gprof. You must use --static to use this.
+profOpt       : Optimized profiling version
+size          :
+massif        :
+optAssure     :
+optMsg        :
+optAssureMsg  :
+"""
+        wnsbase.playground.plugins.Command.Command.__init__(self, "install", rationale, usage)
 
-        executable = project.getExe()
-        if core.getOptions().static and executable == "lib":
-            executable = 's'+executable
+    def run(self):
+        flavour = "dbg"
+        sandboxDir = ""
 
-        command = ""
-        if core.getOptions().static:
-            staticSConsOptions = 'static=1 '
-            moduleNames = []
-            # special handling for WNS-CORE
-            if project.getExe() == 'bin':
-                for pp in core.getProjects().all:
-                    if pp.getExe() != 'lib':
-                        continue
-                    # list all libraries in local lib dir (e.g. framework/libwns--main--3.0/build/dbg/lib)
-                    dirToCheck = os.path.join(wnsrc.pathToWNS, pp.getDir(), "build", flavour, "lib")
-                    # for the external libraries this path does not exist
-                    # it would be better to check this somehow else ...
-                    if os.path.exists(dirToCheck):
-                        dirContent = os.listdir(dirToCheck)
-                        for ff in dirContent:
-                            if ff.endswith('.a'):
-                                # strip 'lib' and '.a'
-                                moduleNames.append(ff[3:-2])
-                # forward this modules to WNS -> WNS will link them statically
-                if len(moduleNames) != 0:
-                    staticSConsOptions += 'staticallyLinkedLibs="' + ','.join(moduleNames) + '"'
+        if len(self.args) > 0:
+            flavour = " ".join(self.args)
 
-        else:
-            staticSConsOptions = 'static=0'
+        def install(project):
+            if project.getExe() == None:
+                return
 
-        projectExe = project.getExe()
-        if projectExe in ["lib", "bin", "pyconfig", "python"]:
-            installTarget = "install-" + projectExe
-            command += ' '.join(('scons', 'sandboxDir='+sandboxDir, staticSConsOptions, core.getOptions().scons, parallel_compiles, 'install-' + executable, 'flavour=' + flavour, ";"))
-        else:
-            raise("Unkown project.getExe() result: " + project.getExe())
+            print "Installing", project.getDir(), "..."
 
-        print "Executing:", command
+            parallel_compiles = ''
+            if core.getNumJobs():
+                parallel_compiles = '-j %d' % core.getNumJobs()
 
-        while True:
-            if runProjectHook(project, 'prebuild'):
-                result = runCommand(command)
-                if result is None:
-                    return
+            executable = project.getExe()
+            if core.isStaticBuild() and executable == "lib":
+                executable = 's'+executable
 
-            print "Failed to install:", project.getDir()
+            command = ""
+            if core.isStaticBuild():
+                staticSConsOptions = 'static=1 '
+                moduleNames = []
+                # special handling for WNS-CORE
+                if project.getExe() == 'bin':
+                    for pp in core.getProjects().all:
+                        if pp.getExe() != 'lib':
+                            continue
+                        # list all libraries in local lib dir (e.g. framework/libwns--main--3.0/build/dbg/lib)
+                        dirToCheck = os.path.join(wnsrc.pathToWNS, pp.getDir(), "build", flavour, "lib")
+                        # for the external libraries this path does not exist
+                        # it would be better to check this somehow else ...
+                        if os.path.exists(dirToCheck):
+                            dirContent = os.listdir(dirToCheck)
+                            for ff in dirContent:
+                                if ff.endswith('.a'):
+                                    # strip 'lib' and '.a'
+                                    moduleNames.append(ff[3:-2])
+                    # forward this modules to WNS -> WNS will link them statically
+                    if len(moduleNames) != 0:
+                        staticSConsOptions += 'staticallyLinkedLibs="' + ','.join(moduleNames) + '"'
 
-            if not core.userFeedback.askForReject("Do you want to retry the install process?"):
-                pass
             else:
-                if core.userFeedback.askForReject("Do you want to abort the install process?"):
-                    return
-                else:
-                    sys.exit(1)
+                staticSConsOptions = 'static=0'
 
-    core.fixConfigurationLinks()
+            projectExe = project.getExe()
+            if projectExe in ["lib", "bin", "pyconfig", "python"]:
+                installTarget = "install-" + projectExe
+                command += ' '.join(('scons', 'sandboxDir='+sandboxDir, staticSConsOptions, core.getSconsOptions(), parallel_compiles, 'install-' + executable, 'flavour=' + flavour, ";"))
+            else:
+                raise("Unkown project.getExe() result: " + project.getExe())
 
-    reorderedListOfProjects = core.getProjects().all
+            print "Executing:", command
 
-    if core.getOptions().static:
-        # reorder: first libs then bin
-        # in fact there is only one binary: WNS-CORE
-        reorderedListOfProjects = [it for it in core.getProjects().all if it.getExe() == "lib"] + [it for it in core.getProjects().all if it.getExe() == "bin"]
-        reorderedListOfProjects += [it for it in core.getProjects().all if it not in reorderedListOfProjects]
-    core.foreachProjectIn(reorderedListOfProjects, run)
+            while True:
+                if self.runProjectHook(project, 'prebuild'):
+                    result = runCommand(command)
+                    if result is None:
+                        return
+
+                    print "Failed to install:", project.getDir()
+
+                    if not core.userFeedback.askForReject("Do you want to retry the install process?"):
+                        pass
+                    else:
+                        if core.userFeedback.askForReject("Do you want to abort the install process?"):
+                            return
+                        else:
+                            sys.exit(1)
+
+        core.fixConfigurationLinks()
+
+        reorderedListOfProjects = core.getProjects().all
+
+        if core.isStaticBuild():
+            # reorder: first libs then bin
+            # in fact there is only one binary: WNS-CORE
+            reorderedListOfProjects = [it for it in core.getProjects().all if it.getExe() == "lib"] + [it for it in core.getProjects().all if it.getExe() == "bin"]
+            reorderedListOfProjects += [it for it in core.getProjects().all if it not in reorderedListOfProjects]
+        core.foreachProjectIn(reorderedListOfProjects, install)
 
 
-def runProjectHook(project, hookName):
-    if not hasattr(project, hookName):
-        return True
+    def runProjectHook(self, project, hookName):
+        if not hasattr(project, hookName):
+            return True
 
-    hook = getattr(project, hookName)
-    if not callable(hook):
-        return True
+        hook = getattr(project, hookName)
+        if not callable(hook):
+            return True
 
-    print "Running '%s' hook for project %s" % (hookName, project.getDir())
-    return hook()
+        print "Running '%s' hook for project %s" % (hookName, project.getDir())
+        return hook()
 

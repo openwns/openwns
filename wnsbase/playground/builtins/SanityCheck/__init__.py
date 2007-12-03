@@ -34,8 +34,8 @@ core = wnsbase.playground.Core.getCore()
 
 if not core.hasPlugin("SanityCheck"):
     core.registerPlugin("SanityCheck")
-    optParser.add_option("", "--sanityCheck",
-                         action="callback", callback = commandQueue.append,
-                         callback_args = (SanityCheck.sanityCheckCommand,),
-                         help="Runs: --lint, --changes, --install=dbg, --install=opt, --runTests (None)")
+
+    checksanityCommand = SanityCheck.CheckSanityCommand()
+
+    core.registerCommand(checksanityCommand)
 

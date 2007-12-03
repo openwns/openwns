@@ -25,17 +25,25 @@
 #
 ##############################################################################
 
-import wnsbase.playground.Core
-import Replay
+import optparse
 
-optParser = wnsbase.playground.Core.getCore().getOptParser()
-commandQueue = wnsbase.playground.Core.getCore().getCommandQueue()
-core = wnsbase.playground.Core.getCore()
+class Command:
 
-if not core.hasPlugin("Replay"):
-    core.registerPlugin("Replay")
-    optParser.add_option("", "--replay",
-                         action="callback", callback = commandQueue.append,
-                         callback_args = (Replay.replayCommand,),
-                         help="replay all projects (--f, -if)")
+    def __init__(self, name, rationale, usage):
+        self.name = name
+        self.usage = usage
+        self.rationale = rationale
+        self.optParser = optparse.OptionParser(usage = usage)
+
+    def addOption(self, *args, **kwargs):
+        self.optParser.add_option(*args, **kwargs)
+
+    def startup(self, args):
+        self.options, self.args = self.optParser.parse_args(args)
+
+    def run(self):
+        pass
+
+    def shutdown(self):
+        pass
 

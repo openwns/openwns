@@ -34,7 +34,8 @@ core = wnsbase.playground.Core.getCore()
 
 if not core.hasPlugin("Upgrade"):
     core.registerPlugin("Upgrade")
-    optParser.add_option("", "--upgrade",
-                         action="callback", callback = commandQueue.append,
-                         callback_args = (Upgrade.upgradeCommand,),
-                         help="update all projects (-f, --if)")
+
+    upgradeCommand = Upgrade.UpgradeCommand()
+
+    core.registerCommand(upgradeCommand)
+

@@ -30,9 +30,29 @@ from wnsbase.playground.Tools import *
 import wnsbase.playground.Core
 core = wnsbase.playground.Core.getCore()
 
-def missingCommand(arg = 'unused'):
-    def run(project):
-        print "Missing in", project.getDir(), "..."
-        project.getRCS().missing(project.getRCSUrl() ,{"-s":""}).realtimePrint("  ")
 
-    core.foreachProject(run)
+class MissingCommand(wnsbase.playground.plugins.Command.Command):
+
+    def __init__(self):
+        usage = "\n%prog missing\n\n"
+        rationale = "Check for missing patches in the source repository."
+
+        usage += rationale
+        usage += """
+
+Missing checks if you are missing any patches in your master source code repository.
+If for a project the underlying version control is GNUArch it will report any patches
+that have been committed and that you do not have applied to your local source tree.
+
+If you use Bazaar missing additionally lists the patches that you have commited locally
+but have not yet pushed to the remote location. So pay attention to the output wether
+patches are local or remote
+"""
+        wnsbase.playground.plugins.Command.Command.__init__(self, "missing", rationale, usage)
+
+    def run(self):
+        def checkMissing(project):
+            print "Missing in", project.getDir(), "..."
+            project.getRCS().missing(project.getRCSUrl() ,{"-s":""}).realtimePrint("  ")
+
+        core.foreachProject(checkMissing)

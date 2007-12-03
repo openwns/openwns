@@ -31,45 +31,62 @@ from wnsbase.playground.Tools import *
 import wnsbase.playground.Core
 core = wnsbase.playground.Core.getCore()
 
-def updateCommand(arg = None):
-    projects = core.getProjects()
+class UpdateCommand(wnsbase.playground.plugins.Command.Command):
 
-    myProject = projects.root
-    if myProject.getRCS().isPinned():
-        sys.stdout.write("\nSkipping module in %s, because it is pinned to %i\n\n"
-                         % (myProject.getDir(), myProject.getRCS().getPinnedPatchLevel()))
-        return
-    sys.stdout.write("Checking for new patches in: %s ... " % ("./"))
-    sys.stdout.flush()
-    missing = str(myProject.getRCS().missing(myProject.getRCSUrl(), {"-s":""}))
-    if(missing != ""):
-        print "Found:"
-        print missing
-        print "\nRetrieving new patches for './' ... "
-        try:
-            myProject.getRCS().update().realtimePrint()
-        except:
-            print "An RCS error occured."
-            sys.exit(1)
-    else:
-        print "None"
+    def __init__(self):
+        usage = "\n%prog update\n\n"
+        rationale = "Update the project support modules."
 
-    sys.stdout.write("Checking for new patches in: %s ... " % ("./framework/buildSupport"))
-    sys.stdout.flush()
-    missing = str(projects.buildSupport.getRCS().missing(projects.buildSupport.getRCSUrl(), {"-s":""}))
-    if(missing != ""):
-        print "Found:"
-        print missing
-        checkForConflictsAndExit("./framework/buildSupport")
-        print "\nRetrieving new patches for './framework/buildSupport/' ..."
-        try:
-            projects.buildSupport.getRCS().update().realtimePrint()
+        usage += rationale
+
+        usage += """
+
+Updates the following projects and rereads the project configuration
+afterwards:
+  1. openWNS--main--1.0  : Master located at ./
+  2. cn-scons--main--1.0 : Build support located at ./framework/cn-scons--main--1.0
+"""
+        wnsbase.playground.plugins.Command.Command.__init__(self, "update", rationale, usage)
+
+    def run(self):
+        projects = core.getProjects()
+
+        myProject = projects.root
+        if myProject.getRCS().isPinned():
+            sys.stdout.write("\nSkipping module in %s, because it is pinned to %i\n\n"
+                             % (myProject.getDir(), myProject.getRCS().getPinnedPatchLevel()))
+            return
+        sys.stdout.write("Checking for new patches in: %s ... " % ("./"))
+        sys.stdout.flush()
+        missing = str(myProject.getRCS().missing(myProject.getRCSUrl(), {"-s":""}))
+        if(missing != ""):
+            print "Found:"
+            print missing
+            print "\nRetrieving new patches for './' ... "
+            try:
+                myProject.getRCS().update().realtimePrint()
+            except:
+                print "An RCS error occured."
+                sys.exit(1)
+        else:
+            print "None"
+
+        sys.stdout.write("Checking for new patches in: %s ... " % ("./framework/buildSupport"))
+        sys.stdout.flush()
+        missing = str(projects.buildSupport.getRCS().missing(projects.buildSupport.getRCSUrl(), {"-s":""}))
+        if(missing != ""):
+            print "Found:"
+            print missing
             checkForConflictsAndExit("./framework/buildSupport")
-        except:
-            print "An TLA error occured."
-            sys.exit(1)
-    else:
-        print "None"
+            print "\nRetrieving new patches for './framework/buildSupport/' ..."
+            try:
+                projects.buildSupport.getRCS().update().realtimePrint()
+                checkForConflictsAndExit("./framework/buildSupport")
+            except:
+                print "An TLA error occured."
+                sys.exit(1)
+        else:
+            print "None"
 
-    # Maybe projects.py has changed. Trigger reload
-    core.readProjectsConfig()
+        # Maybe projects.py has changed. Trigger reload
+        core.readProjectsConfig()

@@ -26,15 +26,16 @@
 ##############################################################################
 
 import wnsbase.playground.Core
+import wnsbase.playground.plugins.Command
+
 import Changes
 
-optParser = wnsbase.playground.Core.getCore().getOptParser()
-commandQueue = wnsbase.playground.Core.getCore().getCommandQueue()
 core = wnsbase.playground.Core.getCore()
 
 if not core.hasPlugin("Changes"):
     core.registerPlugin("Changes")
-    optParser.add_option("", "--changes",
-                         action="callback", callback = commandQueue.append,
-                         callback_args = (Changes.statusCommand,),
-                         help="show changes for each project (-f, --if, --diffs)")
+
+    changesCommand = Changes.ChangesCommand()
+
+    core.registerCommand(changesCommand)
+

@@ -30,29 +30,56 @@ from wnsbase.playground.Tools import *
 import wnsbase.playground.Core
 core = wnsbase.playground.Core.getCore()
 
-from wnsbase.playground.builtins.Lint.Lint import lintCommand
-from wnsbase.playground.builtins.Changes.Changes import statusCommand
-from wnsbase.playground.builtins.Install.Install import installCommand
-from wnsbase.playground.builtins.Testing.Testing import runTestsCommand
+from wnsbase.playground.builtins.Lint.Lint import LintCommand
+from wnsbase.playground.builtins.Changes.Changes import ChangesCommand
+from wnsbase.playground.builtins.Install.Install import InstallCommand
+from wnsbase.playground.builtins.Testing.Testing import RunTestsCommand
 
-def sanityCheckCommand(arg = "unused"):
+class CheckSanityCommand(wnsbase.playground.plugins.Command.Command):
 
-    def sanityCheckRunner(fun, message, arg = "unused"):
-        print message
-	answer = ""
-        # run once
-        fun(arg)
-        # run again upon user's request
-        while not core.userFeedback.askForReject("Do you want to fix something and run again?"):
-            fun(arg)
+    def __init__(self):
+        usage = "\n%prog checksanity\n\n"
+        rationale = "Sanity check for all projects. Runs lint, changes, install and runtests"
 
-    sanityCheckRunner(lintCommand, "running ./playground.py --lint" )
-    sanityCheckRunner(statusCommand, "running ./playground.py --changes" )
+        usage += rationale
 
-    print "running ./playground.py --install=dbg"
-    installCommand("dbg")
+        usage += """
 
-    print "running ./playground.py --install=opt"
-    installCommand("opt")
+This is a convenience wrapper that runs the followoing playround commands
+   1. %prog lint
+   2. %prog changes
+   3. %prog install dbg
+   4. %prog install opt
+   5. %prog runtests
+"""
+        wnsbase.playground.plugins.Command.Command.__init__(self, "checksanity", rationale, usage)
 
-    runTestsCommand()
+    def run(self):
+
+        installCommand = InstallCommand()
+        lintCommand = LintCommand()
+        changesCommand = ChangesCommand()
+        changesCommand.startup([""])
+        runTestsCommand = RunTestsCommand()
+
+        def sanityCheckRunner(fun, message, arg = "unused"):
+            print message
+            answer = ""
+            # run once
+            fun()
+            # run again upon user's request
+            while not core.userFeedback.askForReject("Do you want to fix something and run again?"):
+                fun()
+
+        sanityCheckRunner(lintCommand.run, "running ./playground.py --lint" )
+        sanityCheckRunner(changesCommand.run, "running ./playground.py --changes" )
+
+        print "running ./playground.py --install=dbg"
+        installCommand.startup("dbg")
+        installCommand.run()
+
+        print "running ./playground.py --install=opt"
+        installCommand.startup("opt")
+        installCommand.run()
+
+        runTestsCommand()

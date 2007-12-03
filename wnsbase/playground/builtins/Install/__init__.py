@@ -34,14 +34,8 @@ core = wnsbase.playground.Core.getCore()
 
 if not core.hasPlugin("Install"):
     core.registerPlugin("Install")
-    optParser.add_option("", "--install",
-                         type="string", metavar = "FLAVOUR",
-                         action="callback", callback = commandQueue.append,
-                         callback_args = (Install.installCommand,),
-                         help="install all projects with flavour FLAVOUR. (-f, --if, -j, --static, --scons)")
 
-    optParser.add_option("", "--create",
-                         type="string", metavar = "FLAVOUR",
-                         action="callback", callback = commandQueue.append,
-                         callback_args = (Install.installCommand,),
-                         help="alias for --install")
+    installCommand = Install.InstallCommand()
+
+    core.registerCommand(installCommand)
+

@@ -29,37 +29,53 @@ import sys
 from wnsbase.playground.Tools import *
 
 import wnsbase.playground.Core
+import wnsbase.playground.plugins.Command
+
 core = wnsbase.playground.Core.getCore()
 
-def statusCommand(arg = 'unused'):
-    def run(project):
-        return changesChecker(project)
+class ChangesCommand(wnsbase.playground.plugins.Command.Command):
 
-    print "Searching changes. A summary will be listed at the end ..."
-    projectChanges = []
-    projectChanges.extend(core.foreachProject(run))
+    def __init__(self):
+        usage = "Show changes in source code managed by the version control system for all known projects."
+        wnsbase.playground.plugins.Command.Command.__init__(self, "changes", usage, usage)
 
-    print
-    for ii in projectChanges:
-        if len(ii.result) > 0:
-            print "Changes in: " + ii.dirname
-            for change in ii.result:
-                print "  " + change
+        self.addOption("", "--if",
+                       type="string", dest = "if_expr", metavar = "EXPR", default = None,
+                       help = "restrict commands to affect only projects that match EXPR (can be: 'python', 'bin', 'lib', 'none', 'changed', 'scons', 'ask', 'bzr', 'tla').")
 
-def changesChecker(project):
-    sys.stdout.write("Checking for changes in " + project.getDir() + " ...")
-    sys.stdout.flush()
-    changes = []
-    foundChanges = False
-    for line in project.getRCS().status({core.getOptions().diffs:""}):
-        if line.startswith('*') or line.strip(" ") == "":
-            continue
+        self.addOption("", "--diffs",
+                       action = "store_const", dest = "diffs", const = '--diffs', default = '',
+                       help=" when using --changes, show diffs of changed files.")
 
-        changes.append(line)
-        foundChanges = True
+    def run(self, arg = 'unused'):
+        def runForEach(project):
+            return self.changesChecker(project)
 
-    if foundChanges:
-        sys.stdout.write(" " + str(len(changes)) + " files changed\n")
-    else:
-        sys.stdout.write(" no changes\n")
-    return changes
+        print "Searching changes. A summary will be listed at the end ..."
+        projectChanges = []
+        projectChanges.extend(core.foreachProject(runForEach))
+
+        print
+        for ii in projectChanges:
+            if len(ii.result) > 0:
+                print "Changes in: " + ii.dirname
+                for change in ii.result:
+                    print "  " + change
+
+    def changesChecker(self, project):
+        sys.stdout.write("Checking for changes in " + project.getDir() + " ...")
+        sys.stdout.flush()
+        changes = []
+        foundChanges = False
+        for line in project.getRCS().status({self.options.diffs:""}):
+            if line.startswith('*') or line.strip(" ") == "":
+                continue
+
+            changes.append(line)
+            foundChanges = True
+
+        if foundChanges:
+            sys.stdout.write(" " + str(len(changes)) + " files changed\n")
+        else:
+            sys.stdout.write(" no changes\n")
+        return changes
