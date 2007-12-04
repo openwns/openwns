@@ -27,6 +27,7 @@
 
 import wnsbase.playground.Core
 from wnsbase.playground.Tools import *
+import shutil
 
 core = wnsbase.playground.Core.getCore()
 
