@@ -61,7 +61,7 @@ class Core:
         self._loadBuiltins()
         self._setupCommandLineOptions()
         self.configFile = "config/projects.py"
-        self.userFeedback = AcceptDefaultDecision()
+        self.userFeedback = UserMadeDecision()
 
         argv = sys.argv
 
