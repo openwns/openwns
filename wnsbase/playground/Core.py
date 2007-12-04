@@ -50,12 +50,15 @@ class Core:
         self.optParser = optparse.OptionParser(usage = usage)
         self.commandQueue = CommandQueue()
         self.plugins = []
+        self.pluginPaths = []
         self.commands = {}
         self.ifExpr = None
 
     def startup(self):
         self._loadBuiltins()
         self._setupCommandLineOptions()
+        self._loadPlugins()
+
         self.configFile = "config/projects.py"
         self.userFeedback = UserMadeDecision()
 
@@ -71,9 +74,18 @@ class Core:
                 self.userFeedback = AcceptDefaultDecision()
             elif a.startswith("--if"):
                 self.ifExpr = a.split("=")[1]
+            elif a == "--help":
+                self.printUsage()
             else:
                 self.pluginArgs.append(a)
             i += 1
+
+        if len(self.pluginArgs) > 0:
+            commandName = self.pluginArgs[0]
+            if not self.commands.has_key(commandName):
+                self.printUsage()
+        else:
+            self.printUsage()
 
         self.projects = self.readProjectsConfig()
 
@@ -126,10 +138,17 @@ class Core:
 
         sys.exit(1)
 
-    def _loadBuiltins(self):
-        self.loadPluginsInDir("./wnsbase/playground/builtins", "wnsbase.playground.builtins")
+    def addPluginPath(self, path):
+        self.pluginPaths.append(path)
 
-    def loadPluginsInDir(self, pluginsDir, targetPackage="wnsbase.playground.plugins"):
+    def _loadBuiltins(self):
+        self._loadPluginsInDir("./wnsbase/playground/builtins", "wnsbase.playground.builtins")
+
+    def _loadPlugins(self):
+        for pluginPath in self.pluginPaths:
+            self._loadPluginsInDir(pluginPath)
+
+    def _loadPluginsInDir(self, pluginsDir, targetPackage="wnsbase.playground.plugins"):
         if os.path.exists(pluginsDir):
             plugins.__path__.append(str(pluginsDir))
             for (dirname, topLevelDirs, files) in os.walk(pluginsDir):

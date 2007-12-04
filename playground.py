@@ -78,9 +78,9 @@ if __name__ == "__main__":
 
     pywnsPluginsPath = os.path.join("sandbox", "default", "lib", "python2.4", "site-packages", "pywns", "playgroundPlugins")
 
-    core.loadPluginsInDir(pywnsPluginsPath)
+    core.addPluginPath(pywnsPluginsPath)
 
-    core.loadPluginsInDir(os.path.join(os.environ["HOME"], ".wns", "playgroundPlugins"))
+    core.addPluginPath(os.path.join(os.environ["HOME"], ".wns", "playgroundPlugins"))
 
     core.startup()
 
