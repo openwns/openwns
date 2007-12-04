@@ -63,7 +63,7 @@ be placed in sandbox/default/doc .
 
         core.foreachProject(run)
 
-        createTestbedDocu()
+        self.createTestbedDocu()
 
 
     def createTestbedDocu(self):
@@ -100,7 +100,7 @@ be placed in sandbox/default/doc .
             shutil.rmtree(os.path.join("sandbox", "default", "doc", "WNS", "flash"))
         shutil.copytree(os.path.join("doc", "flash"), os.path.join("sandbox", "default", "doc", "WNS", "flash"))
 
-        writeDoxygenHeader()
+        self.writeDoxygenHeader()
 
     def writeDoxygenHeader(self):
         projects = core.getProjects()
