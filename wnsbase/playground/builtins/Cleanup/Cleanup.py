@@ -64,9 +64,18 @@ TARGET can be one of :
 """
         wnsbase.playground.plugins.Command.Command.__init__(self, "clean", rationale, usage)
 
+        self.optParser.add_option("", "--flavour",
+                                  type="string", dest = "flavour", metavar = "TYPE", default = "dbg",
+                                  help = "choose a flavour (TYPE=[dbg|opt|prof|...]) to operate with.")
+
+        self.optParser.add_option("", "--static",
+                                  dest = "static", default = False,
+                                  action = "store_true",
+                                  help = "build static executable")
+
     def run(self):
         option = " ".join(self.args)
-        print option
+
         def remove(base, directory):
             delDir = os.path.join(base, directory)
             if os.path.exists(base):
@@ -84,7 +93,7 @@ TARGET can be one of :
         def runCleanObjs(project):
             if project.getExe() == None:
                 return
-            if core.isStaticBuild() == True:
+            if self.options.static == True:
                 addPrint = " (static build)"
                 staticOption = " static=1"
                 if project.getExe() == "lib":
@@ -93,8 +102,8 @@ TARGET can be one of :
                 addPrint = ""
                 staticOption = " static=0"
 
-            print "Cleaning objects for '" + core.getBuildFlavour() + "' of " + project.getDir() + addPrint
-            runCommand("scons -c flavour=" + core.getBuildFlavour() + staticOption)
+            print "Cleaning objects for '" + self.options.flavour + "' of " + project.getDir() + addPrint
+            runCommand("scons -c flavour=" + self.options.flavour + staticOption)
 
         def runCleanDocu(project):
             remove(os.path.abspath(os.getcwd()),
@@ -112,17 +121,20 @@ TARGET can be one of :
             remove(os.getcwd(), os.path.join("{arch}", "++pristine-trees"))
             core.foreachProject(runCleanPristines)
 
-        if option == "sandbox" or option == "all":
+        elif option == "sandbox" or option == "all":
             remove("./", "sandbox")
 
-        if option == "objs" or option == "all":
+        elif option == "objs" or option == "all":
             core.foreachProject(runCleanObjs)
 
-        if option == "docu" or option == "all":
+        elif option == "docu" or option == "all":
             core.foreachProject(runCleanDocu)
 
-        if option == "extern" or option == "all":
+        elif option == "extern" or option == "all":
             core.foreachProject(+runCleanExtern)
 
-        if option == "build-dirs" or option == "all":
+        elif option == "build-dirs" or option == "all":
             core.foreachProject(runCleanBuildDirs)
+
+        else:
+            self.optParser.print_help()

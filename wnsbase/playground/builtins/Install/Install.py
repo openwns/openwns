@@ -35,12 +35,12 @@ core = wnsbase.playground.Core.getCore()
 class InstallCommand(wnsbase.playground.plugins.Command.Command):
 
     def __init__(self):
-        usage = "\n%prog install [FLAVOUR]\n\n"
+        usage = "\n%prog install\n\n"
         rationale = "Compile and install all projects to the sandbox"
 
         usage += rationale
         usage += """This command starts the build process and installs all files
-to the sandbox. FLAVOUR selects a build flavour. Choose one of the following:
+to the sandbox. Use --flavour=FLAVOUR to select a build flavour. Choose one of the following:
 
 dbg (default) : Build with debug symbols
 opt           : Build optimized version without debug symbols and assures
@@ -59,12 +59,25 @@ optAssureMsg  :
 """
         wnsbase.playground.plugins.Command.Command.__init__(self, "install", rationale, usage)
 
-    def run(self):
-        flavour = "dbg"
-        sandboxDir = ""
+        self.optParser.add_option("-j", "--jobs",
+                                  type = "int", dest = "jobs", default = 0,
+                                  help = "use JOBS parallel compilation jobs", metavar = "JOBS")
 
-        if len(self.args) > 0:
-            flavour = " ".join(self.args)
+        self.optParser.add_option("", "--flavour",
+                                  type="string", dest = "flavour", metavar = "TYPE", default = "dbg",
+                                  help = "choose a flavour (TYPE=[dbg|opt|prof|...]) to operate with.")
+
+        self.optParser.add_option("", "--static",
+                                  dest = "static", default = False,
+                                  action = "store_true",
+                                  help = "build static executable")
+
+        self.optParser.add_option("", "--scons",
+                                  dest = "scons", default = "",
+                                  help="options forwarded to scons.")
+
+    def run(self):
+        sandboxDir = ""
 
         def install(project):
             if project.getExe() == None:
@@ -73,15 +86,15 @@ optAssureMsg  :
             print "Installing", project.getDir(), "..."
 
             parallel_compiles = ''
-            if core.getNumJobs():
-                parallel_compiles = '-j %d' % core.getNumJobs()
+            if self.options.jobs:
+                parallel_compiles = '-j %d' % self.options.jobs
 
             executable = project.getExe()
-            if core.isStaticBuild() and executable == "lib":
+            if self.options.static and executable == "lib":
                 executable = 's'+executable
 
             command = ""
-            if core.isStaticBuild():
+            if self.options.static:
                 staticSConsOptions = 'static=1 '
                 moduleNames = []
                 # special handling for WNS-CORE
@@ -90,7 +103,7 @@ optAssureMsg  :
                         if pp.getExe() != 'lib':
                             continue
                         # list all libraries in local lib dir (e.g. framework/libwns--main--3.0/build/dbg/lib)
-                        dirToCheck = os.path.join(wnsrc.pathToWNS, pp.getDir(), "build", flavour, "lib")
+                        dirToCheck = os.path.join(wnsrc.pathToWNS, pp.getDir(), "build", self.options.flavour, "lib")
                         # for the external libraries this path does not exist
                         # it would be better to check this somehow else ...
                         if os.path.exists(dirToCheck):
@@ -109,7 +122,7 @@ optAssureMsg  :
             projectExe = project.getExe()
             if projectExe in ["lib", "bin", "pyconfig", "python"]:
                 installTarget = "install-" + projectExe
-                command += ' '.join(('scons', 'sandboxDir='+sandboxDir, staticSConsOptions, core.getSconsOptions(), parallel_compiles, 'install-' + executable, 'flavour=' + flavour, ";"))
+                command += ' '.join(('scons', 'sandboxDir='+sandboxDir, staticSConsOptions, self.options.scons, parallel_compiles, 'install-' + executable, 'flavour=' + self.options.flavour, ";"))
             else:
                 raise("Unkown project.getExe() result: " + project.getExe())
 
@@ -135,7 +148,7 @@ optAssureMsg  :
 
         reorderedListOfProjects = core.getProjects().all
 
-        if core.isStaticBuild():
+        if self.options.static:
             # reorder: first libs then bin
             # in fact there is only one binary: WNS-CORE
             reorderedListOfProjects = [it for it in core.getProjects().all if it.getExe() == "lib"] + [it for it in core.getProjects().all if it.getExe() == "bin"]

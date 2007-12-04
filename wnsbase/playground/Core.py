@@ -52,10 +52,6 @@ class Core:
         self.plugins = []
         self.commands = {}
         self.ifExpr = None
-        self.buildFlavour = "dbg"
-        self.staticBuild = False
-        self.sconsOptions = ""
-        self.numJobs = 10
 
     def startup(self):
         self._loadBuiltins()
@@ -75,14 +71,6 @@ class Core:
                 self.userFeedback = AcceptDefaultDecision()
             elif a.startswith("--if"):
                 self.ifExpr = a.split("=")[1]
-            elif a == "--static":
-                self.staticBuild = True
-            elif a == "--flavour":
-                self.buildFlavour = a.split("=")[1]
-            elif a.startswith("--scons"):
-                self.sconsOptions = "=".join(a.split("=")[1:])
-            elif a.startswith("-j=") or a.startswith("--jobs"):
-                self.numJobs = int(a.split("=")[1])
             else:
                 self.pluginArgs.append(a)
             i += 1
@@ -188,18 +176,6 @@ class Core:
             sys.exit(1)
         else:
             self.commands[command.name] = command
-
-    def isStaticBuild(self):
-        return self.staticBuild
-
-    def getBuildFlavour(self):
-        return self.buildFlavour
-
-    def getSconsOptions(self):
-        return self.sconsOptions
-
-    def getNumJobs(self):
-        return self.numJobs
 
     def getOptParser(self):
         return self.optParser
@@ -380,24 +356,6 @@ class Core:
         self.optParser.add_option("-f", "--configFile",
                                   type="string", dest = "configFile", metavar = "FILE", default = "config/projects.py",
                                   help = "choose a configuration file (e.g., --configFile=config/projects.py)")
-
-        self.optParser.add_option("-j", "--jobs",
-                                  type = "int", dest = "jobs", default = 0,
-                                  help = "use JOBS parallel compilation jobs", metavar = "JOBS")
-
-        self.optParser.add_option("", "--flavour",
-                                  type="string", dest = "flavour", metavar = "TYPE", default = "dbg",
-                                  help = "choose a flavour (TYPE=[dbg|opt|prof|...]) to operate with.")
-
-        self.optParser.add_option("", "--static",
-                                  dest = "static", default = False,
-                                  action = "store_true",
-                                  help = "build static executable")
-
-        self.optParser.add_option("", "--scons",
-                                  dest = "scons", default = "",
-                                  help="options forwarded to scons.")
-
         self.optParser.add_option("", "--if",
                                   type="string", dest = "if_expr", metavar = "EXPR", default = None,
                                   help = "restrict commands to affect only projects that match EXPR (can be: 'python', 'bin', 'lib', 'none', 'changed', 'scons', 'ask', 'bzr', 'tla').")
