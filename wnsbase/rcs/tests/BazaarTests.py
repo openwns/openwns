@@ -35,22 +35,22 @@ class BazaarTests(unittest.TestCase):
 
     def setUp(self):
         self.pid = os.getpid()
-        c = ["rm -rf /tmp/__bazaarTests",
-             "mkdir /tmp/__bazaarTests",
-             "mkdir /tmp/__bazaarTests/master",
-             "mkdir /tmp/__bazaarTests/testplayground",
-             "cd /tmp/__bazaarTests/master;bzr init .",
-             "touch /tmp/__bazaarTests/master/AFile",
-             "cd /tmp/__bazaarTests/master;bzr add AFile",
-             "cd /tmp/__bazaarTests/master;bzr commit -m 'Inital Version' AFile",
+        c = ["rm -rf /tmp/__%s_bazaarTests" % str(self.pid),
+             "mkdir /tmp/__%s_bazaarTests" % str(self.pid),
+             "mkdir /tmp/__%s_bazaarTests/master" % str(self.pid),
+             "mkdir /tmp/__%s_bazaarTests/testplayground" % str(self.pid),
+             "cd /tmp/__%s_bazaarTests/master;bzr init ." % str(self.pid),
+             "touch /tmp/__%s_bazaarTests/master/AFile" % str(self.pid),
+             "cd /tmp/__%s_bazaarTests/master;bzr add AFile" % str(self.pid),
+             "cd /tmp/__%s_bazaarTests/master;bzr commit -m 'Inital Version' AFile" % str(self.pid),
              ]
         self.runCommands(c)
         self.originalPath = os.getcwd()
-        os.chdir("/tmp/__bazaarTests/testplayground")
+        os.chdir("/tmp/__%s_bazaarTests/testplayground" % str(self.pid))
 
     def tearDown(self):
         os.chdir(self.originalPath)
-        c = ["rm -rf /tmp/__bazaarTests"]
+        c = ["rm -rf /tmp/__%s_bazaarTests" % str(self.pid)]
         self.runCommands(c)
 
     def testSetGetPath(self):
@@ -63,13 +63,13 @@ class BazaarTests(unittest.TestCase):
         bzr = Bazaar("./theBranch", "testcategory", "testbranch", "testrevision")
         bzr.get("../master")
         fqrn = bzr.getFQRN()
-        self.failUnless(fqrn == "file:///tmp/__bazaarTests/master/", "FQRN is not correct. Was %s" % fqrn)
+        self.failUnless(fqrn == "file:///tmp/__%s_bazaarTests/master/" % str(self.pid), "FQRN is not correct. Was %s" % fqrn)
 
     def testGetTreeVersion(self):
         bzr = Bazaar("./theBranch", "testcategory", "testbranch", "testrevision")
         bzr.get("../master")
         treeVersion = bzr.getTreeVersion()
-        self.failUnless(treeVersion == "file:///tmp/__bazaarTests/master/", "TreeVersion is not correct. Was %s" % treeVersion)
+        self.failUnless(treeVersion == "file:///tmp/__%s_bazaarTests/master/" % str(self.pid), "TreeVersion is not correct. Was %s" % treeVersion)
 
     def testGetVersion(self):
         bzr = Bazaar("./theBranch", "testcategory", "testbranch", "testrevision")
@@ -166,7 +166,7 @@ class BazaarTests(unittest.TestCase):
 
         missing = str(bzrB.missing("../../master"))
 
-        expectedOutput = "Using last location: /tmp/__bazaarTests/master/.*You have 1 extra revision\(s\).*Changed on theBranchB"
+        expectedOutput = "Using last location: /tmp/__%s_bazaarTests/master/.*You have 1 extra revision\(s\).*Changed on theBranchB" % str(self.pid)
         self.failUnless(self.outputMatches(missing, expectedOutput),
                         "Missing output should list revision on BranchB but was %s" % missing)
 
@@ -182,7 +182,7 @@ class BazaarTests(unittest.TestCase):
 
         missing = str(bzr.missing("../../master"))
 
-        expectedOutput = "Using last location: /tmp/__bazaarTests/master/.*You are missing 1 revision\(s\).*Changed on theBranchB"
+        expectedOutput = "Using last location: /tmp/__%s_bazaarTests/master/.*You are missing 1 revision\(s\).*Changed on theBranchB" % str(self.pid)
         self.failUnless(self.outputMatches(missing, expectedOutput),
                         "Missing output should list revision on BranchB but was %s" % missing)
 
@@ -218,7 +218,7 @@ class BazaarTests(unittest.TestCase):
         missing = str(bzr.missing("../../master"))
 
         # PRECONDITION : We miss the revision before we update
-        expectedOutput = "Using last location: /tmp/__bazaarTests/master/.*You are missing 1 revision\(s\).*Changed on theBranchB"
+        expectedOutput = "Using last location: /tmp/__%s_bazaarTests/master/.*You are missing 1 revision\(s\).*Changed on theBranchB" % str(self.pid)
         self.failUnless(self.outputMatches(missing, expectedOutput),
                         "Missing output should list revision on BranchB but was %s" % missing)
 
