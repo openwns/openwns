@@ -43,7 +43,9 @@ be placed in sandbox/default/doc .
 """
         wnsbase.playground.plugins.Command.Command.__init__(self, "docu", rationale, usage)
 
-
+        self.optParser.add_option("", "--scons",
+                                  dest = "scons", default = "",
+                                  help="options forwarded to scons.")
     def run(self):
 
         def run(project):
@@ -55,7 +57,7 @@ be placed in sandbox/default/doc .
 
             print "\nInstalling documentation for", project.getDir(), "..."
 
-            command = 'scons %s docu; scons %s install-docu' % (core.getSconsOptions(), core.getSconsOptions(),)
+            command = 'scons %s docu; scons %s install-docu' % (self.options.scons, self.options.scons,)
             print "Executing:", command
             result = runCommand(command)
             if not result == None:
