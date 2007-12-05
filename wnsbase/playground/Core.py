@@ -74,8 +74,6 @@ class Core:
                 self.userFeedback = AcceptDefaultDecision()
             elif a.startswith("--if"):
                 self.ifExpr = a.split("=")[1]
-            elif a == "--help":
-                self.printUsage()
             else:
                 self.pluginArgs.append(a)
             i += 1
@@ -83,7 +81,11 @@ class Core:
         if len(self.pluginArgs) > 0:
             commandName = self.pluginArgs[0]
             if not self.commands.has_key(commandName):
+                print "\nERROR: Unknown Command %s" % commandName
                 self.printUsage()
+            else:
+                self.command = self.commands[commandName]
+                self.command.startup(self.pluginArgs[1:])
         else:
             self.printUsage()
 
@@ -98,26 +100,17 @@ class Core:
 
         # install necessary files
         # must happen after missing projects ...
-        for command, sourcePath in self.getProjects().prereqCommands:
+        for preCommand, sourcePath in self.getProjects().prereqCommands:
             savedDir = os.getcwd()
             os.chdir(sourcePath)
-            stdin, stdout = os.popen4(command)
+            stdin, stdout = os.popen4(preCommand)
             line = stdout.readline()
             while line:
                 line = stdout.readline()
                 os.chdir(savedDir)
 
     def run(self):
-        if len(self.pluginArgs) > 0:
-            commandName = self.pluginArgs[0]
-            if self.commands.has_key(commandName):
-                command = self.commands[commandName]
-                command.startup(self.pluginArgs[1:])
-                command.run()
-            else:
-                self.printUsage()
-        else:
-            self.printUsage()
+        self.command.run()
 
         self.commandQueue.run()
 
