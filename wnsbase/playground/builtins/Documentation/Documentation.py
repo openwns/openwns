@@ -43,19 +43,18 @@ be placed in sandbox/default/doc .
 """
         wnsbase.playground.plugins.Command.Command.__init__(self, "docu", rationale, usage)
 
-
+        self.optParser.add_option("", "--scons",
+                                  dest = "scons", default = "",
+                                  help="options forwarded to scons.")
     def run(self):
 
         def run(project):
             if not project.generateDoc:
                 return
 
-            if not core.userFeedback.askForConfirmation("Do you want to install documentation for '" + project.getDir() + "'?"):
-                return
-
             print "\nInstalling documentation for", project.getDir(), "..."
 
-            command = 'scons %s docu; scons %s install-docu' % (core.getSconsOptions(), core.getSconsOptions(),)
+            command = 'scons %s docu; scons %s install-docu' % (self.options.scons, self.options.scons,)
             print "Executing:", command
             result = runCommand(command)
             if not result == None:
@@ -109,7 +108,7 @@ be placed in sandbox/default/doc .
         # index.htm
         index = file(os.path.join("sandbox", "default", "doc", "index.htm"), "w")
         index.write("""
-    <html><head><title>openWNS - The Wireless Network Simulator</title></head>
+    <html><head><title>openWNS - The open Wireless Network Simulator</title></head>
     <frameset rows="105,*">
     <frame marginwidth=0 marginheight=0 frameborder=0 src="head.htm">
     <frameset cols="250,*,250">
@@ -124,7 +123,7 @@ be placed in sandbox/default/doc .
         # head.htm
         head = file(os.path.join("sandbox", "default", "doc", "head.htm"), "w")
         head.write("""
-    <html><head><title>openWNS - The Wireless Network Simulator</title>
+    <html><head><title>openWNS - The open Wireless Network Simulator</title>
     <link href="WNS/doxygen.css" rel="stylesheet" type="text/css">
     <link href="WNS/tabs.css" rel="stylesheet" type="text/css">
     </head>
@@ -133,7 +132,7 @@ be placed in sandbox/default/doc .
     <tr>
     <td width=25%><img src="WNS/images/openWNS.png"></td>
     <td width=50% valign=bottom align=center>
-    <font size=+2><b>openWNS - The Wireless Network Simulator</b></font>
+    <font size=+2><b>openWNS - The open Wireless Network Simulator</b></font>
     </td>
     <td width=25% align=right><img src="WNS/images/RWTHAachen-ComNets.png"></td>
     </tr>
@@ -177,7 +176,10 @@ be placed in sandbox/default/doc .
                     listOfProjects.append('<li><a target="body" href="'+rcs.getVersion()+'/index.htm">'+rcs.getVersion()+'</a>\n')
 
         listOfProjects.sort()
-        for p in listOfProjects: right.write(p)
+        if (len(listOfProjects) == 0):
+            right.write("<li>None</li>")
+        else:
+            for p in listOfProjects: right.write(p)
         right.write("</ul>")
         right.write("""
     </font></body>

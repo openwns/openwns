@@ -146,6 +146,7 @@ class Tester:
         return os.path.exists(os.path.join(self.project.getDir(), 'SConstruct'))
 
     def ask(self):
+        userFeedback = UserMadeDecision()
         return userFeedback.askForConfirmation("Execute command for project " + self.project.getDir() + " ?")
 
     def tla(self):
