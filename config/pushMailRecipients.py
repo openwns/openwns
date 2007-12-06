@@ -8,4 +8,6 @@
 # emails are sent to the recipients.
 
 recipients = [("bzr://bazaar.comnets.rwth-aachen.de/openWNS/main",
+               "software@comnets.rwth-aachen.de"),
+              ("bzr://bazaar.comnets.rwth-aachen.de/openWNS/addOns/main",
                "software@comnets.rwth-aachen.de")]
