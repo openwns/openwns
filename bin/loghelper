@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-for i in `tla changes | grep 'M '` ; do
-	if [ $i != "M" ]; then
-		meld $i `tla file-find $i`
-	fi
-done
