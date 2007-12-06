@@ -52,9 +52,6 @@ be placed in sandbox/default/doc .
             if not project.generateDoc:
                 return
 
-            if not core.userFeedback.askForConfirmation("Do you want to install documentation for '" + project.getDir() + "'?"):
-                return
-
             print "\nInstalling documentation for", project.getDir(), "..."
 
             command = 'scons %s docu; scons %s install-docu' % (self.options.scons, self.options.scons,)
@@ -73,7 +70,7 @@ be placed in sandbox/default/doc .
         projects = core.getProjects()
         stdin, stdout = os.popen4('doxygen -')
         rcs = projects.root.getRCS()
-        for i in file(os.path.join("doc", "config", "Doxyfile")):
+        for i in file(os.path.join("config", "Doxyfile")):
             stdin.write(i)
         stdin.write('PROJECT_NAME="'+ rcs.getVersion() + '"\n')
         stdin.write('PROJECT_NUMBER="'+ rcs.getPatchLevel() + '<br>(archive: '+ rcs.getFQRN() +')"\n')

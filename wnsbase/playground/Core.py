@@ -157,10 +157,11 @@ class Core:
                 except exceptions.SystemExit:
                     sys.exit(1)
                 except:
-                    print "WARNING: Unable to load " + str(plugin) + " plugin. Ignored."
+                    print "ERROR: Unable to load " + str(plugin) + " plugin. Ignored."
                     print "   " + str(sys.exc_info()[0])
                     print "   " + str(sys.exc_info()[1])
                     print "   " + str(sys.exc_info()[2].tb_frame)
+                    sys.exit(1)
 
             sys.path.pop()
 
