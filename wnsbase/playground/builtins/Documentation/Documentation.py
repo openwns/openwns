@@ -52,9 +52,6 @@ be placed in sandbox/default/doc .
             if not project.generateDoc:
                 return
 
-            if not core.userFeedback.askForConfirmation("Do you want to install documentation for '" + project.getDir() + "'?"):
-                return
-
             print "\nInstalling documentation for", project.getDir(), "..."
 
             command = 'scons %s docu; scons %s install-docu' % (self.options.scons, self.options.scons,)
