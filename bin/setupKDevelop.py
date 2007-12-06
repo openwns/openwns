@@ -31,7 +31,7 @@ import sys
 import shutil
 
 sys.path.append(os.path.join(wnsrc.pathToWNS, 'framework/buildSupport'))
-import RCS
+import wnsbase.RCS
 import FilePatcher
 sys.path.remove(os.path.join(wnsrc.pathToWNS, 'framework/buildSupport'))
 
