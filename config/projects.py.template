@@ -45,8 +45,8 @@ buildSupport = Generic('./framework/cn-scons--main--1.0',"cn-scons--main--1.0", 
 supportLibs  = Library('./extern--main--1.0', "extern--main--1.0", bzrBaseURL,
                        RCS.Bazaar('./extern--main--1.0', 'extern', 'main', '1.0'))
 
-documentation= Generic('./WNS-Documentation--main--1.0', 'WNS-Documentation--main--1.0', bzrBaseURL,
-                       RCS.Bazaar('./WNS-Documentation--main--1.0', 'WNS-Documentation', 'main', '1.0'),
+documentation= Generic('./openWNS-Documentation--main--1.0', 'openWNS-Documentation--main--1.0', bzrBaseURL,
+                       RCS.Bazaar('./openWNS-Documentation--main--1.0', 'openWNS-Documentation', 'main', '1.0'),
                        alias ='doc')
 
 libwns       = Library('./framework/libwns--main--1.0',"libwns--main--1.0", bzrBaseURL,
