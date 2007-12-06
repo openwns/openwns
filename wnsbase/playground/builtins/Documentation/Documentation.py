@@ -108,7 +108,7 @@ be placed in sandbox/default/doc .
         # index.htm
         index = file(os.path.join("sandbox", "default", "doc", "index.htm"), "w")
         index.write("""
-    <html><head><title>openWNS - The Wireless Network Simulator</title></head>
+    <html><head><title>openWNS - The open Wireless Network Simulator</title></head>
     <frameset rows="105,*">
     <frame marginwidth=0 marginheight=0 frameborder=0 src="head.htm">
     <frameset cols="250,*,250">
@@ -123,7 +123,7 @@ be placed in sandbox/default/doc .
         # head.htm
         head = file(os.path.join("sandbox", "default", "doc", "head.htm"), "w")
         head.write("""
-    <html><head><title>openWNS - The Wireless Network Simulator</title>
+    <html><head><title>openWNS - The open Wireless Network Simulator</title>
     <link href="WNS/doxygen.css" rel="stylesheet" type="text/css">
     <link href="WNS/tabs.css" rel="stylesheet" type="text/css">
     </head>
@@ -132,7 +132,7 @@ be placed in sandbox/default/doc .
     <tr>
     <td width=25%><img src="WNS/images/openWNS.png"></td>
     <td width=50% valign=bottom align=center>
-    <font size=+2><b>openWNS - The Wireless Network Simulator</b></font>
+    <font size=+2><b>openWNS - The open Wireless Network Simulator</b></font>
     </td>
     <td width=25% align=right><img src="WNS/images/RWTHAachen-ComNets.png"></td>
     </tr>
@@ -176,7 +176,10 @@ be placed in sandbox/default/doc .
                     listOfProjects.append('<li><a target="body" href="'+rcs.getVersion()+'/index.htm">'+rcs.getVersion()+'</a>\n')
 
         listOfProjects.sort()
-        for p in listOfProjects: right.write(p)
+        if (len(listOfProjects) == 0):
+            right.write("<li>None</li>")
+        else:
+            for p in listOfProjects: right.write(p)
         right.write("</ul>")
         right.write("""
     </font></body>
