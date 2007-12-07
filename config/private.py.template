@@ -25,30 +25,21 @@
 #
 ##############################################################################
 import os
-import CNBuildSupport
-import commands
-import platform
-import wnsrc
 
 Import('commonEnvs', 'cleanEnv')
 
 for flavour, env in commonEnvs.iteritems():
-
-        # if we are on beast, we can try to use the fast SCSI RAID for our
-        # object files
-        if platform.node().startswith("beast"):
-                env.setExternalObjDir(os.path.join("/local2", ".objs"))
 
         # use ICECC if iceccd is running
         ps = os.popen("ps ax") # is there a python way to get the processes?
         iceccds = [p for p in ps if "iceccd" in p]
         ps.close()
 
-        if len(iceccds) > 0 and not platform.machine() == "x86_64":
+        if len(iceccds) > 0:
                 # use distribution's icecc
                 env.Replace(ICECC='icecc')
                 # have some default number of jobs to be run in parallel ...
-                env.SetOption('num_jobs', 40)
+                env.SetOption('num_jobs', 10)
 
         else:
                 # ...using default compiler
@@ -62,7 +53,7 @@ for flavour, env in commonEnvs.iteritems():
         # if they are defined here all projects use the same defines which is a good idea
         # env.AppendUnique(CPPDEFINES={'xxx':'1'})
 
-        #privateEnv.AppendUnique(CXXFLAGS=["-E"])
+        # env.AppendUnique(CXXFLAGS=["-E"])
 
 envs = commonEnvs
 

@@ -57,7 +57,7 @@ class WNSRC:
         if self.pathToWNS != None:
             sys.path = [os.path.join(self.pathToSandbox, "default", "lib", "python2.4", "site-packages")] + sys.path
         else:
-            print "WARNING: Could not set path to sandbox. You are not inside a WNS testbed!"
+            print "WARNING: Could not set path to sandbox. You are not inside an openWNS-SDK!"
             print "         Your current working directory is: " + os.getcwd()
 
     def __searchPathToWNS(self, path):
