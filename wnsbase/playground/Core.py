@@ -74,6 +74,9 @@ class Core:
                 self.userFeedback = AcceptDefaultDecision()
             elif a.startswith("--if"):
                 self.ifExpr = a.split("=")[1]
+            elif a == "--commands":
+                print " ".join(self.commands.keys())
+                sys.exit(0)
             else:
                 self.pluginArgs.append(a)
             i += 1
