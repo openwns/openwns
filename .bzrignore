@@ -24,3 +24,5 @@ modules/rrm/*
 modules/tl/*
 tests/system/*
 patchSets
+documentation
+supportlibs
