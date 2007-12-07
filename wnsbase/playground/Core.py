@@ -214,7 +214,7 @@ class Core:
         if not len(missingProjects):
             return
 
-        print "Warning: According to 'config/projects.py' the following directories are missing:"
+        print "Warning: According to '%s' the following directories are missing:" % (self.configFile)
         for project in missingProjects:
             print "  " + project.getDir() + " (from URL: " + project.getRCSUrl() + ")"
 
