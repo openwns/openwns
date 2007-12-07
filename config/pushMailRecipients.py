@@ -7,5 +7,5 @@
 # is matched against the location that you push to. If it matches than
 # emails are sent to the recipients.
 
-recipients = [(".*@launchpad.net/~comnets",
+recipients = [(".*@bazaar.launchpad.net/~comnets",
                "develop@openwns.org"),]
