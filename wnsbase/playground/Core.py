@@ -75,6 +75,7 @@ class Core:
         Finally the preReq commands in projects.py are executed.
         """
 
+        self.addPluginPath("./wnsbase/playground/plugins")
         self._loadBuiltins()
         self._setupCommandLineOptions()
         self._loadPlugins()
