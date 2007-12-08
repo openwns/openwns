@@ -38,23 +38,43 @@ import builtins
 import plugins.Command
 
 class Core:
-    """ This the core of the openWNS project tree management tool 'playground'. It
-    includes the basic functionality. All extension plugins get the current
-    instance of the core object when invoked.
+    """ This the core of the openwns-sdk project tree management tool 'playground.py'.
+
+    Core is basically a plugin loader. It implements just a few commands by itself.
     """
 
     def __init__(self):
+        """ Initialization of members. No other functionality.
+        """
         usage = ""
         usage += "The list below shows global available options.\n"
 
         self.optParser = optparse.OptionParser(usage = usage)
-        self.commandQueue = CommandQueue()
         self.plugins = []
         self.pluginPaths = []
         self.commands = {}
         self.ifExpr = None
 
     def startup(self):
+        """ Loads builtins, plugins. Setup of the project tree.
+
+        The startup phase loads builtin commands and all plugins. You can add paths
+        to search for plugins by using the addPluginPath method. The command line is
+        parsed and some global switches are extracted before the command line is
+        passed to the selected command.
+
+        The command to execute is selected by the first argument of the stripped
+        command line. This means you can place the global options anywhere on the
+        command line. Ensure that the first non-global is a valid command name. If
+        no command is found the help text is shown to the user.
+
+        After builtins, plugins and the command line has been processed Core reads
+        the project configuration at "config/projects.py" and checks if all projects
+        are available. If not missing projects will be fetched.
+
+        Finally the preReq commands in projects.py are executed.
+        """
+
         self._loadBuiltins()
         self._setupCommandLineOptions()
         self._loadPlugins()
@@ -113,16 +133,22 @@ class Core:
                 os.chdir(savedDir)
 
     def run(self):
+        """ Runs the command selected in the startup phase.
+        """
         self.command.run()
 
-        self.commandQueue.run()
-
+    def shutdown(self):
+        """ Shutdown the core. Shutdown the selected command.
+        """
+        self.command.shutdown()
         sys.exit(0)
 
-    def shutdown(self):
-        pass
-
     def printUsage(self):
+        """ Show the help text.
+
+        Shows the help text for all commands and for the global switches
+        """
+
         print "\nUsage : playground COMMAND options"
         print "\n\nYou can use one of following commands. Use COMMAND --help to get"
         print "detailed help for the command\n\n"
@@ -135,16 +161,31 @@ class Core:
         sys.exit(1)
 
     def addPluginPath(self, path):
+        """ Add a path to search for plugins.
+
+        During the startup phase all directories added in this way are scanned
+        for plugins.
+        """
         self.pluginPaths.append(path)
 
     def _loadBuiltins(self):
+        """ Load builtins.
+        """
         self._loadPluginsInDir("./wnsbase/playground/builtins", "wnsbase.playground.builtins")
 
     def _loadPlugins(self):
+        """ Load plugins.
+        """
         for pluginPath in self.pluginPaths:
             self._loadPluginsInDir(pluginPath)
 
     def _loadPluginsInDir(self, pluginsDir, targetPackage="wnsbase.playground.plugins"):
+        """ Load plugins in a specific directory.
+
+        pluginsDir : The directory to scan
+        targetPackage : Inject the plugin into this package. Package must exist and
+        must be importable.
+        """
         if os.path.exists(pluginsDir):
             plugins.__path__.append(str(pluginsDir))
             for (dirname, topLevelDirs, files) in os.walk(pluginsDir):
@@ -169,9 +210,23 @@ class Core:
             sys.path.pop()
 
     def hasPlugin(self, pluginName):
+        """ Returns True if Core has loaded the plugin pluginName.
+
+        pluginName : Name of the plugin (string)
+        Returns True if plugin was loaded, else returns False
+        """
         return (self.plugins.count(pluginName) > 0)
 
     def registerPlugin(self, pluginName):
+        """ Register a plugin.
+
+        Each plugin must register itself with a unique name to avoid duplicates. You
+        should us hasPlugin in your plugin to test if the plugin has already been
+        loaded. If it has not been loaded use registerPlugin to register it and then
+        completely initialise your plugin.
+
+        pluginName : The plugin to register (string)
+        """
         if self.plugins.count(pluginName) > 0:
             print "Error! Pluging %s already registered." % pluginName
             print
@@ -183,6 +238,15 @@ class Core:
             self.plugins.append(pluginName)
 
     def registerCommand(self, command):
+        """ Register a command.
+
+        Plugins may register an arbitrary number of commands.
+        Use this method to register a new command. Eachc command must implement
+        wnsbase.playground.plugins.Command. Duplicate registration of commands
+        is an error.
+
+        command : The command to register (wnsbase.playground.plugins.Command)
+        """
         if self.commands.has_key(command.name) > 0:
             print "Error! Command %s already registered." % command.name
             print
@@ -193,24 +257,29 @@ class Core:
         else:
             self.commands[command.name] = command
 
-    def getOptParser(self):
-        return self.optParser
-
-    def getCommandQueue(self):
-        return self.commandQueue
-
-    def getOptions(self):
-        return self.options
-
     def getProjects(self):
+        """ Get the parsed contents of config/projects.py
+
+        returns projects
+        """
         return self.projects
 
     def checkForMissingProjects(self):
-        """iterate over the projects in p, return a list of missing directory names.
+        """Iterate over all projects return a list of missing directory names.
+
+        returns a list of missing projects ([ wnsbase.playground.Project.Project ])
         """
+
         return [project for project in self.projects.all if not os.path.isdir(project.getDir())]
 
     def updateMissingProjects(self, missingProjects):
+        """Fetch missing projects.
+
+        Projects that are listed in projects.py but not found in the file system will
+        be fetched.
+
+        missingProjects : Projects to fetch ( [wnsbase.playground.project.Project, ...] )
+        """
         if not len(missingProjects):
             return
 
@@ -226,7 +295,9 @@ class Core:
             sys.exit(0)
 
     def getMissingProjects(self, missingProjects):
-        """for each directory name in dirs, try to resolve the archive and retrieve it via GNUArch.
+        """For each project in missingProjects, try to resolve the archive and retrieve it.
+
+        missingProjects : Projects to fetch ( [wnsbase.playground.project.Project, ...] )
         """
 
         for project in missingProjects:
@@ -258,17 +329,31 @@ class Core:
         self.fixConfigurationLinks()
 
     def fixConfigurationLinks(self):
+        """ Symlink config/private.py and config.pushMailRecipients.py to their templates if not found
+        """
         self.foreachProject(self._linkPrivatePy)
         self.foreachProject(self._linkPushMailRecipientsPy)
 
     def foreachProject(self, fun, **args):
+        """ Execute a function on each project
+
+        fun : Callable to execute in each directory
+        args : Any arguments to pass to fun when it is called
+        returns wnsbase.playground.Tools.ForEachResult
+        """
         return self.foreachProjectIn(self.projects.all, fun, **args)
 
     def foreachProjectIn(self, projectList, fun, **args):
         """run function fun for each of the projects.
 
         change directory to each project directory, calling fun
-        with the projects as parameter.
+        with the projects as parameter. You may use the --if option
+        to control if a project is included.
+
+        projectList : A list of projects to execute fun in ( [wnsbase.playground.Project.Project] )
+        fun : Callable to execute in each directory
+        args : Any arguments to pass to fun when it is called
+        returns wnsbase.playground.Tools.ForEachResult
         """
         results = []
         for project in projectList:
@@ -285,6 +370,10 @@ class Core:
         return results
 
     def includeProject(self, project):
+        """ Check the --if switch and decide if a project is included.
+
+        project : The project to test (wnsbase.playground.Project)
+        """
         if self.ifExpr is None:
             return True
 
@@ -329,16 +418,28 @@ class Core:
             sys.exit(1)
 
     def getDirectoryDepth(self, path):
+        """ For a directory get the depth relative to the root of openwns-sdk
+
+        path : Directory to check
+        returns Relative depth the the root of openwns-sdk (int)
+        """
         # calculate the depth with respect to the testbed dir
         normalizedPath = os.path.normpath(path)
         # by splitting at the slashes we can find the depth
         return len(normalizedPath.split(os.sep))
 
     def getRelativePathToPlayground(self, path):
+        """ Get the relative path to the root of openwns-sdk for a subdir path.
+
+        path : Directory to check
+        returns pathname (str)
+        """
         depth = self.getDirectoryDepth(path)
         return os.path.normpath(("/").join([".."]*depth))
 
     def readProjectsConfig(self):
+        """ Read the projects config file config/projects.py
+        """
         sys.path.append("config")
         foobar = {}
         if (self.configFile == "config/projects.py"):
@@ -354,6 +455,14 @@ class Core:
         return Dict2Class(foobar)
 
     def _linkPrivatePy(self, project):
+        """ Possibly link config/private.py in a project to the global openwns-sdk/config/private.py
+
+        If a project does not have a config/private.py a link to the global openwns-sdk/config/private.py
+        is created.
+
+        project : The project to check (wnsbase.playground.Project.Project)
+        """
+
         if not project.getExe() in ["bin", "lib"]:
             return
         if not os.path.exists(os.path.join("config", "private.py")) and os.path.exists(os.path.join(".", "config")):
@@ -361,6 +470,14 @@ class Core:
                        os.path.join("config", "private.py"))
 
     def _linkPushMailRecipientsPy(self, project):
+        """ Possibly link config/pushMailRecipients.py in a project to the global openwns-sdk/config/pushMailRecipients.py
+
+        If a project does not have a config/pushMailRecipients.py a link to the global openwns-sdk/config/pushMailRecipients.py
+        is created.
+
+        project : The project to check (wnsbase.playground.Project.Project)
+        """
+
         path = project.getDir()
 
         if not os.path.exists(os.path.join("config", "pushMailRecipients.py")) and os.path.exists(os.path.join(".", "config")):
@@ -368,6 +485,8 @@ class Core:
                        os.path.join("config", "pushMailRecipients.py"))
 
     def _setupCommandLineOptions(self):
+        """ Setup the internal optParser
+        """
         # modifying options
         self.optParser.add_option("-f", "--configFile",
                                   type="string", dest = "configFile", metavar = "FILE", default = "config/projects.py",
@@ -383,5 +502,8 @@ class Core:
 theCore = Core()
 
 def getCore():
+    """ Get the one and only core object.
+    returns wnsbase.playground.Core.Core
+    """
     return theCore
 

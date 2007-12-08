@@ -28,8 +28,6 @@
 import wnsbase.playground.Core
 import Upgrade
 
-optParser = wnsbase.playground.Core.getCore().getOptParser()
-commandQueue = wnsbase.playground.Core.getCore().getCommandQueue()
 core = wnsbase.playground.Core.getCore()
 
 if not core.hasPlugin("Upgrade"):
