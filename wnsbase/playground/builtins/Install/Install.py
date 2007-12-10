@@ -76,8 +76,13 @@ optAssureMsg  :
                                   dest = "scons", default = "",
                                   help="options forwarded to scons.")
 
+        self.optParser.add_option("", "--sandboxDir",
+                                  type = "string", dest = "sandboxDir", metavar = "DIRECTORY", default = "",
+                                  help = "Choose directory to store the sandbox.")
+
+
     def run(self):
-        sandboxDir = ""
+        sandboxDir = self.options.sandboxDir
 
         def install(project):
             if project.getExe() == None:
