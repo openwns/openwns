@@ -54,6 +54,8 @@ class Core:
         self.pluginPaths = []
         self.commands = {}
         self.ifExpr = None
+        self.warnings = []
+        self.command = None
 
     def startup(self):
         """ Loads builtins, plugins. Setup of the project tree.
@@ -97,7 +99,7 @@ class Core:
                 self.ifExpr = a.split("=")[1]
             elif a == "--commands":
                 print " ".join(self.commands.keys())
-                sys.exit(0)
+                self.shutdown(0)
             else:
                 self.pluginArgs.append(a)
             i += 1
@@ -138,11 +140,14 @@ class Core:
         """
         self.command.run()
 
-    def shutdown(self):
+    def shutdown(self, returnCode):
         """ Shutdown the core. Shutdown the selected command.
         """
-        self.command.shutdown()
-        sys.exit(0)
+        if not self.command is None:
+            self.command.shutdown()
+        for warning in self.warnings:
+            print warning
+        sys.exit(returnCode)
 
     def printUsage(self):
         """ Show the help text.
@@ -159,7 +164,7 @@ class Core:
         print "\n\nThere are some global options that are available for all commands"
         self.optParser.print_help()
 
-        sys.exit(1)
+        self.shutdown(1)
 
     def addPluginPath(self, path):
         """ Add a path to search for plugins.
@@ -200,13 +205,13 @@ class Core:
                 try:
                     exec "import %s.%s" % (targetPackage, str(plugin)) in globals(), locals()
                 except exceptions.SystemExit:
-                    sys.exit(1)
+                    self.shutdown(1)
                 except:
-                    print "ERROR: Unable to load " + str(plugin) + " plugin. Ignored."
-                    print "   " + str(sys.exc_info()[0])
-                    print "   " + str(sys.exc_info()[1])
-                    print "   " + str(sys.exc_info()[2].tb_frame)
-                    sys.exit(1)
+                    tmpWarning = "WARNING: Unable to load " + str(plugin) + " plugin. Ignored."
+                    tmpWarning += "\n   " + str(sys.exc_info()[0])
+                    tmpWarning += "\n   " + str(sys.exc_info()[1])
+                    tmpWarning += "\n   " + str(sys.exc_info()[2].tb_frame)
+                    self.warnings.append(tmpWarning)
 
             sys.path.pop()
 
@@ -234,7 +239,7 @@ class Core:
             print "This could happen if you have a plugin installed to several places that are"
             print "read by playground. Some plugin did violate the hasPlugin/registerPlugin"
             print "protocol of playground."
-            sys.exit(1)
+            self.shutdown(1)
         else:
             self.plugins.append(pluginName)
 
@@ -254,7 +259,7 @@ class Core:
             print "This could happen if you have a plugin installed to several places that are"
             print "read by playground or if two plugins try to register a command with the same"
             print "name."
-            sys.exit(1)
+            self.shutdown(1)
         else:
             self.commands[command.name] = command
 
@@ -293,7 +298,7 @@ class Core:
         else:
             print "Not trying to fetch missing projects."
             print "Exiting"
-            sys.exit(0)
+            self.shutdown(0)
 
     def getMissingProjects(self, missingProjects):
         """For each project in missingProjects, try to resolve the archive and retrieve it.
@@ -314,7 +319,7 @@ class Core:
                     print "Symlink would be: " + project.getDir() + " -> "  + project.alias + " in " + os.getcwd()
                     print "Error: " + project.alias + " already exists. Please move it out of the way."
                     print "Run '" + " ".join(sys.argv) + "' afterwards again."
-                    sys.exit(1)
+                    self.shutdown(1)
 
             print "Fetching project: " + project.getRCSUrl()
 
@@ -408,7 +413,7 @@ class Core:
             tester = Tester(project)
             if not hasattr(tester, testName):
                 print "Unknown test in --if expression:", testName
-                sys.exit(1)
+                self.shutdown(1)
 
             context[testName] = getattr(tester, testName)()
 
@@ -416,7 +421,7 @@ class Core:
             return eval(self.ifExpr, context)
         except SyntaxError, e:
             print "Syntax error in --if expression:", e
-            sys.exit(1)
+            self.shutdown(1)
 
     def getDirectoryDepth(self, path):
         """ For a directory get the depth relative to the root of openwns-sdk

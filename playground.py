@@ -105,4 +105,4 @@ if __name__ == "__main__":
 
     core.run()
 
-    core.shutdown()
+    core.shutdown(0)
