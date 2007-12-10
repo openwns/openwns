@@ -28,14 +28,21 @@
 import wnsbase.playground.Core
 import wnsbase.playground.plugins.Command
 
-import Changes
+import Status
 
 core = wnsbase.playground.Core.getCore()
+
+if not core.hasPlugin("Status"):
+    core.registerPlugin("Status")
+
+    statusCommand = Status.StatusCommand()
+
+    core.registerCommand(statusCommand)
+
 
 if not core.hasPlugin("Changes"):
     core.registerPlugin("Changes")
 
-    changesCommand = Changes.ChangesCommand()
+    changesCommand = Status.ChangesCommand()
 
     core.registerCommand(changesCommand)
-
