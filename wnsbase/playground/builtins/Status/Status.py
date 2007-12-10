@@ -33,10 +33,59 @@ import wnsbase.playground.plugins.Command
 
 core = wnsbase.playground.Core.getCore()
 
+class StatusCommand(wnsbase.playground.plugins.Command.Command):
+
+    def __init__(self):
+        usage = "Show status in source code managed by the version control system for all known projects."
+        # make 'changes' command an alias for the 'status' command
+        wnsbase.playground.plugins.Command.Command.__init__(self, "status", usage, usage)
+
+        self.addOption("", "--if",
+                       type="string", dest = "if_expr", metavar = "EXPR", default = None,
+                       help = "restrict commands to affect only projects that match EXPR (can be: 'python', 'bin', 'lib', 'none', 'changed', 'scons', 'ask', 'bzr', 'tla').")
+
+        self.addOption("", "--diffs",
+                       action = "store_const", dest = "diffs", const = '--diffs', default = '',
+                       help=" when using --status, show status of changed files.")
+
+    def run(self, arg = 'unused'):
+        def runForEach(project):
+            return self.changesChecker(project)
+
+        print "Searching changes. A summary will be listed at the end ..."
+        projectChanges = []
+        projectChanges.extend(core.foreachProject(runForEach))
+
+        print
+        for ii in projectChanges:
+            if len(ii.result) > 0:
+                print "Changes in: " + ii.dirname
+                for change in ii.result:
+                    print "  " + change
+
+    def changesChecker(self, project):
+        sys.stdout.write("Checking for changes in " + project.getDir() + " ...")
+        sys.stdout.flush()
+        changes = []
+        foundChanges = False
+        for line in project.getRCS().status({self.options.diffs:""}):
+            if line.startswith('*') or line.strip(" ") == "":
+                continue
+
+            changes.append(line)
+            foundChanges = True
+
+        if foundChanges:
+            sys.stdout.write(" " + str(len(changes)) + " files changed\n")
+        else:
+            sys.stdout.write(" no changes\n")
+        return changes
+
+
 class ChangesCommand(wnsbase.playground.plugins.Command.Command):
 
     def __init__(self):
-        usage = "Show changes in source code managed by the version control system for all known projects."
+        usage = "This command is deprecated but still in use due to backward compatibility.\n       Use instead the 'status' command to be in line with the bzr interface"
         wnsbase.playground.plugins.Command.Command.__init__(self, "changes", usage, usage)
 
         self.addOption("", "--if",
