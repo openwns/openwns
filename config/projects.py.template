@@ -39,20 +39,16 @@ unitTests = Generic('./tests/unit', 'openwns-unittest/unittest--main--1.0', bzrB
 buildSupport = Generic('./framework/buildSupport',"openwns-buildsupport/buildsupport--main--1.0", bzrBaseURL,
                        RCS.Bazaar('./framework/buildSupport', 'buildsupport', 'main', '1.0'))
 
-supportLibs  = Library('./supportlibs', "openwns-supportlibs/supportlibs--main--1.0", bzrBaseURL,
-                       RCS.Bazaar('./supportlibs', 'supportlibs', 'main', '1.0'))
-
 documentation= Generic('./documentation', 'openwns-documentation/documentation--main--1.0', bzrBaseURL,
                        RCS.Bazaar('./documentation', 'documentation', 'main', '1.0'),
                        alias ='doc')
 
 library      = Library('./framework/library',"openwns-library/library--main--1.0", bzrBaseURL,
-                       RCS.Bazaar('framework/library', 'library', 'main', '1.0'),
-                       [supportLibs])
+                       RCS.Bazaar('framework/library', 'library', 'main', '1.0'))
 
 application  = Binary('./framework/application', "openwns-application/application--main--1.0", bzrBaseURL,
                       RCS.Bazaar('framework/application', 'application', 'main', '1.0'),
-                      [library, supportLibs])
+                      [library])
 
 pywns        = Python("./framework/pywns", "openwns-pywns/pywns--main--1.0", bzrBaseURL,
                       RCS.Bazaar('framework/pywns',
@@ -61,7 +57,6 @@ pywns        = Python("./framework/pywns", "openwns-pywns/pywns--main--1.0", bzr
 all = [ root,
         unitTests,
         buildSupport,
-        supportLibs,
         documentation,
         library,
         application,
