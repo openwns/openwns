@@ -64,6 +64,7 @@ TARGET can be one of :
 """
         wnsbase.playground.plugins.Command.Command.__init__(self, "clean", rationale, usage)
 
+        self.numberOfArgs = 1
         self.optParser.add_option("", "--flavour",
                                   type="string", dest = "flavour", metavar = "TYPE", default = "dbg",
                                   help = "choose a flavour (TYPE=[dbg|opt|prof|...]) to operate with.")
