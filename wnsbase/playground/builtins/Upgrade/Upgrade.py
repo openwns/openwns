@@ -52,7 +52,7 @@ patches from the remote repository (if any are available).
 
     def run(self):
         updateCommand = UpdateCommand()
-        updateCommand.startup([""])
+        updateCommand.startup([])
         updateCommand.run()
 
         def upgrade(project):

@@ -45,6 +45,7 @@ class Command(object):
         self.options, self.args = self.optParser.parse_args(args)
         if len(self.args) != self.numberOfArgs:
             print "ERROR: Wrong number of arguments to command '%s' (%d instead of %d)" % (self.name, len(self.args), self.numberOfArgs)
+            print " args: %s" % (self.args)
             self.optParser.print_help()
             wnsbase.playground.Core.getCore().shutdown(1)
 
