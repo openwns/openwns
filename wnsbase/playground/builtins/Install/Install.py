@@ -137,17 +137,17 @@ optAssureMsg  :
                 if self.runProjectHook(project, 'prebuild'):
                     result = runCommand(command)
                     if result is None:
-                        return
+                        return True
 
                     print "Failed to install:", project.getDir()
 
                     if not core.userFeedback.askForReject("Do you want to retry the install process?"):
                         pass
                     else:
-                        if core.userFeedback.askForReject("Do you want to abort the install process?"):
-                            return
-                        else:
+                        if core.userFeedback.askForConfirmation("Do you want to abort the install process?"):
                             sys.exit(1)
+                        else:
+                            return False
 
         core.fixConfigurationLinks()
 
@@ -158,8 +158,11 @@ optAssureMsg  :
             # in fact there is only one binary: WNS-CORE
             reorderedListOfProjects = [it for it in core.getProjects().all if it.getExe() == "lib"] + [it for it in core.getProjects().all if it.getExe() == "bin"]
             reorderedListOfProjects += [it for it in core.getProjects().all if it not in reorderedListOfProjects]
-        core.foreachProjectIn(reorderedListOfProjects, install)
+        results = core.foreachProjectIn(reorderedListOfProjects, install)
 
+        for result in results:
+            if result.result == False:
+                exit(1)
 
     def runProjectHook(self, project, hookName):
         if not hasattr(project, hookName):

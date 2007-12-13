@@ -24,4 +24,5 @@ modules/rrm/*
 modules/tl/*
 tests/system/*
 patchSets
-openWNS-Documentation--main--1.0
+documentation
+supportlibs

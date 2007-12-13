@@ -26,13 +26,16 @@
 ##############################################################################
 
 import optparse
+import wnsbase.playground.Core
 
-class Command:
+
+class Command(object):
 
     def __init__(self, name, rationale, usage):
         self.name = name
         self.usage = usage
         self.rationale = rationale
+        self.numberOfArgs = 0
         self.optParser = optparse.OptionParser(usage = usage)
 
     def addOption(self, *args, **kwargs):
@@ -40,6 +43,11 @@ class Command:
 
     def startup(self, args):
         self.options, self.args = self.optParser.parse_args(args)
+        if len(self.args) != self.numberOfArgs:
+            print "ERROR: Wrong number of arguments to command '%s' (%d instead of %d)" % (self.name, len(self.args), self.numberOfArgs)
+            print " args: %s" % (self.args)
+            self.optParser.print_help()
+            wnsbase.playground.Core.getCore().shutdown(1)
 
     def run(self):
         pass

@@ -36,9 +36,10 @@ class ForEachCommand(wnsbase.playground.plugins.Command.Command):
     def __init__(self):
         usage = "\n%prog foreach [switches] COMMAND\n\n"
         rationale = "Execute a command on multiple projects."
-
         usage += rationale
-        wnsbase.playground.plugins.Command.Command.__init__(self, "foreach", rationale, usage)
+        super(ForEachCommand, self).__init__("foreach", rationale, usage)
+        # the command to execute
+        self.numberOfArgs = 1
 
     def run(self):
 

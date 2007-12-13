@@ -24,16 +24,26 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+"""
+A tutorial plugin for playground
+"""
 
+# HelloWorldCommand contains our command implementation
+import HelloWorldCommand
+
+# We will now register this plugin and add the HelloWorld Command
+
+# Get the core object of playground
 import wnsbase.playground.Core
-import Upgrade
-
 core = wnsbase.playground.Core.getCore()
 
-if not core.hasPlugin("Upgrade"):
-    core.registerPlugin("Upgrade")
+# We only register stuff at the core once.
+if not core.hasPlugin("HelloWorld"):
+    core.registerPlugin("HelloWorld")
 
-    upgradeCommand = Upgrade.UpgradeCommand()
+    # We create the command
+    helloworldCommand = HelloWorldCommand.HelloWorldCommand()
 
-    core.registerCommand(upgradeCommand)
+    # And register it at the core
+    core.registerCommand(helloworldCommand)
 

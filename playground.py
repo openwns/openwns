@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.4
+#! /usr/bin/env python
 ###############################################################################
 # This file is part of openWNS (open Wireless Network Simulator)
 # _____________________________________________________________________________
@@ -32,12 +32,22 @@ import shutil
 import sys
 
 def installEnvironment():
+    """ Installs wnsrc.py to /home/$USER/.wns
+
+    openWNS-sdk needs a common way to setup paths for some directories in
+    the sandbox. The entry point for this is wnsrc.py. The master wnsrc.py
+    file is under version and is located in openwns-sdk/config/wnsrc.py.
+    Changes in openwns-sdk/config/wnsrc.py will always be copied to
+    /home/$USER/.wns/wnsrc.py everytime playground.py is executed.
+    """
+
     # This will install wnsrc.py to /home/$USER/.wns
     wnsDir = os.path.join(os.environ["HOME"], ".wns")
     if not os.path.exists(wnsDir):
         os.mkdir(wnsDir)
     if not os.path.exists("sandbox"):
         os.mkdir("sandbox")
+
     # The wnsrc.py will always be copied.
     shutil.copy("config/wnsrc.py", wnsDir)
     if not os.environ.has_key("PYTHONPATH") or wnsDir not in os.environ["PYTHONPATH"]:
@@ -52,6 +62,14 @@ def installEnvironment():
         print "    Again, this affects only your current shell!"
         print
         sys.exit(1)
+
+def installWNSBase():
+    """ Installs wnsbase package to the sandbox.
+
+    openWNS-sdk provides the python package wnsbase. This includes python classes that
+    are available for all modules within your openWNS-sdk. Everytime you invoke playground.py
+    openWNS-sdk/wnsbase is installed openWNS-sdk/sandbox/default/lib/python2.4/site-packages/wnsbase.
+    """
 
     # Install all files in wnsbase to sandbox
     sandboxSrcSubDir = os.path.join("default", "lib", "python2.4", "site-packages", "wnsbase")
@@ -68,6 +86,7 @@ def installEnvironment():
         print "Unable to install wnsbase files to sandbox"
 
 installEnvironment()
+installWNSBase()
 
 import wnsrc
 import wnsbase.playground.Core
@@ -86,4 +105,4 @@ if __name__ == "__main__":
 
     core.run()
 
-    core.shutdown()
+    core.shutdown(0)
