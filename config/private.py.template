@@ -25,23 +25,30 @@
 #
 ##############################################################################
 import os
+import CNBuildSupport
+import commands
 import platform
-import sys
+import wnsrc
 
 Import('commonEnvs', 'cleanEnv')
 
 for flavour, env in commonEnvs.iteritems():
+
+        # if we are on beast, we can try to use the fast SCSI RAID for our
+        # object files
+        if platform.node().startswith("beast"):
+                env.setExternalObjDir(os.path.join("/local2", ".objs"))
 
         # use ICECC if iceccd is running
         ps = os.popen("ps ax") # is there a python way to get the processes?
         iceccds = [p for p in ps if "iceccd" in p]
         ps.close()
 
-        if len(iceccds) > 0:
+        if len(iceccds) > 0 and not platform.machine() == "x86_64":
                 # use distribution's icecc
                 env.Replace(ICECC='icecc')
                 # have some default number of jobs to be run in parallel ...
-                env.SetOption('num_jobs', 10)
+                env.SetOption('num_jobs', 40)
 
         else:
                 # ...using default compiler
@@ -55,32 +62,7 @@ for flavour, env in commonEnvs.iteritems():
         # if they are defined here all projects use the same defines which is a good idea
         # env.AppendUnique(CPPDEFINES={'xxx':'1'})
 
-        # env.AppendUnique(CXXFLAGS=["-E"])
-
-	# This enables compiling under CYGWIN.
-	if platform.system().startswith("CYGWIN"):
-		# there seems to be a problem with parallel compiling
-		# under cygwin. therfore we limit the number of
-		# parallel jobs to 1 :)
-                env.SetOption('num_jobs', 1)
-
-		# currently only static linking is supported
-		if not env['LINK_STATIC']:
-			raise Exception("\n\nUnder cygwin only './playground.py install --static' is supported.")
-
-		# python lib can be found under /usr/lib/pythonx.y/config
-		env.Append(LIBPATH = [os.path.join(os.sep, 'usr', 'lib'),
-				      os.path.join(os.sep, 'usr', 'lib', 'python'+sys.version[:3], 'config')])
-
-		# under cygwin the boost libs end with gcc-mt, we
-		# remove all boost libs and add them below again
-		for lib in env['LIBS']:
-			if 'boost' in lib:
-				env['LIBS'].remove(lib)
-
-		# openWNS Application needs to link against all libs, that openWNS Library links against
-		env.AppendUnique(LIBS = ['python'+sys.version[:3], 'dl', 'cppunit'])
-		env.AppendUnique(LIBS = ['boost_program_options-gcc-mt', 'boost_signals-gcc-mt'])
+        #privateEnv.AppendUnique(CXXFLAGS=["-E"])
 
 envs = commonEnvs
 
