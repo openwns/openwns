@@ -82,10 +82,10 @@ class StatusCommand(wnsbase.playground.plugins.Command.Command):
         return changes
 
 
-class ChangesCommand(wnsbase.playground.plugins.Command.Command):
+class ChangesCommand(StatusCommand):
 
     def __init__(self):
-        usage = "This command is deprecated but still in use due to backward compatibility.\n       Use instead the 'status' command to be in line with the bzr interface"
+        usage = "This command is deprecated but still in use due to backward compatibility.\n       Use 'status' command instead."
         wnsbase.playground.plugins.Command.Command.__init__(self, "changes", usage, usage)
 
         self.addOption("", "--if",
@@ -97,34 +97,8 @@ class ChangesCommand(wnsbase.playground.plugins.Command.Command):
                        help=" when using --changes, show diffs of changed files.")
 
     def run(self, arg = 'unused'):
-        def runForEach(project):
-            return self.changesChecker(project)
-
-        print "Searching changes. A summary will be listed at the end ..."
-        projectChanges = []
-        projectChanges.extend(core.foreachProject(runForEach))
-
         print
-        for ii in projectChanges:
-            if len(ii.result) > 0:
-                print "Changes in: " + ii.dirname
-                for change in ii.result:
-                    print "  " + change
+        print "WARNING: This command is deprecated. Please use 'status' instead."
+        print
 
-    def changesChecker(self, project):
-        sys.stdout.write("Checking for changes in " + project.getDir() + " ...")
-        sys.stdout.flush()
-        changes = []
-        foundChanges = False
-        for line in project.getRCS().status({self.options.diffs:""}):
-            if line.startswith('*') or line.strip(" ") == "":
-                continue
-
-            changes.append(line)
-            foundChanges = True
-
-        if foundChanges:
-            sys.stdout.write(" " + str(len(changes)) + " files changed\n")
-        else:
-            sys.stdout.write(" no changes\n")
-        return changes
+        StatusCommand.run(self, arg)
