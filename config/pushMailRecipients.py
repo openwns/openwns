@@ -9,5 +9,5 @@
 
 recipients = [(".*@bazaar.launchpad.net/~comnets.*",
                "develop@openwns.org"),
-	      (".*bazaar.comnets.rwth-aachen.de/openWNS.'",
+	      (".*bazaar.comnets.rwth-aachen.de/openWNS.*",
                "software@comnets.rwth-aachen.de")]
