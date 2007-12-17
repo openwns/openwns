@@ -207,7 +207,7 @@ class Core:
                 except exceptions.SystemExit:
                     self.shutdown(1)
                 except:
-                    tmpWarning = "WARNING: Unable to load " + str(plugin) + " plugin. Ignored."
+                    tmpWarning = "WARNING: Unable to load '" + str(plugin) + "' plugin from '" + pluginsDir + "'. Ignored."
                     tmpWarning += "\n   " + str(sys.exc_info()[0])
                     tmpWarning += "\n   " + str(sys.exc_info()[1])
                     tmpWarning += "\n   " + str(sys.exc_info()[2].tb_frame)
