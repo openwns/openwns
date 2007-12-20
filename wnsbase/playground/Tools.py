@@ -138,7 +138,13 @@ class Tester:
         return self.project.getExe() is None
 
     def changed(self):
-        if len(changesChecker(self.project)) > 0:
+        changes = []
+        for line in self.project.getRCS().status():
+            if line.startswith('*') or line.strip(" ") == "":
+                continue
+            changes.append(line)
+            
+        if len(changes) > 0:
             return True
         return False
 
