@@ -58,7 +58,7 @@ class No(RCS):
         def lint(self):
                 pass
 
-        def update(self):
+        def update(self, fromRepository=""):
                 pass
 
         def get(self, url):
@@ -171,7 +171,7 @@ class GNUArch(RCS):
 			files = ["--"] + files
 		return self.__exec("commit", switches, files)
 
-	def update(self):
+	def update(self, fromRepository=""):
 		self.__startup()
 
 		return self.__exec("update", {"-d":self.path}, [])

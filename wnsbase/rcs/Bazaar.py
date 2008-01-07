@@ -86,7 +86,7 @@ class Bazaar(RCS):
 		if str(retval).endswith("Branches are up to date."):
 			return Output(StringIO.StringIO(""), StringIO.StringIO())
 		else:
-			return self.__exec("missing", {"--log-format" : "short"}, [])
+			return self.__exec("missing", {"--log-format" : "short"}, [url])
 
 	def status(self, switches={}):
 		return self.__exec("status", {}, ["--short"])
@@ -101,9 +101,9 @@ class Bazaar(RCS):
 		tmp = Output(StringIO.StringIO(lintoutput), StringIO.StringIO())
 		return tmp
 
-	def update(self):
+	def update(self, fromRepository=""):
 		# BZR update outputs partly on std error, we redirect this
-		return self.__exec("pull", {}, ["2>&1"])
+		return self.__exec("pull", {}, [fromRepository, "2>&1"])
 
 	def get(self, url):
 		namedArgs = {}

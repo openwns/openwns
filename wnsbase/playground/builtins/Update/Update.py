@@ -64,7 +64,7 @@ afterwards:
             print missing
             print "\nRetrieving new patches for './' ... "
             try:
-                myProject.getRCS().update().realtimePrint()
+                myProject.getRCS().update(myProject.getRCSUrl()).realtimePrint()
             except:
                 print "An RCS error occured."
                 sys.exit(1)
@@ -80,7 +80,7 @@ afterwards:
             checkForConflictsAndExit("./framework/buildSupport")
             print "\nRetrieving new patches for './framework/buildSupport/' ..."
             try:
-                projects.buildSupport.getRCS().update().realtimePrint()
+                projects.buildSupport.getRCS().update(projects.buildSupport.getRCSUrl()).realtimePrint()
                 checkForConflictsAndExit("./framework/buildSupport")
             except:
                 print "An TLA error occured."

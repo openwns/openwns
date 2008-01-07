@@ -50,7 +50,7 @@ class RCS(Interface):
         pass
 
     @abstractmethod
-    def update(self):
+    def update(self, fromRepository=""):
         pass
 
     @abstractmethod
