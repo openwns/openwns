@@ -218,7 +218,7 @@ class BazaarTests(unittest.TestCase):
         missing = str(bzr.missing("../../master"))
 
         # PRECONDITION : We miss the revision before we update
-        expectedOutput = "Using last location: /tmp/__%s_bazaarTests/master/.*You are missing 1 revision\(s\).*Changed on theBranchB" % str(self.pid)
+        expectedOutput = "You are missing 1 revision\(s\).*Changed on theBranchB"
         self.failUnless(self.outputMatches(missing, expectedOutput),
                         "Missing output should list revision on BranchB but was %s" % missing)
 
