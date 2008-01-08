@@ -1,3 +1,5 @@
 You can run the examples using:
 
 ./openwns -f exampleName.py
+
+This will start the simulator with the according configuration you've specified.
