@@ -31,7 +31,9 @@ mm1 = openwns.queuingsystem.SimpleMM1(meanJobInterArrivalTime = 0.100,
 
 # create simulator configuration
 sim = openwns.Simulator(simulationModel = mm1,
-                        maxSimTime      = 1000)
+                        maxSimTime      = 1.0)
+
+sim.eventSchedulerMonitor = None
 
 # set the configuration for this simulation
 openwns.setSimulator(sim)
