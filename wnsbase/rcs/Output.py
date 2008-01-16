@@ -33,13 +33,18 @@ class Output:
 
 	def __str__(self):
 		s = ""
-		error = ""
+		self.error = ""
 		for it in self.serr:
-			error += it
-		if error != "":
-			raise("An error during TLA action occured:\n\n" + error )
+			self.error += it
+		if self.error != "":
+			self.hasError = True
+
 		for i in self.sout:
 			s += i
+
+		if self.hasError:
+			s = "stdout:\n%s\n\nstderr:\n%s\n" % (s, self.error)
+			
 		return s.strip("\n")
 
 	def __iter__(self):

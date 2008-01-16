@@ -31,6 +31,7 @@ import optparse
 import re
 import sets
 import exceptions
+import wnsbase.rcs.Bazaar
 
 from wnsbase.playground.Tools import *
 
@@ -323,7 +324,12 @@ class Core:
 
             print "Fetching project: " + project.getRCSUrl()
 
-            project.getRCS().get(project.getRCSUrl())
+            try:
+                project.getRCS().get(project.getRCSUrl())
+            except wnsbase.rcs.Bazaar.BzrGetException, e:
+                print "\n\n!!! Unable to retrieve project %s !!!\n\n" % project.getRCSUrl()
+                print e
+                sys.exit(1)
 
             if project.alias != None:
                 curDir = os.getcwd()

@@ -35,6 +35,22 @@ import StringIO
 
 import bzrlib.branch
 
+class BzrException(Exception):
+	def __init__(self, errorcode, errormessage, command):
+		self.errorcode = errorcode
+		self.errormessage = errormessage
+		self.command = command
+
+	def __str__(self):
+		return "--\nExecuted command:\n%s\nErrorcode %s (message follows):\n%s\n--\n" % (str(self.command), str(self.errorcode), str(self.errormessage))
+
+class BzrGetException(BzrException):
+	pass
+
+class BzrMissingException(BzrException):
+	pass
+
+
 class Bazaar(RCS):
 	def __init__(self, path, category, branch, revision, pinnedPatchLevel=None):
 		self.cmd = "bzr"
@@ -70,6 +86,8 @@ class Bazaar(RCS):
 		returnValue = Output(p.stdout, p.stderr)
 		p.wait()
 		os.chdir(cwd)
+		if p.returncode != 0:
+			raise BzrException(p.returncode, str(returnValue), finalCommand)
 		return returnValue
 
 	def _updateVersionInfo(self):
@@ -82,11 +100,17 @@ class Bazaar(RCS):
 	def missing(self, url, switches={}, revision=""):
 		if self.pinnedPatchLevel != None:
 			return Output(StringIO.StringIO("This branch is pinned to " + str(url) + " at revision " + str(self.pinnedPatchLevel)), StringIO.StringIO())
-		retval = self.__exec("missing", {"--log-format" : "short"}, [url])
-		if str(retval).endswith("Branches are up to date."):
-			return Output(StringIO.StringIO(""), StringIO.StringIO())
-		else:
-			return self.__exec("missing", {"--log-format" : "short"}, [url])
+
+		try:
+			retval = self.__exec("missing", {"--log-format" : "short"}, [url])
+		except BzrException, e:
+			# If any patches are missing or you have any extra patches
+			# Bazaar returns with errorcode 1. Output is on stdout.
+			if not (e.errorcode == 1):
+				raise BzrMissingException(e.errorcode, e.errormessage, e.command)
+			return e.errormessage
+
+		return Output(StringIO.StringIO(""), StringIO.StringIO())
 
 	def status(self, switches={}):
 		return self.__exec("status", {}, ["--short"])
@@ -111,7 +135,10 @@ class Bazaar(RCS):
 		if self.pinnedPatchLevel != None:
 			namedArgs = { "--revision" : str(self.pinnedPatchLevel) }
 
-		returnValue = self.__exec("branch", namedArgs, [url, self.path])
+		try:
+			returnValue = self.__exec("branch", namedArgs, [url, self.path])
+		except BzrException, e:
+			raise BzrGetException(e.errorcode, e.errormessage, e.command)
 		self._updateVersionInfo()
 		return returnValue
 
