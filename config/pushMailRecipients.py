@@ -10,4 +10,6 @@
 recipients = [(".*@bazaar.launchpad.net/~comnets.*",
                "develop@openwns.org"),
 	      (".*bazaar.comnets.rwth-aachen.de/openWNS.*",
-               "software@comnets.rwth-aachen.de")]
+               "software@comnets.rwth-aachen.de"),
+              (".*bazaar.comnets.rwth-aachen.de/RS.*",
+               "rs@comnets.rwth-aachen.de aoz@comnets.rwth-aachen.de pab@comnets.rwth-aachen.de yit@comnets.rwth-aachen.de bzg@comnets.rwth-aachen.de hoi@comnets.rwth-aachen.de")]
