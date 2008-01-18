@@ -136,16 +136,18 @@ import optparse
 def addPath(option, opt, value, parser):
     sys.path.append(value)
 
-parser = optparse.OptionParser()
-parser.add_option('-p', '--path', type='string', action='callback', callback=addPath)
+parser = optparse.OptionParser(usage = "pytree [OPTIONS] <CONFIGFILE.PY>")
+parser.add_option('-p', '--path', type='string', action='callback', callback=addPath, help='Path to sandbox PyConfig (e.g. ../../../sandbox/dbg/lib/PyConfig)')
 parser.add_option('-g', '--gui', default=False, action='store_true', dest='gui')
 parser.add_option('-i', '--ignore', type='string', action='store', dest='ignorePaths')
 parser.add_option('-f', '--flavour', type='string', default='dbg', action='store', dest='sandboxFlavour')
 
 (options, args) = parser.parse_args()
 
-if not args:
-    args = ['wns']
+if len(args) < 1:
+	parser.print_help()
+	import sys
+	sys.exit(1)
 
 sys.path = ["."] + sys.path
 
