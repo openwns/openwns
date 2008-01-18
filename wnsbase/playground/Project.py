@@ -123,11 +123,12 @@ class Binary(Project):
                                      executable = 'bin')
 
 class Python(Project):
-    def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, generateDoc = True):
+    def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, generateDoc = True, alias=None):
         super(Python, self).__init__(directory = directory,
                                      rcsSubDir = rcsSubDir,
                                      rcsBaseUrl = rcsBaseUrl,
                                      rcs = rcs,
+                                     alias = alias,
                                      dependencies = [],
                                      executable = 'python',
                                      generateDoc = generateDoc)
