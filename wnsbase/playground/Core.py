@@ -311,8 +311,6 @@ class Core:
 
             basedir = os.path.abspath(os.path.join(project.getDir(), ".."))
 
-            print basedir
-
             if project.alias != None:
                 newLink = os.path.join(basedir, project.alias)
                 if os.path.exists(newLink) or os.path.islink(newLink):
@@ -478,10 +476,10 @@ class Core:
         if not project.getExe() in ["bin", "lib"]:
             return
         if not os.path.exists(os.path.join("config", "private.py")) and os.path.exists(os.path.join(".", "config")):
-            target = os.path.join(self.getRelativePathToPlayground(project.getDir()), "..", "config", "private.py")
-            destination = os.path.join("config", "private.py")
-            print "Creating symlink %s to %s" % (target, destination)
-            os.symlink(target, destination)
+            destination = os.path.join(self.getRelativePathToPlayground(project.getDir()), "..", "config", "private.py")
+            target = os.path.join("config", "private.py")
+            print "Creating symlink for %s from %s to %s" % (project.getDir(), target, destination)
+            os.symlink(destination, target)
 
     def _linkPushMailRecipientsPy(self, project):
         """ Possibly link config/pushMailRecipients.py in a project to the global openwns-sdk/config/pushMailRecipients.py
