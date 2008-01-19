@@ -478,8 +478,10 @@ class Core:
         if not project.getExe() in ["bin", "lib"]:
             return
         if not os.path.exists(os.path.join("config", "private.py")) and os.path.exists(os.path.join(".", "config")):
-            os.symlink(os.path.join(self.getRelativePathToPlayground(project.getDir()), "..", "config", "private.py"),
-                       os.path.join("config", "private.py"))
+            target = os.path.join(self.getRelativePathToPlayground(project.getDir()), "..", "config", "private.py")
+            destination = os.path.join("config", "private.py")
+            print "Creating symlink %s to %s" % (target, destination)
+            os.symlink(target, destination)
 
     def _linkPushMailRecipientsPy(self, project):
         """ Possibly link config/pushMailRecipients.py in a project to the global openwns-sdk/config/pushMailRecipients.py
