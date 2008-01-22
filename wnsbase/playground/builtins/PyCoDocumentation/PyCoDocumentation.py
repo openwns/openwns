@@ -45,7 +45,7 @@ Note: EpyDoc currently produces a lot of warnings.
         destination = "sandbox/default/doc/PyCoDoc"
         package = "sandbox/%s/lib/PyConfig/" % self.options.flavour
 
-        command = "PYTHONPATH=$PYTHONPATH:%s epydc -o %s --html --show-sourcecode --simple-term --name=openWNS --graph=all %s" % (package, destination, package)
+        command = "PYTHONPATH=$PYTHONPATH:%s epydoc -o %s --html --show-sourcecode --simple-term --name=openWNS --graph=all %s" % (package, destination, package)
         result = runCommand(command)
         if not (result is None):
             print "Could not execute %s" % command
