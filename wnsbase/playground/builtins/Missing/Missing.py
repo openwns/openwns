@@ -53,6 +53,6 @@ patches are local or remote
     def run(self):
         def checkMissing(project):
             print "Missing in", project.getDir(), "..."
-            project.getRCS().missing(project.getRCSUrl() ,{"-s":""}).realtimePrint("  ")
+            print project.getRCS().missing(project.getRCSUrl() ,{"-s":""})
 
         core.foreachProject(checkMissing)
