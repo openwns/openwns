@@ -26,39 +26,13 @@
 ##############################################################################
 
 import wnsbase.playground.Core
-
-from wnsbase.playground.builtins.PyCoDocumentation.PyCoDocumentation import PyCoDocumentationCommand
-from wnsbase.playground.builtins.CPPDocumentation.CPPDocumentation import CPPDocuCommand
+import CPPDocumentation
 
 core = wnsbase.playground.Core.getCore()
 
-class DocuCommand(wnsbase.playground.plugins.Command.Command):
+if not core.hasPlugin("CPPDocumentation"):
+    core.registerPlugin("CPPDocumentation")
 
-    def __init__(self):
-        usage = "\n%prog docu\n\n"
-        rationale = "Build project documentation."
+    cppDocuCommand = CPPDocumentation.CPPDocuCommand()
 
-        usage += rationale
-        usage += """ Build the CPP documentation for the whole project."""
-        wnsbase.playground.plugins.Command.Command.__init__(self, "docu", rationale, usage)
-
-        self.optParser.add_option("", "--scons",
-                                  dest = "scons", default = "",
-                                  help="options forwarded to scons.")
-
-
-        self.pycoDocuCommand = PyCoDocumentationCommand()
-        self.cppDocuCommand = CPPDocuCommand()
-
-    def startup(self, args):
-        self.pycoDocuCommand.startup([])
-        self.cppDocuCommand.startup(args)
-
-    def run(self):
-        self.pycoDocuCommand.run()
-        self.cppDocuCommand.run()
-
-    def shutdown(self):
-        self.pycoDocuCommand.shutdown()
-        self.cppDocuCommand.shutdown()
-
+    core.registerCommand(cppDocuCommand)
