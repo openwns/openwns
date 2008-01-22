@@ -199,7 +199,7 @@ be placed in sandbox/default/doc .
     <b>General:</b>
     <ul>
     <li><a target="body" href="WNS/index.htm">Home</a></li>
-    <li><a target="body" href="PyCoDoc/index.htm">Python Configuration</a></li>
+    <li><a target="body" href="PyCoDoc/index.html">Python Configuration</a></li>
     """)
 
         # generate from doc/pages.htm
