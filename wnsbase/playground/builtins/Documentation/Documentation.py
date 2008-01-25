@@ -158,10 +158,12 @@ be placed in sandbox/default/doc .
         right.write("<b>Framwork Documentation:</b><ul>")
         listOfProjects = []
         for i in projects.all:
-            if os.path.normpath(i.getDir()).split(os.sep)[0] == "framework":
-                rcs = i.getRCS()
-                if os.path.exists(os.path.join("sandbox", "default", "doc", rcs.getVersion())):
-                    listOfProjects.append('<li><a target="body" href="'+rcs.getVersion()+'/index.htm">'+rcs.getVersion()+'</a>\n')
+            # AddOn projects are included in their parent's documentation
+            if not isinstance(i, wnsbase.playground.Project.AddOn):
+                if os.path.normpath(i.getDir()).split(os.sep)[0] == "framework":
+                    rcs = i.getRCS()
+                    if os.path.exists(os.path.join("sandbox", "default", "doc", rcs.getVersion())):
+                        listOfProjects.append('<li><a target="body" href="'+rcs.getVersion()+'/index.htm">'+rcs.getVersion()+'</a>\n')
 
         listOfProjects.sort()
         for p in listOfProjects: right.write(p)
