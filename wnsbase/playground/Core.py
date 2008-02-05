@@ -185,7 +185,6 @@ class Core:
         """ Load plugins.
         """
         for pluginPath in self.pluginPaths:
-            print "Loading plugins in dir %s" % pluginPath
             self._loadPluginsInDir(pluginPath)
 
     def _loadPluginsInDir(self, pluginsDir, targetPackage="wnsbase.playground.plugins"):
