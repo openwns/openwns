@@ -37,7 +37,7 @@ core = wnsbase.playground.Core.getCore()
 class ConsistencyCommand(wnsbase.playground.plugins.Command.Command):
 
     def __init__(self):
-        usage = "\n%prog consistency TARGET\n\n"
+        usage = "\n%prog consistency\n\n"
         rationale = "Check if projects.py is consistent with file system contents."
 
         usage += rationale
