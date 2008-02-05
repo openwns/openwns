@@ -52,6 +52,7 @@ class Core:
 
         self.optParser = optparse.OptionParser(usage = usage)
         self.plugins = []
+        self.hooks = {}
         self.pluginPaths = []
         self.commands = {}
         self.ifExpr = None
@@ -184,6 +185,7 @@ class Core:
         """ Load plugins.
         """
         for pluginPath in self.pluginPaths:
+            print "Loading plugins in dir %s" % pluginPath
             self._loadPluginsInDir(pluginPath)
 
     def _loadPluginsInDir(self, pluginsDir, targetPackage="wnsbase.playground.plugins"):
@@ -263,6 +265,16 @@ class Core:
             self.shutdown(1)
         else:
             self.commands[command.name] = command
+
+    def installHook(self, hookname, callable):
+        if not self.hooks.has_key(hookname):
+            self.hooks[hookname] = []
+        self.hooks[hookname].append(callable)
+
+    def _process_hooks(self, hookname):
+        if self.hooks.has_key(hookname):
+            for callable in self.hooks[hookname]:
+                callable()
 
     def getProjects(self):
         """ Get the parsed contents of config/projects.py
@@ -450,6 +462,8 @@ class Core:
     def readProjectsConfig(self):
         """ Read the projects config file config/projects.py
         """
+        self._process_hooks("_pre_parse_project")
+
         sys.path.append("config")
         foobar = {}
         if (self.configFile == "config/projects.py"):
@@ -462,6 +476,9 @@ class Core:
 
         execfile(self.configFile, foobar)
         sys.path.remove("config")
+
+        self._process_hooks("_post_parse_project")
+
         return Dict2Class(foobar)
 
     def _linkPrivatePy(self, project):
