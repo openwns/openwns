@@ -62,6 +62,27 @@ class UserMadeDecision:
             answer = raw_input(question + " (y/N) ")
         return (answer.lower() == 'n') or (answer == '')
 
+    def askForChoice(self, question, alternativesDict, defaultKey):
+        answer = None
+        keys = alternativesDict.keys()
+        while answer not in xrange(len(keys)):
+            for k in keys:
+                if k==defaultKey:
+                    print "[%i] %s (default)" % (keys.index(k), str(k))
+                else:
+                    print "[%i] %s" % (keys.index(k), str(k))
+
+            answer = raw_input(question + " ")
+
+            if answer == '':
+                answer = keys.index(defaultKey)
+            else:
+                try:
+                    answer = int(answer)
+                except ValueError:
+                    answer = None
+        return alternativesDict[keys[answer]]
+
 class AcceptDefaultDecision:
     """ This always accepts default decisions. AskForConfirmation always returns
     True. AskForReject always returns False."""
@@ -72,6 +93,9 @@ class AcceptDefaultDecision:
     def askForReject(self, question):
         """ Always retruns true """
         return True
+
+    def askForChoice(self, question, alternativesDict, defaultKey):
+        return alternativesDict[defaultKey]
 
 class CommandQueue:
     """ A queue for commands. """
