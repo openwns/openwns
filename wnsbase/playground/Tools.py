@@ -28,6 +28,19 @@
 import os
 import wnsbase.RCS as RCS
 
+def installLink(linksrc, linktarget):
+
+    if not os.path.exists(linktarget) and os.path.exists(os.path.dirname(linktarget)):
+        # Broken symlink?
+        if os.path.lexists(linktarget):
+            os.remove(linktarget)
+        try:
+            os.symlink(linksrc, linktarget)
+        except:
+            print "Cannot create symlink %s pointing to %s" % (linktarget, linksrc)
+            print "Current working dir is %s" % os.getcwd()
+            raise
+
 def Stripper(something):
     """iterate over something, yielding stripped, non-empty elements, that don't start with a hash.
     """

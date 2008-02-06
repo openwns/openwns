@@ -160,7 +160,7 @@ be placed in sandbox/default/doc .
         for i in projects.all:
             # AddOn projects are included in their parent's documentation
             if not isinstance(i, wnsbase.playground.Project.AddOn):
-                if os.path.normpath(i.getDir()).split(os.sep)[0] == "framework":
+                if os.path.normpath(i.getDir()).contains("/framework/"):
                     rcs = i.getRCS()
                     if os.path.exists(os.path.join("sandbox", "default", "doc", rcs.getVersion())):
                         listOfProjects.append('<li><a target="body" href="'+rcs.getVersion()+'/index.htm">'+rcs.getVersion()+'</a>\n')
@@ -172,7 +172,7 @@ be placed in sandbox/default/doc .
     <ul>""")
         listOfProjects = []
         for i in projects.all:
-            if os.path.normpath(i.getDir()).split(os.sep)[0] == "modules":
+            if os.path.normpath(i.getDir()).contains("/modules/"):
                 rcs = i.getRCS()
                 if os.path.exists(os.path.join("sandbox", "default", "doc", rcs.getVersion())):
                     listOfProjects.append('<li><a target="body" href="'+rcs.getVersion()+'/index.htm">'+rcs.getVersion()+'</a>\n')

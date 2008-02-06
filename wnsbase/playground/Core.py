@@ -27,11 +27,13 @@
 
 import sys
 import os
+import subprocess
 import optparse
 import re
 import sets
 import exceptions
 import wnsbase.rcs.Bazaar
+import wnsrc
 
 from wnsbase.playground.Tools import *
 
@@ -81,7 +83,7 @@ class Core:
         """
 
         self.configFile = os.path.join(os.environ["HOME"], ".wns", "playground.config")
-        
+
         self._loadConfigFile()
         self.addPluginPath("./wnsbase/playground/plugins")
         self._loadBuiltins()
@@ -469,8 +471,10 @@ class Core:
         path : Directory to check
         returns Relative depth the the root of openwns-sdk (int)
         """
+        base = wnsrc.wnsrc.pathToWNS
         # calculate the depth with respect to the testbed dir
-        normalizedPath = os.path.normpath(path)
+        normalizedPath = os.path.normpath(path).replace(base, "")
+        normalizedPath.lstrip("/")
         # by splitting at the slashes we can find the depth
         return len(normalizedPath.split(os.sep))
 
@@ -513,14 +517,14 @@ class Core:
 
         project : The project to check (wnsbase.playground.Project.Project)
         """
-
         if not project.getExe() in ["bin", "lib"]:
             return
-        if not os.path.exists(os.path.join("config", "private.py")) and os.path.exists(os.path.join(".", "config")):
-            destination = os.path.join(self.getRelativePathToPlayground(project.getDir()), "..", "config", "private.py")
-            target = os.path.join("config", "private.py")
-            print "Creating symlink for %s from %s to %s" % (project.getDir(), target, destination)
-            os.symlink(destination, target)
+
+
+        linksrc = os.path.join(self.getRelativePathToPlayground(project.getDir()), "config", "private.py")
+        linktarget = os.path.join("config", "private.py")
+
+        installLink(linksrc, linktarget)
 
     def _linkPushMailRecipientsPy(self, project):
         """ Possibly link config/pushMailRecipients.py in a project to the global openwns-sdk/config/pushMailRecipients.py
@@ -530,12 +534,10 @@ class Core:
 
         project : The project to check (wnsbase.playground.Project.Project)
         """
+        linksrc = os.path.join(self.getRelativePathToPlayground(project.getDir()), "config", "pushMailRecipients.py")
+        linktarget = os.path.join("config", "pushMailRecipients.py")
 
-        path = project.getDir()
-
-        if not os.path.exists(os.path.join("config", "pushMailRecipients.py")) and os.path.exists(os.path.join(".", "config")):
-            os.symlink(os.path.join(self.getRelativePathToPlayground(project.getDir()), "..", "config", "pushMailRecipients.py"),
-                       os.path.join("config", "pushMailRecipients.py"))
+        installLink(linksrc, linktarget)
 
     def _setupCommandLineOptions(self):
         """ Setup the internal optParser

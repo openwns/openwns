@@ -41,7 +41,7 @@ class Project(object):
                   alias = None):
 
 
-        self.directory = directory
+        self.directory = os.path.abspath(directory)
 
         self.rcsSubDir = rcsSubDir
 
@@ -58,6 +58,8 @@ class Project(object):
         self.alias = alias
 
         self.generateDoc = generateDoc
+
+        self.addOns = []
 
         self.__buildDependencies()
 
@@ -91,6 +93,15 @@ class Project(object):
             project.addDependingProject(self)
 
 
+    def registerAddOn(self, addonProject):
+        self.addOns.append(addonProject)
+
+    def hasAddOns(self):
+        return (len(self.addOns) > 0)
+
+    def getAddOns(self):
+        return self.addOns
+
 class Library(Project):
     def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, dependencies = []):
         super(Library, self).__init__(directory = directory,
@@ -112,6 +123,8 @@ class AddOn(Library):
         # handled by the "master" project
         self.generateDoc = False
         self.rcs.setPath(self.getDir())
+
+        baseProject.registerAddOn(self)
 
 class Binary(Project):
     def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, dependencies= []):

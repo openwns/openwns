@@ -108,7 +108,7 @@ optAssureMsg  :
                         if pp.getExe() != 'lib':
                             continue
                         # list all libraries in local lib dir (e.g. framework/libwns--main--3.0/build/dbg/lib)
-                        dirToCheck = os.path.join(wnsrc.pathToWNS, pp.getDir(), "build", self.options.flavour, "lib")
+                        dirToCheck = os.path.join(pp.getDir(), "build", self.options.flavour, "lib")
                         # for the external libraries this path does not exist
                         # it would be better to check this somehow else ...
                         if os.path.exists(dirToCheck):
