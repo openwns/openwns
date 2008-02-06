@@ -37,6 +37,7 @@ from wnsbase.playground.Tools import *
 
 import builtins
 import plugins.Command
+import ConfigParser
 
 class Core:
     """ This the core of the openwns-sdk project tree management tool 'playground.py'.
@@ -60,7 +61,7 @@ class Core:
         self.command = None
 
     def startup(self):
-        """ Loads builtins, plugins. Setup of the project tree.
+        """ Loads builtins, plugins and configuration. Setup of the project tree.
 
         The startup phase loads builtin commands and all plugins. You can add paths
         to search for plugins by using the addPluginPath method. The command line is
@@ -79,12 +80,15 @@ class Core:
         Finally the preReq commands in projects.py are executed.
         """
 
+        self.configFile = os.path.join(os.environ["HOME"], ".wns", "playground.config")
+        
+        self._loadConfigFile()
         self.addPluginPath("./wnsbase/playground/plugins")
         self._loadBuiltins()
         self._setupCommandLineOptions()
         self._loadPlugins()
 
-        self.configFile = "config/projects.py"
+        self.projectsFile = "config/projects.py"
         self.userFeedback = UserMadeDecision()
 
         argv = sys.argv
@@ -94,7 +98,7 @@ class Core:
         while i < len(argv):
             a = argv[i]
             if a.startswith('--configFile'):
-                self.configFile = a.split("=")[1]
+                self.projectsFile = a.split("=")[1]
             elif a == "--noAsk":
                 self.userFeedback = AcceptDefaultDecision()
             elif a.startswith("--if"):
@@ -175,6 +179,14 @@ class Core:
         for plugins.
         """
         self.pluginPaths.append(path)
+
+    def _loadConfigFile(self):
+        if not os.path.exists(self.configFile):
+            f = open(self.configFile, "w")
+            f.write("# Configuration file of playground\n")
+            f.close()
+        self.configParser = ConfigParser.SafeConfigParser()
+        self.configParser.read(self.configFile)
 
     def _loadBuiltins(self):
         """ Load builtins.
@@ -275,6 +287,19 @@ class Core:
             for callable in self.hooks[hookname]:
                 callable()
 
+    def getConfig(self):
+        """ Return the global config parser
+        """
+        return self.configParser
+
+    def updateConfig(self):
+        """ Write the config file to disk and reparse it.
+        """
+        f = open(self.configFile, "w")
+        self.configParser.write(f)
+        f.close()
+        self._loadConfigFile()
+
     def getProjects(self):
         """ Get the parsed contents of config/projects.py
 
@@ -301,7 +326,7 @@ class Core:
         if not len(missingProjects):
             return
 
-        print "Warning: According to '%s' the following directories are missing:" % (self.configFile)
+        print "Warning: According to '%s' the following directories are missing:" % (self.projectsFile)
         for project in missingProjects:
             print "  " + project.getDir() + " (from URL: " + project.getRCSUrl() + ")"
 
@@ -465,15 +490,15 @@ class Core:
 
         sys.path.append("config")
         foobar = {}
-        if (self.configFile == "config/projects.py"):
+        if (self.projectsFile == "config/projects.py"):
             # Default value
-            if not os.path.exists(self.configFile):
+            if not os.path.exists(self.projectsFile):
                 os.symlink('projects.py.template', "config/projects.py")
         else:
-            if not os.path.exists(self.configFile):
-                print "Cannot open configuration file " + str(self.configFile)
+            if not os.path.exists(self.projectsFile):
+                print "Cannot open configuration file " + str(self.projectsFile)
 
-        execfile(self.configFile, foobar)
+        execfile(self.projectsFile, foobar)
         sys.path.remove("config")
 
         self._process_hooks("_post_parse_project")
