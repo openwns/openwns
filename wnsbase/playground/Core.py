@@ -83,6 +83,7 @@ class Core:
         """
 
         self.configFile = os.path.join(os.environ["HOME"], ".wns", "playground.config")
+        self.projects = None
 
         self._loadConfigFile()
         self.addPluginPath("./wnsbase/playground/plugins")
