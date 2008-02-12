@@ -46,6 +46,10 @@ documentation= Generic('./documentation', 'openwns-documentation/documentation--
 library      = Library('./framework/library',"openwns-library/library--main--1.0", bzrBaseURL,
                        RCS.Bazaar('framework/library', 'library', 'main', '1.0'))
 
+moduleTemplate = Library('./framework/moduleTemplate', 'openwns-moduletemplate/moduletemplate--main--1.0', bzrBaseURL,
+                         RCS.Bazaar('./framework/moduleTemplate', 'ModuleTemplate', 'main', '1.0'),
+                         [library])
+
 application  = Binary('./framework/application', "openwns-application/application--main--1.0", bzrBaseURL,
                       RCS.Bazaar('framework/application', 'application', 'main', '1.0'),
                       [library])
@@ -59,6 +63,7 @@ all = [ root,
         buildSupport,
         documentation,
         library,
+        moduleTemplate,
         application,
         pywns
         ]
