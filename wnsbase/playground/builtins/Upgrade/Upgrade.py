@@ -51,6 +51,7 @@ patches from the remote repository (if any are available).
         wnsbase.playground.plugins.Command.Command.__init__(self, "upgrade", rationale, usage)
 
     def run(self):
+        wnsbase.playground.Core.getCore()._process_hooks("_pre_upgrade")
         updateCommand = UpdateCommand()
         updateCommand.startup([])
         updateCommand.run()
