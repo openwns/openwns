@@ -496,7 +496,9 @@ class Core:
         sys.path.append("config")
         foobar = {}
         if (self.projectsFile == "config/projects.py"):
-            # Default value
+            if not os.path.exists(self.projectsFile):
+                self._process_hooks("_projects_py_not_available")
+            # if there is no hook we need to make a symlink to the template
             if not os.path.exists(self.projectsFile):
                 os.symlink('projects.py.template', "config/projects.py")
         else:
