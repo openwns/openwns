@@ -74,9 +74,8 @@ for flavour, env in commonEnvs.iteritems():
 
 		# under cygwin the boost libs end with gcc-mt, we
 		# remove all boost libs and add them below again
-		for lib in env['LIBS']:
-			if 'boost' in lib:
-				env['LIBS'].remove(lib)
+		if env.has_key('LIBS'):
+			env['LIBS'] = [ lib for lib in env['LIBS'] if 'boost' not in lib ]
 
 		# openWNS Application needs to link against all libs, that openWNS Library links against
 		env.AppendUnique(LIBS = ['python'+sys.version[:3], 'dl', 'cppunit'])
