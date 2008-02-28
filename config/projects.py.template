@@ -28,32 +28,32 @@
 from wnsbase.playground.Project import *
 import wnsbase.RCS as RCS
 
-bzrBaseURL = "https://launchpad.net/~comnets/"
+bzrBaseURL = "bzr://bazaar.comnets.rwth-aachen.de/allInOneDocu/"
 
-root         = Root('./',"openwns-sdk/sdk--main--1.0", bzrBaseURL,
+root         = Root('./',"sdk--main--1.0", bzrBaseURL,
                     RCS.Bazaar('.', 'sdk', 'main', '1.0'))
 
-unitTests = Generic('./tests/unit', 'openwns-unittest/unittest--main--1.0', bzrBaseURL,
+unitTests = Generic('./tests/unit', 'unittest--main--1.0', bzrBaseURL,
                     RCS.Bazaar('./tests/unit', 'unittest', 'main', '1.0'))
 
-buildSupport = Generic('./framework/buildSupport',"openwns-buildsupport/buildsupport--main--1.0", bzrBaseURL,
+buildSupport = Generic('./framework/buildSupport',"buildsupport--main--1.0", bzrBaseURL,
                        RCS.Bazaar('./framework/buildSupport', 'buildsupport', 'main', '1.0'))
 
-documentation= Documentation('./documentation', 'openwns-documentation/documentation--main--1.0', bzrBaseURL,
+documentation= Documentation('./documentation', 'documentation--main--1.0', bzrBaseURL,
                              RCS.Bazaar('./documentation', 'documentation', 'main', '1.0'))
 
-library      = Library('./framework/library',"openwns-library/library--main--1.0", bzrBaseURL,
+library      = Library('./framework/library',"library--main--1.0", bzrBaseURL,
                        RCS.Bazaar('framework/library', 'library', 'main', '1.0'))
 
-moduleTemplate = Library('./framework/moduleTemplate', 'openwns-moduletemplate/moduletemplate--main--1.0', bzrBaseURL,
+moduleTemplate = Library('./framework/moduleTemplate', 'moduletemplate--main--1.0', bzrBaseURL,
                          RCS.Bazaar('./framework/moduleTemplate', 'ModuleTemplate', 'main', '1.0'),
                          [library])
 
-application  = Binary('./framework/application', "openwns-application/application--main--1.0", bzrBaseURL,
+application  = Binary('./framework/application', "application--main--1.0", bzrBaseURL,
                       RCS.Bazaar('framework/application', 'application', 'main', '1.0'),
                       [library])
 
-pywns        = Python("./framework/pywns", "openwns-pywns/pywns--main--1.0", bzrBaseURL,
+pywns        = Python("./framework/pywns", "pywns--main--1.0", bzrBaseURL,
                       RCS.Bazaar('framework/pywns',
                                  "pywns", "main", "1.0"))
 
