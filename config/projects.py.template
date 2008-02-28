@@ -39,9 +39,8 @@ unitTests = Generic('./tests/unit', 'openwns-unittest/unittest--main--1.0', bzrB
 buildSupport = Generic('./framework/buildSupport',"openwns-buildsupport/buildsupport--main--1.0", bzrBaseURL,
                        RCS.Bazaar('./framework/buildSupport', 'buildsupport', 'main', '1.0'))
 
-documentation= Generic('./documentation', 'openwns-documentation/documentation--main--1.0', bzrBaseURL,
-                       RCS.Bazaar('./documentation', 'documentation', 'main', '1.0'),
-                       alias ='doc')
+documentation= Documentation('./documentation', 'openwns-documentation/documentation--main--1.0', bzrBaseURL,
+                             RCS.Bazaar('./documentation', 'documentation', 'main', '1.0'))
 
 library      = Library('./framework/library',"openwns-library/library--main--1.0", bzrBaseURL,
                        RCS.Bazaar('framework/library', 'library', 'main', '1.0'))
