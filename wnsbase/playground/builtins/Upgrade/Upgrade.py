@@ -57,27 +57,26 @@ patches from the remote repository (if any are available).
         updateCommand.run()
 
         def upgrade(project):
-            arch = project.getRCS()
-            if project.getRCS().isPinned():
+            rcs = project.getRCS()
+            if rcs.isPinned():
                 sys.stdout.write("\nSkipping module in %s, because it is pinned to %s\n\n"
-                                 % (project.getDir(), project.getRCS().getPinnedPatchLevel()))
+                                 % (project.getDir(), rcs.getPinnedPatchLevel()))
                 return
             sys.stdout.write("Checking for new patches in: %s ... " % (project.getDir()))
             sys.stdout.flush()
-            missing = str(project.getRCS().missing(project.getRCSUrl(), {"-s":""}))
+            missing = str(rcs.missing(project.getRCSUrl(), {"-s":""}))
             if(missing != ""):
                 print "Found:"
                 print missing
                 checkForConflictsAndExit(".")
                 print "\nRetrieving new patches for '" + project.getDir() + "' ..."
-                gnuArch = project.getRCS()
-
                 try:
-                    gnuArch.update().realtimePrint()
+                    rcs.update().realtimePrint()
                     checkForConflictsAndExit(".")
-                except:
-                    print "An TLA error occured."
-                    sys.exit(1)
+                except wnsbase.rcs.Bazaar.BzrMergeNeededException, e:
+                    core = wnsbase.playground.Core.getCore()
+                    if (not core.userFeedback.askForReject("These branches have diverged! Do you want me to merge?")):
+                        rcs.merge().realtimePrint()
             else:
                 print "None"
 

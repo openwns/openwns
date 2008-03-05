@@ -54,6 +54,10 @@ class RCS(Interface):
         pass
 
     @abstractmethod
+    def merge(self, fromRepository=""):
+        pass
+
+    @abstractmethod
     def get(self, url):
         pass
 

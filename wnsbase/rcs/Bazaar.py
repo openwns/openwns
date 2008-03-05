@@ -50,6 +50,8 @@ class BzrGetException(BzrException):
 class BzrMissingException(BzrException):
 	pass
 
+class BzrMergeNeededException(BzrException):
+	pass
 
 class Bazaar(RCS):
 	def __init__(self, path, category, branch, revision, pinnedPatchLevel=None):
@@ -127,7 +129,17 @@ class Bazaar(RCS):
 
 	def update(self, fromRepository=""):
 		# BZR update outputs partly on std error, we redirect this
-		return self.__exec("pull", {}, [fromRepository, "2>&1"])
+		try:
+			updateResult = self.__exec("pull", {}, [fromRepository, "2>&1"])
+		except BzrException, e:
+			if (e.errorcode == 3):
+				raise BzrMergeNeededException(e.errorcode, e.errormessage, e.command)
+		return updateResult
+
+	def merge(self, fromRepository=""):
+		# BZR update outputs partly on std error, we redirect this
+		mergeResult = self.__exec("merge", {}, [fromRepository, "2>&1"])
+		return mergeResult
 
 	def get(self, url):
 		namedArgs = {}
