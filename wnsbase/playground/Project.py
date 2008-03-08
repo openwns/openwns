@@ -174,6 +174,7 @@ class Documentation(Generic):
                                       rcsBaseUrl = rcsBaseUrl,
                                       rcs = rcs,
                                       alias = alias)
+        self.generateDoc = True
 
 class Root(Generic):
     pass
