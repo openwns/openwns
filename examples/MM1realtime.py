@@ -8,6 +8,7 @@ import openwns
 # "SimpleMM1" which is used in this example
 import openwns.queuingsystem
 
+import openwns.eventscheduler
 
 ### Simulation setup
 #
@@ -32,6 +33,9 @@ mm1 = openwns.queuingsystem.SimpleMM1(meanJobInterArrivalTime = 1.00,
 # create simulator configuration
 sim = openwns.Simulator(simulationModel = mm1,
                         maxSimTime      = 10.0)
+
+# replace normal event scheduler by real time event scheduler
+sim.environment.eventScheduler = openwns.eventscheduler.RealTime()
 
 sim.eventSchedulerMonitor = None
 
