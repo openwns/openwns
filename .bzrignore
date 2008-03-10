@@ -28,3 +28,6 @@ documentation
 supportlibs
 bin/simcontrol.py
 bin/sim.py
+.doxydocExamples
+doxydoc
+examples/SimpleMM1Step4.output
