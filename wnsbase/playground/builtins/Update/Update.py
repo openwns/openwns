@@ -83,7 +83,7 @@ afterwards:
                 projects.buildSupport.getRCS().update(projects.buildSupport.getRCSUrl()).realtimePrint()
                 checkForConflictsAndExit("./framework/buildSupport")
             except:
-                print "An TLA error occured."
+                print "An RCS error occured."
                 sys.exit(1)
         else:
             print "None"

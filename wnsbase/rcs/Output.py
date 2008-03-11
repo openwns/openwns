@@ -44,7 +44,6 @@ class Output:
 
 		if self.hasError:
 			s = "stdout:\n%s\n\nstderr:\n%s\n" % (s, self.error)
-			
 		return s.strip("\n")
 
 	def __iter__(self):
@@ -60,4 +59,4 @@ class Output:
 		for it in self:
 			print prepend + it
 		if self.hasError:
-			raise("An error during TLA action occured!")
+			raise Exception("An error during RCS action occured!")
