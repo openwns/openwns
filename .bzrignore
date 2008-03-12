@@ -28,3 +28,4 @@ documentation
 supportlibs
 bin/simcontrol.py
 bin/sim.py
+SimulationSupport
