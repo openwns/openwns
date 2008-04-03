@@ -33,3 +33,5 @@ doxydoc
 examples/SimpleMM1Step4.output
 SimpleMM1Step6_lowPriority.output
 SimpleMM1Step6_highPriority.output
+examples/SimpleMM1Step5.output
+examples/SimpleMM1Step6.output

@@ -89,10 +89,9 @@ highPriorityFilter = FilterProbeBus('priority', 1)
 highPriorityStats  = StatisticsProbeBus("SimpleMM1Step6_highPriority.output")
 highPriorityStats.observe(highPriorityFilter)
 
-
 # create simulator configuration
 sim = openwns.Simulator(simulationModel = mm1,
-                        maxSimTime      = 1000.0)
+                        maxSimTime      = 100.0)
 
 sim.eventSchedulerMonitor = None
 

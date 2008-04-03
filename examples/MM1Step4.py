@@ -61,7 +61,7 @@ mm1.probeBus = statisticsProbeBus
 
 # create simulator configuration
 sim = openwns.Simulator(simulationModel = mm1,
-                        maxSimTime      = 1000.0)
+                        maxSimTime      = 100.0)
 
 sim.eventSchedulerMonitor = None
 

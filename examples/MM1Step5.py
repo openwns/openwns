@@ -25,13 +25,10 @@ import openwns.probebus
 #             ----
 #
 
-class StatisticsProbeBus(openwns.probebus.ProbeBus):
-
-    nameInFactory = "PythonProbeBus"
+class StatisticsProbeBus(openwns.probebus.PythonProbeBus):
 
     def __init__(self, outputFilename):
-        openwns.probebus.ProbeBus.__init__(self,"")
-        self.reportErrors = True
+        openwns.probebus.PythonProbeBus.__init__(self, self.accepts, self.onMeasurement, self.output)
         self.outputFilename = outputFilename
         self.sum = 0.0
         self.trials = 0
@@ -51,7 +48,7 @@ class StatisticsProbeBus(openwns.probebus.ProbeBus):
 
 # create the M/M/1 (step4) simulation model configuration (time in seconds)
 # we reuse step3 and only change the configuration!
-mm1 = openwns.queuingsystem.SimpleMM1Step3(meanJobInterArrivalTime = 0.100,
+mm1 = openwns.queuingsystem.SimpleMM1Step5(meanJobInterArrivalTime = 0.100,
                                            meanJobProcessingTime   = 0.099)
 
 # Replace the default LoggingProbeBus configured in SimpleMM1Step3 by
@@ -61,15 +58,16 @@ loggingProbeBus = openwns.probebus.LoggingProbeBus()
 
 # create simulator configuration
 sim = openwns.Simulator(simulationModel = mm1,
-                        maxSimTime      = 1000.0)
+                        maxSimTime      = 100.0)
 
 sim.eventSchedulerMonitor = None
+
+sim.environment.probeBusRegistry = openwns.probebus.ProbeBusRegistry(openwns.probebus.MasterProbeBus())
 
 sim.environment.probeBusRegistry.insertProbeBus("openwns.queuingsystem.MM1.sojournTime",
                                                 statisticsProbeBus)
 sim.environment.probeBusRegistry.insertProbeBus("openwns.queuingsystem.MM1.sojournTime",
                                                 loggingProbeBus)
 
-sim.environment.probeBusRegistry = openwns.probebus.ProbeBusRegistry(openwns.probebus.MasterProbeBus())
 # set the configuration for this simulation
 openwns.setSimulator(sim)
