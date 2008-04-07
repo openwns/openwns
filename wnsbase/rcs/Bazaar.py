@@ -154,8 +154,11 @@ class Bazaar(RCS):
 		self._updateVersionInfo()
 		return returnValue
 
-	def push(self, url):
-		return self.__exec("push", {}, ["--create-prefix", url, "2>&1"])
+	def push(self, url, createPrefix = False):
+		if createPrefix:
+			return self.__exec("push", {}, ["--create-prefix", url, "2>&1"])
+		else:
+			return self.__exec("push", {}, [url, "2>&1"])
 
 	def getFQRN(self):
 		branch, relpath = bzrlib.branch.Branch.open_containing(self.path)

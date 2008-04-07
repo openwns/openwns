@@ -62,7 +62,7 @@ class RCS(Interface):
         pass
 
     @abstractmethod
-    def push(self, url):
+    def push(self, url, createPrefix = False):
         pass
 
     @abstractmethod
