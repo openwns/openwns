@@ -38,7 +38,7 @@ class PushCommand(wnsbase.playground.plugins.Command.Command):
 
     def __init__(self):
         usage = "\n%prog push\n\n"
-        rationale = "Push the whole project tree and all its modules to remove location from projects.py."
+        rationale = "Push the whole project tree and all its modules to remote location from projects.py."
 
         usage += rationale
 
