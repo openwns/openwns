@@ -61,6 +61,9 @@ class No(RCS):
         def update(self, fromRepository=""):
                 pass
 
+        def merge(self, fromRepository=""):
+                pass
+
         def get(self, url):
                 pass
 
@@ -175,6 +178,9 @@ class GNUArch(RCS):
 		self.__startup()
 
 		return self.__exec("update", {"-d":self.path}, [])
+
+        def merge(self, fromRepository=""):
+                return self.update()
 
 	def ancestryGraph(self, switches = {}, specialRevision=""):
 		self.__startup()

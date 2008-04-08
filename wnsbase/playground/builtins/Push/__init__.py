@@ -25,38 +25,15 @@
 #
 ##############################################################################
 
-class Output:
-	def __init__(self, sout, serr):
-		self.sout = sout
-		self.serr = serr
-		self.hasError = False
+import wnsbase.playground.Core
+import Push
 
-	def __str__(self):
-		s = ""
-		self.error = ""
-		for it in self.serr:
-			self.error += it
-		if self.error != "":
-			self.hasError = True
+core = wnsbase.playground.Core.getCore()
 
-		for i in self.sout:
-			s += i
+if not core.hasPlugin("Push"):
+    core.registerPlugin("Push")
 
-		if self.hasError:
-			s = "stdout:\n%s\n\nstderr:\n%s\n" % (s, self.error)
-		return s.strip("\n")
+    pushCommand = Push.PushCommand()
 
-	def __iter__(self):
-		for s in self.sout, self.serr:
-			line = s.readline()
-			while line:
-				if s == self.serr:
-					self.hasError = True
-				yield line.strip('\n')
-				line = s.readline()
+    core.registerCommand(pushCommand)
 
-	def realtimePrint(self, prepend=""):
-		for it in self:
-			print prepend + it
-		if self.hasError:
-			raise Exception("An error during RCS action occured!")

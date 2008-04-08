@@ -54,11 +54,15 @@ class RCS(Interface):
         pass
 
     @abstractmethod
+    def merge(self, fromRepository=""):
+        pass
+
+    @abstractmethod
     def get(self, url):
         pass
 
     @abstractmethod
-    def push(self, url):
+    def push(self, url, createPrefix = False):
         pass
 
     @abstractmethod
