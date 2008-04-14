@@ -64,19 +64,19 @@ patches from the remote repository (if any are available).
                 return
             sys.stdout.write("Checking for new patches in: %s ... " % (project.getDir()))
             sys.stdout.flush()
-            missing = str(rcs.missing(project.getRCSUrl(), {"-s":""}))
+            missing = str(rcs.missing(project.getRCSUrl() , {"-s":""}))
             if(missing != ""):
                 print "Found:"
                 print missing
                 checkForConflictsAndExit(".")
                 print "\nRetrieving new patches for '" + project.getDir() + "' ..."
                 try:
-                    rcs.update().realtimePrint()
+                    rcs.update(fromRepository=project.getRCSUrl()).realtimePrint()
                     checkForConflictsAndExit(".")
                 except wnsbase.rcs.Bazaar.BzrMergeNeededException, e:
                     core = wnsbase.playground.Core.getCore()
                     if (not core.userFeedback.askForReject("These branches have diverged! Do you want me to merge?")):
-                        rcs.merge().realtimePrint()
+                        rcs.merge(fromRepository=project.getRCSUrl()).realtimePrint()
             else:
                 print "None"
 
