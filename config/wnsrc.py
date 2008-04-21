@@ -52,10 +52,10 @@ class WNSRC:
             self.pathToSandbox = os.path.join(self.pathToWNS, self.sandboxName)
 
     def setPathToWNS(self, addExtern = True):
-        """ Append path to current sandbox to sys.path
+        """ Prepend path to current sandbox to sys.path
         """
         if self.pathToWNS != None:
-            sys.path = sys.path + [os.path.join(self.pathToSandbox, "default", "lib", "python2.4", "site-packages")]
+            sys.path = [os.path.join(self.pathToSandbox, "default", "lib", "python2.4", "site-packages")] + sys.path
         else:
             print "WARNING: Could not set path to sandbox. You are not inside an openWNS-SDK!"
             print "         Your current working directory is: " + os.getcwd()
