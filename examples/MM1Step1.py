@@ -3,6 +3,7 @@
 
 # openwns contains the Simulator class, which is needed for every
 # simulation
+import wns.WNS # [hoi]
 import openwns
 # ^ this import reads the file __init__.py in
 #   ./sandbox/*/lib/PyConfig/openwns/__init__.py
@@ -45,16 +46,20 @@ mm1 = openwns.queuingsystem.SimpleMM1Step1(meanJobInterArrivalTime = 0.100,
 # By this syntax the constructor (__init__) is called with two parameters.
 # The constructor sets the parameters into member variables
 
+# This is for the ComNets-WNS instead of the OpenWNS:
+simulation = wns.WNS.WNS(simulationModel=mm1)
+simulation.maxSimTime = 10.0
+
 # create simulator configuration
-sim = openwns.Simulator(simulationModel = mm1,
-                        maxSimTime      = 10.0)
+#sim = openwns.Simulator(simulationModel = mm1,
+#                        maxSimTime      = 10.0)
 # ^ This object is created from a class Simulator defined in
 # ./framework/library/PyConfig/openwns/__init__.py
 
-sim.eventSchedulerMonitor = None
+#sim.eventSchedulerMonitor = None
 
 # set the configuration for this simulation
-openwns.setSimulator(sim)
+#openwns.setSimulator(sim)
 # ^ function defined in
 # ./framework/library/PyConfig/openwns/simulator.py
 
