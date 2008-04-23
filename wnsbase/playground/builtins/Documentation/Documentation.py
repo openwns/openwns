@@ -47,18 +47,18 @@ class DocuCommand(wnsbase.playground.plugins.Command.Command):
                                   help="options forwarded to scons.")
 
 
-        self.pycoDocuCommand = PyCoDocumentationCommand()
         self.cppDocuCommand = CPPDocuCommand()
+        self.pycoDocuCommand = PyCoDocumentationCommand()
 
     def startup(self, args):
-        self.pycoDocuCommand.startup([])
         self.cppDocuCommand.startup(args)
+        self.pycoDocuCommand.startup([])
 
     def run(self):
-        self.pycoDocuCommand.run()
         self.cppDocuCommand.run()
+        self.pycoDocuCommand.run()
 
     def shutdown(self):
-        self.pycoDocuCommand.shutdown()
         self.cppDocuCommand.shutdown()
+        self.pycoDocuCommand.shutdown()
 

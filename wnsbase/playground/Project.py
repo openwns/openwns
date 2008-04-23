@@ -167,5 +167,14 @@ class Generic(Project):
                                       executable = None,
                                       generateDoc = False)
 
+class Documentation(Generic):
+    def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, alias = None):
+        super(Documentation, self).__init__(directory = directory,
+                                      rcsSubDir = rcsSubDir,
+                                      rcsBaseUrl = rcsBaseUrl,
+                                      rcs = rcs,
+                                      alias = alias)
+        self.generateDoc = True
+
 class Root(Generic):
     pass
