@@ -80,6 +80,7 @@ be placed in ./doxydoc.
         for project in docProjects:
             doxygenConfig.append("INPUT", os.path.join(project.getDir(), "src"))
             doxygenConfig.append("INPUT", os.path.join(project.getDir(), "doc"))
+            doxygenConfig.append("STRIP_FROM_INC_PATH", os.path.join(os.getcwd(), project.getDir(), "src"))
             doxygenConfig.append("INCLUDE_PATH", os.path.join(project.getDir(), "include"))
             doxygenConfig.append("IMAGE_PATH", os.path.join(project.getDir(), "doc/pics"))
 
