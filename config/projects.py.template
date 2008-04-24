@@ -40,7 +40,8 @@ buildSupport = Generic('./framework/buildSupport',"openwns-buildsupport/buildsup
                                               RCS.Bazaar('./framework/buildSupport', 'buildsupport', 'main', '1.0'))
 
 documentation= Documentation('./documentation', 'openwns-documentation/documentation--main--1.0', bzrBaseURL,
-                                                          RCS.Bazaar('./documentation', 'documentation', 'main', '1.0'))
+                                                          RCS.Bazaar('./documentation', 'documentation', 'main', '1.0'),
+                             alias='doc')
 
 library      = Library('./framework/library',"openwns-library/library--main--1.0", bzrBaseURL,
                                               RCS.Bazaar('framework/library', 'library', 'main', '1.0'))
