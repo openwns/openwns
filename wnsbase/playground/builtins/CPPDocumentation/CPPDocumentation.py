@@ -102,7 +102,8 @@ be placed in ./doxydoc.
         print "Done!"
 
         print "Copying files to sandbox/default/doc"
-        shutil.rmtree("sandbox/default/doc")
+        if os.path.exists("sandbox/default/doc"):
+            shutil.rmtree("sandbox/default/doc")
         shutil.copytree("doxydoc/html", "sandbox/default/doc")
 
 
