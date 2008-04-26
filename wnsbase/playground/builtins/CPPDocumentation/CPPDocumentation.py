@@ -77,6 +77,12 @@ be placed in ./doxydoc.
 
         # red the doxygen file and modify according to our needs ...
         doxygenConfig = DoxygenConfigParser(doxygenFileName)
+
+        # force output to doxdoc
+        doxygenConfig.set("OUTPUT_DIRECTORY", "doxydoc")
+        doxygenConfig.set("HTML_OUTPUT", "html")
+        doxygenConfig.set("LATEX_OUTPUT", "latex")
+
         for project in docProjects:
             doxygenConfig.append("INPUT", os.path.join(project.getDir(), "src"))
             doxygenConfig.append("INPUT", os.path.join(project.getDir(), "doc"))
@@ -84,6 +90,7 @@ be placed in ./doxydoc.
             doxygenConfig.append("INCLUDE_PATH", os.path.join(project.getDir(), "include"))
             doxygenConfig.append("IMAGE_PATH", os.path.join(project.getDir(), "doc/pics"))
 
+        doxygenConfig.append("FILE_PATTERNS", "*.hpp *.cpp *.txt *.h")
         doxygenConfig.append("EXAMPLE_PATH", self.examplesPath)
         doxygenConfig.append("STRIP_FROM_PATH", os.getcwd())
         doxygenConfig.append("STRIP_FROM_INC_PATH", os.getcwd())
@@ -92,12 +99,12 @@ be placed in ./doxydoc.
 
         # feed configuration to doxygen on stdin
 	print "Calling doxygen ... please wait: 'doxygen -'"
-        stdin, stdout = os.popen4('doxygen -')
+        stdIn, stdOutAndErr = os.popen4('doxygen -')
 	for i in doxygenConfig.options():
 		conf = i.upper() + " = " + doxygenConfig.get(i) + "\n"
-		stdin.write(conf)
-	stdin.close()
-        for line in stdout:
+		stdIn.write(conf)
+	stdIn.close()
+        for line in stdOutAndErr:
 		print line.strip()
         print "Done!"
 
