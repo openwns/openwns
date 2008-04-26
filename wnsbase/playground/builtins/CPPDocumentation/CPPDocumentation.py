@@ -158,39 +158,47 @@ def generateExamples(path, dst):
             if f.endswith('.hpp') or f.endswith('.cpp'):
                 processFile(root, f, dst)
 
-class DoxygenConfigParser(ConfigParser.ConfigParser):
+class DoxygenConfigParser:
     """Parser for doxygen config files"""
     def __init__(self, filename):
-        ConfigParser.ConfigParser.__init__(self)
+        self.parser = ConfigParser.ConfigParser()
         text = open(filename).read()
         # the Python's ConfigParser expects the file to have
         # at least one section. Doxygen's config files don't
         # have such a section. Hence we prepend a dummy section
         newFileContent = StringIO.StringIO("[dummy]\n" + text)
-        self.readfp(newFileContent, filename)
+        self.parser.readfp(newFileContent, filename)
 
     def get(self, parameter):
         """Provides access to the parameters of a doxygen config file"""
-        return ConfigParser.ConfigParser.get(self, "dummy", parameter)
+        return self.parser.get("dummy", parameter)
 
     def getSplit(self, parameter):
         """Provides access to the parameters of a doxygen config file (returns list of parameters)"""
-        return ConfigParser.ConfigParser.get(self, "dummy", parameter).replace("\\", "").replace("\n", "").split()
+        return self.parser.get("dummy", parameter).replace("\\", "").replace("\n", "").split()
 
     def options(self):
-        return ConfigParser.ConfigParser.options(self, "dummy")
+        return self.parser.options("dummy")
+
+    def has_option(self, parameter):
+        return self.parser.has_option("dummy", parameter)
 
     def set(self, parameter, value):
-        assert parameter.lower() in self.options()
-        ConfigParser.ConfigParser.set(self, "dummy", parameter, self.__listToString(value))
+        self.parser.set("dummy", parameter, self.__listToString(value))
 
     def append(self, parameter, value):
-        assert parameter.lower() in self.options()
-        self.set(parameter, self.get(parameter) + " " + self.__listToString(value))
+        oldParameters = ""
+        if self.has_option(parameter):
+            oldParameters = self.get(parameter)
+
+        self.set(parameter, oldParameters + " " + self.__listToString(value))
 
     def prepend(self, parameter, value):
-        assert parameter.lower() in self.options()
-        self.set(parameter, self.__listToString(value) + " " + self.get(parameter))
+        oldParameters = ""
+        if self.has_option(parameter):
+            oldParameters = self.get(parameter)
+
+        self.set(parameter, self.__listToString(value) + " " + oldParameters)
 
     def __listToString(self, any):
         if not isinstance(any, str):
