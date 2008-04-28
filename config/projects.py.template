@@ -30,43 +30,42 @@ import wnsbase.RCS as RCS
 
 bzrBaseURL = "https://launchpad.net/~comnets/"
 
-root         = Root('./',"openwns-sdk/sdk--main--1.0", bzrBaseURL,
-                                        RCS.Bazaar('.', 'sdk', 'main', '1.0'))
+root = Root('./',"openwns-sdk/sdk--main--1.0", bzrBaseURL,
+            RCS.Bazaar('.', 'sdk', 'main', '1.0'))
 
 unitTests = Generic('./tests/unit', 'openwns-unittest/unittest--main--1.0', bzrBaseURL,
-                                        RCS.Bazaar('./tests/unit', 'unittest', 'main', '1.0'))
+                    RCS.Bazaar('./tests/unit', 'unittest', 'main', '1.0'))
 
 buildSupport = Generic('./framework/buildSupport',"openwns-buildsupport/buildsupport--main--1.0", bzrBaseURL,
-                                              RCS.Bazaar('./framework/buildSupport', 'buildsupport', 'main', '1.0'))
+                       RCS.Bazaar('./framework/buildSupport', 'buildsupport', 'main', '1.0'))
 
-documentation= Documentation('./documentation', 'openwns-documentation/documentation--main--1.0', bzrBaseURL,
-                                                          RCS.Bazaar('./documentation', 'documentation', 'main', '1.0'),
-                             alias='doc')
+documentation = MasterDocumentation('./documentation', 'openwns-documentation/documentation--main--1.0', bzrBaseURL,
+                                   RCS.Bazaar('./documentation', 'documentation', 'main', '1.0'))
 
-library      = Library('./framework/library',"openwns-library/library--main--1.0", bzrBaseURL,
-                                              RCS.Bazaar('framework/library', 'library', 'main', '1.0'))
+library = Library('./framework/library',"openwns-library/library--main--1.0", bzrBaseURL,
+                  RCS.Bazaar('framework/library', 'library', 'main', '1.0'))
 
 moduleTemplate = Library('./framework/moduleTemplate', 'openwns-moduletemplate/moduletemplate--main--1.0', bzrBaseURL,
-                                                  RCS.Bazaar('./framework/moduleTemplate', 'ModuleTemplate', 'main', '1.0'),
-                                                  [library])
+                         RCS.Bazaar('./framework/moduleTemplate', 'ModuleTemplate', 'main', '1.0'),
+                         dependencies = [library])
 
-application  = Binary('./framework/application', "openwns-application/application--main--1.0", bzrBaseURL,
-                                            RCS.Bazaar('framework/application', 'application', 'main', '1.0'),
-                                            [library])
+application = Binary('./framework/application', "openwns-application/application--main--1.0", bzrBaseURL,
+                     RCS.Bazaar('framework/application', 'application', 'main', '1.0'),
+                     dependencies = [library])
 
-pywns        = Python("./framework/pywns", "openwns-pywns/pywns--main--1.0", bzrBaseURL,
-                                            RCS.Bazaar('framework/pywns',
-                                                                                        "pywns", "main", "1.0"))
+pywns = Python("./framework/pywns", "openwns-pywns/pywns--main--1.0", bzrBaseURL,
+               RCS.Bazaar('framework/pywns', "pywns", "main", "1.0"))
 
-all = [ root,
-                unitTests,
-                buildSupport,
-                documentation,
-                library,
-                moduleTemplate,
-                application,
-                pywns
-                ]
+all = [
+    root,
+    unitTests,
+    buildSupport,
+    documentation,
+    library,
+    moduleTemplate,
+    application,
+    pywns
+    ]
 
 # commands to prepare the sandbox for playground.py
 # list of tuples, where tuples are (command, directory to execute command in)

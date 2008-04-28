@@ -53,10 +53,18 @@ be placed in ./doxydoc.
         print "Identifying projects for documentation ..."
         # find all documentation projects:
         docProjects = []
+        masterDocumentationProject = None
         for project in core.getProjects().all:
             if isinstance(project, (wnsbase.playground.Project.Library, wnsbase.playground.Project.Binary, wnsbase.playground.Project.Documentation)):
                 print "... found: " + project.getDir()
                 docProjects.append(project)
+                if isinstance(project, wnsbase.playground.Project.MasterDocumentation):
+                    # we can have only 1 (in words: one) master documentation project
+                    assert masterDocumentationProject == None
+                    masterDocumentationProject = project
+
+        # we need exactly one master documentation project
+        assert masterDocumentationProject != None
 
         # remove old examples
         print "Preparing examples."
@@ -72,10 +80,11 @@ be placed in ./doxydoc.
         doxygenFileName = os.path.join(dirNameOfThisModule, "Doxyfile")
         # try if we have a directory "doc". This is the documentation
         # of the SDK. If available use documentation from there.
-        if os.path.exists("doc/config/Doxyfile"):
-            doxygenFileName = "doc/config/Doxyfile"
+        masterDocDoxyfile = os.path.join(masterDocumentationProject.getDir(), "config/Doxyfile")
+        if os.path.exists(masterDocDoxyfile):
+            doxygenFileName = masterDocDoxyfile
 
-        # red the doxygen file and modify according to our needs ...
+        # read the doxygen file and modify according to our needs ...
         doxygenConfig = DoxygenConfigParser(doxygenFileName)
 
         # force output to doxdoc
@@ -96,6 +105,11 @@ be placed in ./doxydoc.
         doxygenConfig.append("STRIP_FROM_INC_PATH", os.getcwd())
         doxygenConfig.append("ALIASES", 'pyco{1}="<dl><dt><b>Configuration Class:</b></dt><dd><A HREF=\\"PyCoDoc/PyConfig.\\1-class.html\\">\\1</A></dd></dl>"')
         doxygenConfig.append("MSCGEN_PATH", "./bin")
+
+        # if the masterProject has a special header.htm will use this as header
+        customHeader = os.path.join(masterDocumentationProject.getDir(), "config/header.htm")
+        if os.path.exists(customHeader):
+            doxygenConfig.set("HTML_HEADER", customHeader)
 
         # feed configuration to doxygen on stdin
 	print "Calling doxygen ... please wait: 'doxygen -'"
