@@ -34,6 +34,7 @@ import os.path
 import wnsrc
 import re
 import textwrap
+import subprocess
 
 class CPPDocuCommand(wnsbase.playground.plugins.Command.Command):
 
@@ -93,11 +94,22 @@ be placed in ./doxydoc.
         doxygenConfig.set("LATEX_OUTPUT", "latex")
 
         for project in docProjects:
-            doxygenConfig.append("INPUT", os.path.join(project.getDir(), "src"))
-            doxygenConfig.append("INPUT", os.path.join(project.getDir(), "doc"))
+            # default path to source files
+            srcPath = os.path.join(project.getDir(), "src")
+            if os.path.exists(srcPath):
+                doxygenConfig.append("INPUT", srcPath)
+
+            # default path to documentation files
+            docPath = os.path.join(project.getDir(), "doc")
+            if os.path.exists(docPath):
+                doxygenConfig.append("INPUT", docPath)
+
+            # default path to images
+            imgPath = os.path.join(project.getDir(), "doc/pics")
+            if os.path.exists(imgPath):
+                doxygenConfig.append("IMAGE_PATH", imgPath)
+
             doxygenConfig.append("STRIP_FROM_INC_PATH", os.path.join(os.getcwd(), project.getDir(), "src"))
-            doxygenConfig.append("INCLUDE_PATH", os.path.join(project.getDir(), "include"))
-            doxygenConfig.append("IMAGE_PATH", os.path.join(project.getDir(), "doc/pics"))
 
         doxygenConfig.append("FILE_PATTERNS", "*.hpp *.cpp *.txt *.h")
         doxygenConfig.append("EXAMPLE_PATH", self.examplesPath)
@@ -113,7 +125,14 @@ be placed in ./doxydoc.
 
         # feed configuration to doxygen on stdin
 	print "Calling doxygen ... please wait: 'doxygen -'"
-        stdIn, stdOutAndErr = os.popen4('doxygen -')
+        doxygenProcess = subprocess.Popen('doxygen -',
+                                          shell=True,
+                                          stdout=subprocess.PIPE,
+                                          stdin=subprocess.PIPE,
+                                          stderr=subprocess.STDOUT,
+                                          close_fds=True)
+        stdIn = doxygenProcess.stdin
+        stdOutAndErr = doxygenProcess.stdout
 	for i in doxygenConfig.options():
 		conf = i.upper() + " = " + doxygenConfig.get(i) + "\n"
 		stdIn.write(conf)
@@ -121,10 +140,13 @@ be placed in ./doxydoc.
         for line in stdOutAndErr:
 		print line.strip()
         print "Done!"
-
+        doxygenProcess.wait()
+        if doxygenProcess.returncode != 0:
+            raise Exception("Doxygen failed to create the documentation.")
         print "Copying files to sandbox/default/doc"
         if os.path.exists("sandbox/default/doc"):
             shutil.rmtree("sandbox/default/doc")
+
         shutil.copytree("doxydoc/html", "sandbox/default/doc")
 
 
