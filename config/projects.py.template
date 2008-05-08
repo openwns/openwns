@@ -29,8 +29,9 @@ from wnsbase.playground.Project import *
 import wnsbase.RCS as RCS
 
 bzrBaseURL = "https://launchpad.net/~comnets/"
+bzrLowLevelProbeBusURL = "http://bazaar.launchpad.net/~daniel.bueltmann/"
 
-root = Root('./',"openwns-sdk/sdk--main--1.0", bzrBaseURL,
+root = Root('./',"openwns-sdk/sdk--finallowlevelprobebus--1.0", bzrLowLevelProbeBusURL,
             RCS.Bazaar('.', 'sdk', 'main', '1.0'))
 
 unitTests = Generic('./tests/unit', 'openwns-unittest/unittest--main--1.0', bzrBaseURL,
@@ -42,7 +43,7 @@ buildSupport = Generic('./framework/buildSupport',"openwns-buildsupport/buildsup
 documentation = MasterDocumentation('./documentation', 'openwns-documentation/documentation--main--1.0', bzrBaseURL,
                                    RCS.Bazaar('./documentation', 'documentation', 'main', '1.0'))
 
-library = Library('./framework/library',"openwns-library/library--main--1.0", bzrBaseURL,
+library = Library('./framework/library',"openwns-library/library--finallowlevelprobebus--1.0", bzrLowLevelProbeBusURL,
                   RCS.Bazaar('framework/library', 'library', 'main', '1.0'))
 
 moduleTemplate = Library('./framework/moduleTemplate', 'openwns-moduletemplate/moduletemplate--main--1.0', bzrBaseURL,
