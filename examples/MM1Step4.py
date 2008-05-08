@@ -30,7 +30,7 @@ class StatisticsProbeBus(openwns.probebus.ProbeBus):
     nameInFactory = "PythonProbeBus"
 
     def __init__(self, outputFilename):
-        openwns.probebus.ProbeBus.__init__(self,"")
+        openwns.probebus.ProbeBus.__init__(self)
         self.reportErrors = True
         self.outputFilename = outputFilename
         self.sum = 0.0
