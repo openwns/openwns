@@ -52,7 +52,12 @@ optK8         :
 prof          : Build version with profiling information for gprof. You must use --static to use this.
 profOpt       : Optimized profiling version
 size          :
-massif        :
+massif        : Optimized version with debugging symbols for use with valgrind --tool=massif
+callgrind     : Optimized version with debugging symbols for use with valgrind --tool=callgrind
+              :   Starts and stops callgrind instrumentalisation just before and after main event loop
+              :   Use 'valgrind --tool=callgrind --instr-atstart=no wns-core' to only trace main event loop
+              :   Use 'valgrind --tool=callgrind wns-core' to trace all
+              :   Use kcachegrind to view tracing results
 optAssure     :
 optMsg        :
 optAssureMsg  :
