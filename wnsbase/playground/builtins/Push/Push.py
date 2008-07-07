@@ -34,50 +34,42 @@ from wnsbase.playground.builtins.Update.Update import UpdateCommand
 import wnsbase.playground.Core
 core = wnsbase.playground.Core.getCore()
 
-class UpgradeCommand(wnsbase.playground.plugins.Command.Command):
+class PushCommand(wnsbase.playground.plugins.Command.Command):
 
     def __init__(self):
-        usage = "\n%prog upgrade\n\n"
-        rationale = "Update the whole project tree and all its modules."
+        usage = "\n%prog push\n\n"
+        rationale = "Push the whole project tree and all its modules to remote location from projects.py."
 
         usage += rationale
 
         usage += """
 
-Upgrade first uses the update command to update the project base. Afterwards
-all project listed in the project configuration file will be update with new
-patches from the remote repository (if any are available).
+Push uploads all projects to the URL provided in projects.py. Use --noAsk option to suppress questions.
+Use together with --configFile to supply a different projects.py file containing different target locations.
+Use --create-prefix option if target directory does not exist.
+See ./playground --help for more information. 
 """
-        wnsbase.playground.plugins.Command.Command.__init__(self, "upgrade", rationale, usage)
+        wnsbase.playground.plugins.Command.Command.__init__(self, "push", rationale, usage)
+        
+        self.optParser.add_option("", "--create-prefix",
+                                  dest = "createPrefix", default = False,
+                                  action = "store_true",
+                                  help = "create new remote repository if not present")
 
     def run(self):
         wnsbase.playground.Core.getCore()._process_hooks("_pre_upgrade")
-        updateCommand = UpdateCommand()
-        updateCommand.startup([])
-        updateCommand.run()
 
-        def upgrade(project):
+        def push(project):
             rcs = project.getRCS()
             if rcs.isPinned():
                 sys.stdout.write("\nSkipping module in %s, because it is pinned to %s\n\n"
                                  % (project.getDir(), rcs.getPinnedPatchLevel()))
                 return
-            sys.stdout.write("Checking for new patches in: %s ... " % (project.getDir()))
-            sys.stdout.flush()
-            missing = str(rcs.missing(project.getRCSUrl() , {"-s":""}))
-            if(missing != ""):
-                print "Found:"
-                print missing
-                checkForConflictsAndExit(".")
-                print "\nRetrieving new patches for '" + project.getDir() + "' ..."
-                try:
-                    rcs.update(fromRepository=project.getRCSUrl()).realtimePrint()
-                    checkForConflictsAndExit(".")
-                except wnsbase.rcs.Bazaar.BzrMergeNeededException, e:
-                    core = wnsbase.playground.Core.getCore()
-                    if (not core.userFeedback.askForReject("These branches have diverged! Do you want me to merge?")):
-                        rcs.merge(fromRepository=project.getRCSUrl()).realtimePrint()
-            else:
-                print "None"
+            checkForConflictsAndExit(".")
+            core = wnsbase.playground.Core.getCore()
+            warning = "Do you realy want to push " + project.getDir() + " to " + project.getRCSUrl() 
+            if (core.userFeedback.askForConfirmation(warning)):
+                print "\nPushing '" + project.getDir() + " to " + project.getRCSUrl() + "' ..."
+                rcs.push(project.getRCSUrl(), self.options.createPrefix).realtimePrint()
 
-        core.foreachProject(upgrade)
+        core.foreachProject(push)

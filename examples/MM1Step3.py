@@ -8,6 +8,7 @@ import openwns
 # "SimpleMM1" which is used in this example
 import openwns.queuingsystem
 
+import openwns.probebus
 
 ### Simulation setup
 #
@@ -24,10 +25,9 @@ import openwns.queuingsystem
 #             ----
 #
 
-
-# create the M/M/1 simulation model configuration (time in seconds)
-mm1 = openwns.queuingsystem.SimpleMM1(meanJobInterArrivalTime = 0.100,
-                                      meanJobProcessingTime   = 0.099)
+# create the M/M/1 (step2) simulation model configuration (time in seconds)
+mm1 = openwns.queuingsystem.SimpleMM1Step3(meanJobInterArrivalTime = 0.100,
+                                           meanJobProcessingTime   = 0.099)
 
 # create simulator configuration
 sim = openwns.Simulator(simulationModel = mm1,

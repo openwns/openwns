@@ -26,188 +26,225 @@
 ##############################################################################
 
 import wnsbase.playground.Core
-from wnsbase.playground.Tools import *
+import wnsbase.playground.Project
 import shutil
-
-core = wnsbase.playground.Core.getCore()
+import ConfigParser
+import StringIO
+import os.path
+import wnsrc
+import re
+import textwrap
+import subprocess
 
 class CPPDocuCommand(wnsbase.playground.plugins.Command.Command):
 
     def __init__(self):
         usage = "\n%prog cppdocu\n\n"
-        rationale = "Build project CPP documentation."
+        rationale = "Build all in one project CPP documentation."
 
         usage += rationale
         usage += """ Build the CPP documentation for the whole project. The created documentation will
-be placed in sandbox/default/doc .
+be placed in ./doxydoc.
 """
         wnsbase.playground.plugins.Command.Command.__init__(self, "cppdocu", rationale, usage)
+        self.examplesPath = ".doxydocExamples"
 
-        self.optParser.add_option("", "--scons",
-                                  dest = "scons", default = "",
-                                  help="options forwarded to scons.")
     def run(self):
+        core = wnsbase.playground.Core.getCore()
+        print "Identifying projects for documentation ..."
+        # find all documentation projects:
+        docProjects = []
+        masterDocumentationProject = None
+        for project in core.getProjects().all:
+            if isinstance(project, (wnsbase.playground.Project.Library, wnsbase.playground.Project.Binary, wnsbase.playground.Project.Documentation)):
+                print "... found: " + project.getDir()
+                docProjects.append(project)
+                if isinstance(project, wnsbase.playground.Project.MasterDocumentation):
+                    # we can have only 1 (in words: one) master documentation project
+                    assert masterDocumentationProject == None
+                    masterDocumentationProject = project
 
-        def run(project):
-            if not project.generateDoc:
-                return
+        # we need exactly one master documentation project
+        assert masterDocumentationProject != None
 
-            print "\nInstalling documentation for", project.getDir(), "..."
+        # remove old examples
+        print "Preparing examples."
+        print "Removing old examples."
+        shutil.rmtree(self.examplesPath, True)
+        os.mkdir(self.examplesPath)
+        for project in docProjects:
+            print "Generating examples for " + project.getDir()
+            generateExamples(os.path.join(project.getDir(), "src"), self.examplesPath)
 
-            command = 'scons %s docu; scons %s install-docu' % (self.options.scons, self.options.scons,)
-            print "Executing:", command
-            result = runCommand(command)
-            if not result == None:
-                raise "Documentation for " + project.getDir() +  " failed"
+        # find the right doxygen file
+        dirNameOfThisModule = os.path.dirname(__file__)
+        doxygenFileName = os.path.join(dirNameOfThisModule, "Doxyfile")
+        # try if we have a directory "doc". This is the documentation
+        # of the SDK. If available use documentation from there.
+        masterDocDoxyfile = os.path.join(masterDocumentationProject.getDir(), "config/Doxyfile")
+        if os.path.exists(masterDocDoxyfile):
+            doxygenFileName = masterDocDoxyfile
+
+        # read the doxygen file and modify according to our needs ...
+        doxygenConfig = DoxygenConfigParser(doxygenFileName)
+
+        # force output to doxdoc
+        doxygenConfig.set("OUTPUT_DIRECTORY", "doxydoc")
+        doxygenConfig.set("HTML_OUTPUT", "html")
+        doxygenConfig.set("LATEX_OUTPUT", "latex")
+
+        for project in docProjects:
+            # default path to source files
+            srcPath = os.path.join(project.getDir(), "src")
+            if os.path.exists(srcPath):
+                doxygenConfig.append("INPUT", srcPath)
+
+            # default path to documentation files
+            docPath = os.path.join(project.getDir(), "doc")
+            if os.path.exists(docPath):
+                doxygenConfig.append("INPUT", docPath)
+
+            # default path to images
+            imgPath = os.path.join(project.getDir(), "doc/pics")
+            if os.path.exists(imgPath):
+                doxygenConfig.append("IMAGE_PATH", imgPath)
+
+            doxygenConfig.append("STRIP_FROM_INC_PATH", os.path.join(os.getcwd(), project.getDir(), "src"))
+
+        doxygenConfig.append("FILE_PATTERNS", "*.hpp *.cpp *.txt *.h")
+        doxygenConfig.append("EXAMPLE_PATH", self.examplesPath)
+        doxygenConfig.append("STRIP_FROM_PATH", os.getcwd())
+        doxygenConfig.append("STRIP_FROM_INC_PATH", os.getcwd())
+        doxygenConfig.append("ALIASES", 'pyco{1}="<dl><dt><b>Configuration Class:</b></dt><dd><A HREF=\\"PyCoDoc/PyConfig.\\1-class.html\\">\\1</A></dd></dl>"')
+        doxygenConfig.append("MSCGEN_PATH", "./bin")
+
+        # if the masterProject has a special header.htm will use this as header
+        customHeader = os.path.join(masterDocumentationProject.getDir(), "config/header.htm")
+        if os.path.exists(customHeader):
+            doxygenConfig.set("HTML_HEADER", customHeader)
+
+        # feed configuration to doxygen on stdin
+	print "Calling doxygen ... please wait: 'doxygen -'"
+        doxygenProcess = subprocess.Popen('doxygen -',
+                                          shell=True,
+                                          stdout=subprocess.PIPE,
+                                          stdin=subprocess.PIPE,
+                                          stderr=subprocess.STDOUT,
+                                          close_fds=True)
+        stdIn = doxygenProcess.stdin
+        stdOutAndErr = doxygenProcess.stdout
+	for i in doxygenConfig.options():
+		conf = i.upper() + " = " + doxygenConfig.get(i) + "\n"
+		stdIn.write(conf)
+	stdIn.close()
+        for line in stdOutAndErr:
+		print line.strip()
+        print "Done!"
+        doxygenProcess.wait()
+        if doxygenProcess.returncode != 0:
+            raise Exception("Doxygen failed to create the documentation.")
+        print "Copying files to sandbox/default/doc"
+        if os.path.exists("sandbox/default/doc"):
+            shutil.rmtree("sandbox/default/doc")
+
+        shutil.copytree("doxydoc/html", "sandbox/default/doc")
 
 
-        core.foreachProject(run)
+def processFile(path, fileName, dstPath):
+    """Search a file for examples and store them at dstPath.
+    """
+    start_re = re.compile(r'\s*//\s*begin\s+example\s+"(.+)".*')
+    stop_re = re.compile(r'\s*//\s*end\s+example.*')
 
-        self.createTestbedDocu()
+    fullFileName = os.path.join(path, fileName)
+
+    unquote = False
+    example = None
+    for line in file(fullFileName):
+        match = start_re.match(line)
+        if match is not None:
+	    unquote = "unquote" in line
+            exampleName = match.group(1)
+            example = []
+            continue
+
+        match = stop_re.match(line)
+        if match is not None:
+            example = textwrap.dedent(''.join(example))
+            example = example.replace('CPPUNIT_', '')
+
+            exampleFileName = os.path.join(dstPath, exampleName)
+            fd = os.open(exampleFileName, os.O_WRONLY | os.O_CREAT | os.O_EXCL)
+            f = os.fdopen(fd, "w")
+            f.write(example)
+
+            example = None
+            continue
+
+        if example is not None:
+	    if unquote:
+		    line = line.strip().lstrip('"').rstrip('"').rstrip('\\n').replace('\\"', '"')
+		    line += "\n"
+            example.append(line)
 
 
-    def createTestbedDocu(self):
-        projects = core.getProjects()
-        stdin, stdout = os.popen4('doxygen -')
-        rcs = projects.root.getRCS()
-        for i in file(os.path.join("doc", "config", "Doxyfile")):
-            stdin.write(i)
-        stdin.write('PROJECT_NAME="'+ rcs.getVersion() + '"\n')
-        stdin.write('PROJECT_NUMBER="'+ rcs.getPatchLevel() + '<br>(archive: '+ rcs.getFQRN() +')"\n')
-        stdin.close()
-        line = stdout.readline()
-        while line:
-            print line.strip()
-            line = stdout.readline()
+def generateExamples(path, dst):
+    """Search all *.{cpp|hpp} files in path for examples.
 
-        # copy all ppt stuff
-        if os.path.isdir(os.path.join("sandbox", "default", "doc", "WNS", "ppt")):
-            shutil.rmtree(os.path.join("sandbox", "default", "doc", "WNS", "ppt"))
-        shutil.copytree(os.path.join("doc", "ppt"), os.path.join("sandbox", "default", "doc", "WNS", "ppt"))
+       Every example found will be written to a file with the name
+       given at the 'begin example' tag.
+       All the example files will be stored in the directory dst.
+    """
 
-        # copy all pdf stuff
-        if os.path.isdir(os.path.join("sandbox", "default", "doc", "WNS", "pdf")):
-            shutil.rmtree(os.path.join("sandbox", "default", "doc", "WNS", "pdf"))
-        shutil.copytree(os.path.join("doc", "pdf"), os.path.join("sandbox", "default", "doc", "WNS", "pdf"))
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            if f.endswith('.hpp') or f.endswith('.cpp'):
+                processFile(root, f, dst)
 
-        # copy all images
-        if os.path.isdir(os.path.join("sandbox", "default", "doc", "WNS", "images")):
-            shutil.rmtree(os.path.join("sandbox", "default", "doc", "WNS", "images"))
-        shutil.copytree(os.path.join("doc", "images"), os.path.join("sandbox", "default", "doc", "WNS", "images"))
+class DoxygenConfigParser:
+    """Parser for doxygen config files"""
+    def __init__(self, filename):
+        self.parser = ConfigParser.ConfigParser()
+        text = open(filename).read()
+        # the Python's ConfigParser expects the file to have
+        # at least one section. Doxygen's config files don't
+        # have such a section. Hence we prepend a dummy section
+        newFileContent = StringIO.StringIO("[dummy]\n" + text)
+        self.parser.readfp(newFileContent, filename)
 
-        # copy all flash movies
-        if os.path.isdir(os.path.join("sandbox", "default", "doc", "WNS", "flash")):
-            shutil.rmtree(os.path.join("sandbox", "default", "doc", "WNS", "flash"))
-        shutil.copytree(os.path.join("doc", "flash"), os.path.join("sandbox", "default", "doc", "WNS", "flash"))
+    def get(self, parameter):
+        """Provides access to the parameters of a doxygen config file"""
+        return self.parser.get("dummy", parameter)
 
-        self.writeDoxygenHeader()
+    def getSplit(self, parameter):
+        """Provides access to the parameters of a doxygen config file (returns list of parameters)"""
+        return self.parser.get("dummy", parameter).replace("\\", "").replace("\n", "").split()
 
-    def writeDoxygenHeader(self):
-        projects = core.getProjects()
+    def options(self):
+        return self.parser.options("dummy")
 
-        # index.htm
-        index = file(os.path.join("sandbox", "default", "doc", "index.htm"), "w")
-        index.write("""
-    <html><head><title>openWNS - The open Wireless Network Simulator</title></head>
-    <frameset rows="105,*">
-    <frame marginwidth=0 marginheight=0 frameborder=0 src="head.htm">
-    <frameset cols="250,*,250">
-    <frame marginwidth=0 marginheight=0 frameborder=0 scrolling = "auto" src="left.htm">
-    <frame marginwidth=0 marginheight=0 frameborder=0 src="WNS/index.htm" name="body">
-    <frame marginwidth=0 marginheight=0 frameborder=0 src="right.htm">
-    </frameset>
-    </frameset>
-    </html>
-    """)
+    def has_option(self, parameter):
+        return self.parser.has_option("dummy", parameter)
 
-        # head.htm
-        head = file(os.path.join("sandbox", "default", "doc", "head.htm"), "w")
-        head.write("""
-    <html><head><title>openWNS - The open Wireless Network Simulator</title>
-    <link href="WNS/doxygen.css" rel="stylesheet" type="text/css">
-    <link href="WNS/tabs.css" rel="stylesheet" type="text/css">
-    </head>
-    <body>
-    <table border=0 cellpadding=0 cellspacing=10 width=100%>
-    <tr>
-    <td width=25%><img src="WNS/images/openWNS.png"></td>
-    <td width=50% valign=bottom align=center>
-    <font size=+2><b>openWNS - The open Wireless Network Simulator</b></font>
-    </td>
-    <td width=25% align=right><img src="WNS/images/RWTHAachen-ComNets.png"></td>
-    </tr>
-    <tr>
-    <td colspan=3 width=100% height=1 bgcolor=black></td>
-    </tr>
-    </table>
-    </body>
-    </html>
-    """)
+    def set(self, parameter, value):
+        self.parser.set("dummy", parameter, self.__listToString(value))
 
-        # right.htm (Menu on the right side)
-        right = file(os.path.join("sandbox", "default", "doc", "right.htm"), "w")
-        right.write("""
-    <html><head><title>openWNS - Right Menu</title>
-    <link href="WNS/doxygen.css" rel="stylesheet" type="text/css">
-    <link href="WNS/tabs.css" rel="stylesheet" type="text/css">
-    </head>
-    <body>
-    <font size=-1>
-    """)
+    def append(self, parameter, value):
+        oldParameters = ""
+        if self.has_option(parameter):
+            oldParameters = self.get(parameter)
 
-        right.write("<b>Framwork Documentation:</b><ul>")
-        listOfProjects = []
-        for i in projects.all:
-            # AddOn projects are included in their parent's documentation
-            if not isinstance(i, wnsbase.playground.Project.AddOn):
-                if os.path.normpath(i.getDir()).find("/framework/") != -1:
-                    rcs = i.getRCS()
-                    if os.path.exists(os.path.join("sandbox", "default", "doc", rcs.getVersion())):
-                        listOfProjects.append('<li><a target="body" href="'+rcs.getVersion()+'/index.htm">'+rcs.getVersion()+'</a>\n')
+        self.set(parameter, oldParameters + " " + self.__listToString(value))
 
-        listOfProjects.sort()
-        for p in listOfProjects: right.write(p)
-        right.write("""</ul>
-    <b>Modules Documentation:</b>
-    <ul>""")
-        listOfProjects = []
-        for i in projects.all:
-            if os.path.normpath(i.getDir()).find("/modules/") != -1:
-                rcs = i.getRCS()
-                if os.path.exists(os.path.join("sandbox", "default", "doc", rcs.getVersion())):
-                    listOfProjects.append('<li><a target="body" href="'+rcs.getVersion()+'/index.htm">'+rcs.getVersion()+'</a>\n')
+    def prepend(self, parameter, value):
+        oldParameters = ""
+        if self.has_option(parameter):
+            oldParameters = self.get(parameter)
 
-        listOfProjects.sort()
-        if (len(listOfProjects) == 0):
-            right.write("<li>None</li>")
+        self.set(parameter, self.__listToString(value) + " " + oldParameters)
+
+    def __listToString(self, any):
+        if not isinstance(any, str):
+            return " ".join(any)
         else:
-            for p in listOfProjects: right.write(p)
-        right.write("</ul>")
-        right.write("""
-    </font></body>
-    </html>
-    """)
-
-        # left.htm (Menu on the left side
-        left = file(os.path.join("sandbox", "default", "doc", "left.htm"), 'w')
-        left.write("""
-    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-    <html><head><meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1">
-    <title>WNS - Left Menu</title>
-    <link href="WNS/doxygen.css" rel="stylesheet" type="text/css">
-    <link href="WNS/tabs.css" rel="stylesheet" type="text/css">
-    </head><body>
-    <font size=-1>
-    <b>General:</b>
-    <ul>
-    <li><a target="body" href="WNS/index.htm">Home</a></li>
-    <li><a target="body" href="PyCoDoc/index.html">Python Configuration</a></li>
-    """)
-
-        # generate from doc/pages.htm
-        for line in file(os.path.join('sandbox', 'default', 'doc', 'WNS', 'pages.htm')):
-            if line.startswith("<li>"):
-                line = line.replace('class="el"', '')
-                left.write(line.replace('href="', 'target="body" href="WNS/'))
-
-        left.write("</ul></font><body></html>")
+            return any

@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.4
+#! /usr/bin/env python
 ###############################################################################
 # This file is part of openWNS (open Wireless Network Simulator)
 # _____________________________________________________________________________
@@ -166,6 +166,24 @@ class Generic(Project):
                                       dependencies = [],
                                       executable = None,
                                       generateDoc = False)
+
+class Documentation(Generic):
+    def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, alias = None):
+        super(Documentation, self).__init__(directory = directory,
+                                      rcsSubDir = rcsSubDir,
+                                      rcsBaseUrl = rcsBaseUrl,
+                                      rcs = rcs,
+                                      alias = alias)
+        self.generateDoc = True
+
+class MasterDocumentation(Documentation):
+    def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, alias = None):
+        super(MasterDocumentation, self).__init__(directory = directory,
+                                                  rcsSubDir = rcsSubDir,
+                                                  rcsBaseUrl = rcsBaseUrl,
+                                                  rcs = rcs,
+                                                  alias = alias)
+        self.generateDoc = True
 
 class Root(Generic):
     pass

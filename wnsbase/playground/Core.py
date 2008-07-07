@@ -32,6 +32,8 @@ import optparse
 import re
 import sets
 import exceptions
+import ConfigParser
+
 import wnsbase.rcs.Bazaar
 import wnsrc
 
@@ -39,7 +41,8 @@ from wnsbase.playground.Tools import *
 
 import builtins
 import plugins.Command
-import ConfigParser
+import Logger
+
 
 class Core:
     """ This the core of the openwns-sdk project tree management tool 'playground.py'.
@@ -82,19 +85,15 @@ class Core:
         Finally the preReq commands in projects.py are executed.
         """
 
-        self.configFile = os.path.join(os.environ["HOME"], ".wns", "playground.config")
-        self.projects = None
-
-        self._loadConfigFile()
-        self.addPluginPath("./wnsbase/playground/plugins")
-        self._loadBuiltins()
-        self._setupCommandLineOptions()
-        self._loadPlugins()
-
-        self.projectsFile = "config/projects.py"
-        self.userFeedback = UserMadeDecision()
+        self.logger = Logger.Logger("Core", Logger.Silent)
 
         argv = sys.argv
+
+        self.printCommands = False
+
+        self.projectsFile = "config/projects.py"
+
+        self.userFeedback = UserMadeDecision()
 
         self.pluginArgs = []
         i = 1
@@ -107,11 +106,27 @@ class Core:
             elif a.startswith("--if"):
                 self.ifExpr = a.split("=")[1]
             elif a == "--commands":
-                print " ".join(self.commands.keys())
-                self.shutdown(0)
+                self.printCommands = True
+            elif a == "--debug":
+                self.logger = Logger.Logger("Core", Logger.Debug)
+            elif a == "--warnings":
+                self.logger = Logger.Logger("Core", Logger.Warning)
             else:
                 self.pluginArgs.append(a)
             i += 1
+
+        self.configFile = os.path.join(os.environ["HOME"], ".wns", "playground.config")
+        self.projects = None
+
+        self._loadConfigFile()
+        self.pluginPaths = ["./wnsbase/playground/plugins"] + self.pluginPaths
+        self._loadBuiltins()
+        self._setupCommandLineOptions()
+        self._loadPlugins()
+
+        if (self.printCommands == True):
+            print " ".join(self.commands.keys())
+            self.shutdown(0)
 
         if len(self.pluginArgs) > 0:
             commandName = self.pluginArgs[0]
@@ -203,6 +218,7 @@ class Core:
             self._loadPluginsInDir(pluginPath)
 
     def _loadPluginsInDir(self, pluginsDir, targetPackage="wnsbase.playground.plugins"):
+        self.logger.logDebug("Loading plugins in dir : %s" % pluginsDir)
         """ Load plugins in a specific directory.
 
         pluginsDir : The directory to scan
@@ -220,6 +236,11 @@ class Core:
             sys.path.append(pluginsDir)
             for plugin in topLevelDirs:
                 try:
+                    if str(plugin) in plugins.__dict__.keys():
+                        self.logger.logWarning("WARNING: Unable to load plugin '%s' from '%s/%s'." % (plugin, pluginsDir, plugin))
+                        self.logger.logWarning("A package with this name already exists. You should rename")
+                        self.logger.logWarning("the containing directory to some other name")
+                    self.logger.logDebug("Loading plugin %s" % plugin)
                     exec "import %s.%s" % (targetPackage, str(plugin)) in globals(), locals()
                 except exceptions.SystemExit:
                     self.shutdown(1)
@@ -264,7 +285,7 @@ class Core:
         """ Register a command.
 
         Plugins may register an arbitrary number of commands.
-        Use this method to register a new command. Eachc command must implement
+        Use this method to register a new command. Each command must implement
         wnsbase.playground.plugins.Command. Duplicate registration of commands
         is an error.
 
@@ -276,7 +297,33 @@ class Core:
             print "This could happen if you have a plugin installed to several places that are"
             print "read by playground or if two plugins try to register a command with the same"
             print "name."
+            print
+            print "Note : You can use wnsbase.playground.Core.getCore().replaceCommand(command)"
+            print "to replace an exisiting command"
             self.shutdown(1)
+        else:
+            self.commands[command.name] = command
+
+    def replaceCommand(self, command):
+        """ Replace an exisiting command.
+
+        Plugins may replace already exisiting commands.
+        Use this method to replace an exisiting command. Each command must implement
+        wnsbase.playground.plugins.Command. Replacing a command that is was not registered before
+        is an error.
+        You can force to not allow command replacement by adding disableCommandReplacement to the
+        core section of your playground.config: This looks like this:
+
+        [core]
+        disableCommandReplacement = True
+        """
+        if self.getConfig().has_option("core", "disableCommandReplacement"):
+            if self.getConfig().get("core", "disableCommandReplacement") == "True":
+                self.logger.logWarning("Warning! The replacement of command %s was disabled" % command.name)
+                return
+
+        if not self.commands.has_key(command.name) > 0:
+            self.registerCommand(command)
         else:
             self.commands[command.name] = command
 
@@ -555,7 +602,15 @@ class Core:
         self.optParser.add_option("", "--noAsk",
                                   action = "store_true", dest = "noAsk", default = False,
                                   help = "Do not ask user. Accept all default answers. Use this for automation.")
-
+        self.optParser.add_option("", "--commands",
+                                  action = "store_true", dest = "noAsk", default = False,
+                                  help = "Space separated list of available commands (use for Bash completion).")
+        self.optParser.add_option("", "--debug",
+                                  action = "store_true", dest = "noAsk", default = False,
+                                  help = "Enable debug output. Also enables warnings.")
+        self.optParser.add_option("", "--warnings",
+                                  action = "store_true", dest = "noAsk", default = False,
+                                  help = "Show warnings.")
 
 theCore = Core()
 

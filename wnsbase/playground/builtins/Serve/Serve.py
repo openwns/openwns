@@ -25,40 +25,31 @@
 #
 ##############################################################################
 
-import wnsbase.playground.Core
+import sys
+from wnsbase.playground.Tools import *
 
-from wnsbase.playground.builtins.PyCoDocumentation.PyCoDocumentation import PyCoDocumentationCommand
-from wnsbase.playground.builtins.CPPDocumentation.CPPDocumentation import CPPDocuCommand
+import wnsbase.playground.Core
+import wnsbase.playground.plugins.Command
+import shutil
 
 core = wnsbase.playground.Core.getCore()
 
-class DocuCommand(wnsbase.playground.plugins.Command.Command):
+class ServeCommand(wnsbase.playground.plugins.Command.Command):
 
     def __init__(self):
-        usage = "\n%prog docu\n\n"
-        rationale = "Build project documentation."
+        usage = "Prepare a directory (localRepo) to serve this SDK via 'bzr serve --directory localRepo'. WARNING: This will remove ./localRepo"
 
-        usage += rationale
-        usage += """ Build the CPP documentation for the whole project."""
-        wnsbase.playground.plugins.Command.Command.__init__(self, "docu", rationale, usage)
+        wnsbase.playground.plugins.Command.Command.__init__(self, "serve", usage, usage)
 
-        self.optParser.add_option("", "--scons",
-                                  dest = "scons", default = "",
-                                  help="options forwarded to scons.")
+    def run(self, arg = 'unused'):
+        print "Removing 'localRepo'"
+        shutil.rmtree('localRepo', True)
+        print "Preparing 'localRepo'"
+        os.mkdir('localRepo')
+        for project in core.getProjects().all:
+            print "Linking: " + project.getDir() + " -> " + os.path.join('localRepo', project.rcsSubDir)
+            os.symlink(project.getDir(), os.path.join('localRepo', project.rcsSubDir))
 
-
-        self.cppDocuCommand = CPPDocuCommand()
-        self.pycoDocuCommand = PyCoDocumentationCommand()
-
-    def startup(self, args):
-        self.cppDocuCommand.startup(args)
-        self.pycoDocuCommand.startup([])
-
-    def run(self):
-        self.cppDocuCommand.run()
-        self.pycoDocuCommand.run()
-
-    def shutdown(self):
-        self.cppDocuCommand.shutdown()
-        self.pycoDocuCommand.shutdown()
-
+        print "localRepo is prepared."
+        print "You can now say 'bzr serve --directory localRepo', to offer this directory for pulling"
+        print "or 'bzr serve --allow-writes --directory localRepo', to offer this directory for pulling AND pushing"

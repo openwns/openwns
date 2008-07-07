@@ -30,6 +30,9 @@ import os
 import sys
 import shutil
 
+#We assume username@maildomain as E-Mail address
+maildomain = "comnets.rwth-aachen.de"
+
 sys.path.append(os.path.join(wnsrc.pathToWNS, 'framework/buildSupport'))
 import wnsbase.RCS
 import FilePatcher
@@ -86,12 +89,16 @@ def setupFileList():
         fc.close()
 
 def setupProjectFile():
+	import getpass
+	import pwd
+
 	template = os.path.join(wnsrc.pathToWNS, "config/WNS.kdevelop.template")
 	projectFile = os.path.join(wnsrc.pathToWNS, "WNS.kdevelop")
 	shutil.copy (template, projectFile)
-	tmp = runCommand("tla my-id")
-	authorname = tmp[0].split("<")[0].rstrip()
-	email = tmp[0].split("<")[1].rstrip(">")
+	username = getpass.getuser()
+	tmp = pwd.getpwnam(username)
+	authorname = tmp[4]
+	email = username + "@" + maildomain
 	FilePatcher.FilePatcher(projectFile, "___AUTHORNAME___", authorname).replaceAll()
 	FilePatcher.FilePatcher(projectFile, "___EMAILADDRESS___", email).replaceAll()
 	FilePatcher.FilePatcher(projectFile, "___PATHTOWNS___", wnsrc.pathToWNS).replaceAll()
