@@ -95,16 +95,13 @@ sim = openwns.Simulator(simulationModel = mm1,
 
 sim.eventSchedulerMonitor = None
 
-sim.environment.probeBusRegistry = openwns.probebus.ProbeBusRegistry(openwns.probebus.MasterProbeBus())
+pbr = sim.environment.probeBusRegistry
 
-sim.environment.probeBusRegistry.insertProbeBus("openwns.queuingsystem.MM1.sojournTime",
-                                                lowPriorityFilter)
+pbr.getMeasurementSource("openwns.queuingsystem.MM1.sojournTime").addObserver(lowPriorityFilter)
 
-sim.environment.probeBusRegistry.insertProbeBus("openwns.queuingsystem.MM1.sojournTime",
-                                                highPriorityFilter)
+pbr.getMeasurementSource("openwns.queuingsystem.MM1.sojournTime").addObserver(highPriorityFilter)
 
-sim.environment.probeBusRegistry.insertProbeBus("openwns.queuingsystem.MM1.sojournTime",
-                                                loggingProbeBus)
+pbr.getMeasurementSource("openwns.queuingsystem.MM1.sojournTime").addObserver(loggingProbeBus)
 
 # The resulting ProbeBusTree looks like this
 
