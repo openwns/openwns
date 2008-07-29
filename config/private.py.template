@@ -46,7 +46,7 @@ for flavour, env in commonEnvs.iteritems():
         else:
                 # ...using default compiler
                 # run jobs in parallel depending on processor count
-                env.SetOption('num_jobs', os.sysconf('SC_NPROCESSORS_ONLN') + 1)
+                env.SetOption('num_jobs', os.sysconf('SC_NPROCESSORS_ONLN'))
 
         # ... do you need another compiler ...
         env.configureCompiler(cc='/usr/bin/gcc', cxx='/usr/bin/g++')

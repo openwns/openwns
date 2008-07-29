@@ -63,6 +63,8 @@ class Project(object):
 
         self.__buildDependencies()
 
+        self.includeBaseName = None
+
     def getFQRN(self):
         return self.rcs.getFQRN()
 
@@ -103,14 +105,15 @@ class Project(object):
         return self.addOns
 
 class Library(Project):
-    def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, dependencies = []):
+    def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, dependencies = [], includeBaseName = None):
         super(Library, self).__init__(directory = directory,
                                       rcsSubDir = rcsSubDir,
                                       rcsBaseUrl = rcsBaseUrl,
                                       rcs = rcs,
                                       dependencies = dependencies,
                                       executable = 'lib')
-
+        self.includeBaseName = includeBaseName
+        
 class AddOn(Library):
     def __init__(self, baseProject, rcsSubDir, rcsBaseUrl, rcs, addOnDir = "addOn"):
         super(AddOn, self).__init__(os.path.join(baseProject.getDir(), addOnDir),
@@ -125,6 +128,7 @@ class AddOn(Library):
         self.rcs.setPath(self.getDir())
 
         baseProject.registerAddOn(self)
+        self.includeBaseName = baseProject.includeBaseName
 
 class Binary(Project):
     def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, dependencies= []):
