@@ -116,6 +116,7 @@ be placed in ./doxydoc.
         doxygenConfig.append("STRIP_FROM_PATH", os.getcwd())
         doxygenConfig.append("STRIP_FROM_INC_PATH", os.getcwd())
         doxygenConfig.append("ALIASES", 'pyco{1}="<dl><dt><b>Configuration Class:</b></dt><dd><A HREF=\\"PyCoDoc/PyConfig.\\1-class.html\\">\\1</A></dd></dl>"')
+        doxygenConfig.append("ALIASES", 'pycoshort{1}="<A HREF=\\"PyCoDoc/PyConfig.\\1-class.html\\">\\1</A>"')
         doxygenConfig.append("MSCGEN_PATH", "./bin")
 
         # if the masterProject has a special header.htm will use this as header
