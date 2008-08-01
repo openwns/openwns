@@ -28,45 +28,326 @@
 from wnsbase.playground.Project import *
 import wnsbase.RCS as RCS
 
-bzrBaseURL = "https://launchpad.net/~comnets/"
+bzrBaseURL = "bzr://bazaar.comnets.rwth-aachen.de/KKS/main"
+bzrBaseAddOnUrl = "bzr://bazaar.comnets.rwth-aachen.de/KKS/addOns/main"
 
-root = Root('./',"openwns-sdk/sdk--main--1.0", bzrBaseURL,
-            RCS.Bazaar('.', 'sdk', 'main', '1.0'))
+root         = Root('./', "openWNS--main--1.0", bzrBaseURL,
+                    RCS.Bazaar('.', 'openWNS', 'main', '1.0'))
 
-unitTests = Generic('./tests/unit', 'openwns-unittest/unittest--main--1.0', bzrBaseURL,
-                    RCS.Bazaar('./tests/unit', 'unittest', 'main', '1.0'))
+unitTests = Generic('./tests/unit', 'unitTest-addOn--main--1.0', bzrBaseAddOnUrl,
+                    RCS.Bazaar('./tests/unit',
+                               'unitTest-addOn', 'main', '1.0'))
 
-buildSupport = Generic('./framework/buildSupport',"openwns-buildsupport/buildsupport--main--1.0", bzrBaseURL,
-                       RCS.Bazaar('./framework/buildSupport', 'buildsupport', 'main', '1.0'))
+buildSupport = Generic('./framework/cn-scons--main--1.0',"cn-scons--main--1.0", bzrBaseURL,
+                       RCS.Bazaar('framework/cn-scons--main--1.0', 'cn-scons', 'main', '1.0'),
+                       alias="buildSupport")
 
-documentation = MasterDocumentation('./documentation', 'openwns-documentation/documentation--main--1.0', bzrBaseURL,
-                                   RCS.Bazaar('./documentation', 'documentation', 'main', '1.0'))
+pywns = Python("./framework/PyWNS-addOn--main--1.0", "PyWNS-addOn--main--1.0", bzrBaseAddOnUrl,
+               RCS.Bazaar('./framework/PyWNS-addOn--main--1.0', "PyWNS", "main", "1.0"),
+               alias="PyWNS--main--1.0")
 
-library = Library('./framework/library',"openwns-library/library--main--1.0", bzrBaseURL,
-                  RCS.Bazaar('framework/library', 'library', 'main', '1.0'))
+libwns       = Library('./framework/libwns--main--1.0',"libwns--main--1.0", bzrBaseURL,
+                       RCS.Bazaar('framework/libwns--main--1.0',
+                                  'libwns', 'main', '1.0'),
+                       [], 'WNS')
 
-moduleTemplate = Library('./framework/moduleTemplate', 'openwns-moduletemplate/moduletemplate--main--1.0', bzrBaseURL,
-                         RCS.Bazaar('./framework/moduleTemplate', 'ModuleTemplate', 'main', '1.0'),
-                         dependencies = [library])
+libwns_addon = AddOn(libwns, "libwns-addOn--main--1.0", bzrBaseAddOnUrl,
+                     RCS.Bazaar('', "libwns", "main", "1.0"))
 
-application = Binary('./framework/application', "openwns-application/application--main--1.0", bzrBaseURL,
-                     RCS.Bazaar('framework/application', 'application', 'main', '1.0'),
-                     dependencies = [library])
+wns_core     = Binary('./framework/wns-core--main--1.0', "wns-core--main--1.0", bzrBaseAddOnUrl,
+                       RCS.Bazaar('./framework/wns-core--main--1.0',
+                                  'wns-core', 'main', '1.0'),
+                       [])
 
-pywns = Python("./framework/pywns", "openwns-pywns/pywns--main--1.0", bzrBaseURL,
-               RCS.Bazaar('framework/pywns', "pywns", "main", "1.0"))
+rise        = Library('./framework/rise--unstable--1.3', 'rise--unstable--1.3', bzrBaseURL,
+                      RCS.Bazaar('./framework/rise--unstable--1.3',
+                                  'rise', 'unstable', '1.3'),
+                      [], 'RISE')
 
-all = [
-    root,
-    unitTests,
-    buildSupport,
-    documentation,
-    library,
-    moduleTemplate,
-    application,
-    pywns
-    ]
+rise_addon = AddOn(rise, "rise-addOn--unstable--1.3", bzrBaseAddOnUrl,
+                   RCS.Bazaar('', "rise", "unstable", "1.3"))
+
+dllBase     = Library('./framework/DLLBase--main--0.1', 'DLLBase--main--0.1', bzrBaseURL,
+                      RCS.Bazaar('./framework/DLLBase--main--0.1',
+                                 'DLLBase', 'main', '0.1'),
+                      [], 'DLL')
+
+dllBase_addon = AddOn(dllBase, 'DLLBase-addOn--main--0.1', bzrBaseAddOnUrl,
+                      RCS.Bazaar('','DLLBase-addOn', 'main', '0.1'))
+
+tutorial    = Library('./framework/Tutorial--main--1.0', 'Tutorial--main--1.0', bzrBaseAddOnUrl,
+                      RCS.Bazaar('./framework/Tutorial--main--1.0',
+                                  'Tutorial', 'main', '1.0'),
+                      [], 'TUTORIAL')
+
+glue        = Library('./modules/dll/glue--main--1.0', 'glue--main--1.0', bzrBaseURL,
+                      RCS.Bazaar('./modules/dll/glue--main--1.0',
+                                  'glue', 'main', '1.0'),
+                      [], 'GLUE')
+
+glue_addon = AddOn(glue, 'glue-addOn--main--1.0', bzrBaseAddOnUrl,
+                   RCS.Bazaar('', 'glue-addOn', 'main', '1.0'))
+
+copper = Library('./modules/phy/Copper--main--1.0', 'Copper--main--1.0', bzrBaseURL,
+                 RCS.Bazaar('./modules/phy/Copper--main--1.0',
+                             'Copper', 'main', '1.0'),
+                 [], 'COPPER')
+
+copper_addon = AddOn(copper, 'Copper-addOn--main--1.0', bzrBaseAddOnUrl,
+                   RCS.Bazaar('', 'Copper-addOn', 'main', '1.0'))
+
+ip = Library('./modules/nl/ip--unstable--1.2', 'ip--unstable--1.2', bzrBaseURL,
+             RCS.Bazaar('./modules/nl/ip--unstable--1.2',
+                        'ip', 'unstable', '1.2'),
+             [], 'IP')
+
+ip_addon = AddOn(ip, 'ip-addOn--unstable--1.2', bzrBaseAddOnUrl,
+                 RCS.Bazaar('','ip-addOn', 'unstable', '1.2'))
+
+constanze = Library('./modules/loadgen/Constanze--unstable--1.0', 'Constanze--unstable--1.0', bzrBaseURL,
+                    RCS.Bazaar('./modules/loadgen/Constanze--unstable--1.0',
+                                'Constanze', 'unstable', '1.0'),
+                    [], 'CONSTANZE')
+
+constanze_addon = AddOn(constanze, 'Constanze-addOn--unstable--1.0', bzrBaseAddOnUrl,
+                        RCS.Bazaar('','Constanze-addOn', 'unstable', '1.0'))
+
+ofdmaPhy = Library('./modules/phy/OFDMAPhy--unstable--0.3', 'OFDMAPhy--unstable--0.3', bzrBaseURL,
+                   RCS.Bazaar('./modules/phy/OFDMAPhy--unstable--0.3',
+                               'OFDMAPhy', 'unstable', '0.3'),
+                   [], 'OFDMAPHY')
+
+ofdmaPhy_addon = AddOn(ofdmaPhy, 'OFDMAPhy-addOn--unstable--0.3', bzrBaseAddOnUrl,
+		       RCS.Bazaar('', 'OFDMAPhy-addOn', 'unstable', '0.3'))
+
+winprost = Library('./modules/dll/WinProSt--main--0.3', 'WinProSt--main--0.3', bzrBaseURL,
+                   RCS.Bazaar('./modules/dll/WinProSt--main--0.3',
+                              'WinProSt', 'main', '0.3'),
+                   [], 'WINPROST')
+
+winprost_addon = AddOn(winprost, 'WinProSt-addOn--main--0.3', bzrBaseAddOnUrl,
+                         RCS.Bazaar('','WinProSt-addOn', 'main', '0.3'))
+
+wimac = Library('./modules/dll/WiMAC--main--1.0', 'WiMAC--main--1.0', bzrBaseURL,
+                RCS.Bazaar('./modules/dll/WiMAC--main--1.0',
+                            'WiMAC', 'main', '1.0'),
+                [], 'WIMAC')
+
+wimac_addon = AddOn(wimac, 'WiMAC-addOn--main--1.0', bzrBaseAddOnUrl,
+                    RCS.Bazaar('','WiMAC-addOn', 'main', '1.0'))
+
+wifimac = Library('./modules/dll/WiFiMAC--main--0.2', "WiFiMAC--main--0.2", bzrBaseURL,
+                       RCS.Bazaar('./modules/dll/WiFiMAC--main--0.2',
+                                  'WiFiMAC', 'main', '0.2'),
+                       [], 'WIFIMAC')
+
+wifimac_addon = AddOn(wifimac, 'WiFiMAC-addOn--main--0.2', bzrBaseAddOnUrl,
+                         RCS.Bazaar('','WiFiMAC-addOn', 'main', '0.2'))
+
+mih = Library('./modules/dll/mih--main--1.0', 'mih--main--1.0', bzrBaseURL,
+              RCS.Bazaar('./modules/dll/mih--main--1.0',
+                          'mih', 'main', '1.0'),
+              [], 'MIH')
+
+mih_addon = AddOn(mih, 'mih-addOn--main--1.0', bzrBaseAddOnUrl,
+                  RCS.Bazaar('','mih-addOn', 'main', '1.0'))
+
+cooprrm = Library('./modules/rrm/coopRRM--main--1.0', 'coopRRM--main--1.0', bzrBaseURL,
+                  RCS.Bazaar('./modules/rrm/coopRRM--main--1.0',
+                              'coopRRM', 'main', '1.0'),
+                  [], 'COOPRRM')
+
+cooprrm_addon = AddOn(cooprrm, 'coopRRM-addOn--main--1.0', bzrBaseAddOnUrl,
+                RCS.Bazaar('','coopRRM-addOn', 'main', '1.0'))
+
+simpleTL = Library('./modules/mock/simpleTL--main--1.0', 'simpleTL--main--1.0', bzrBaseURL,
+                   RCS.Bazaar('./modules/mock/simpleTL--main--1.0',
+                               'simpleTL', 'main', '1.0'),
+                   [], 'SIMPLETL')
+
+simpleTL_addon = AddOn(simpleTL, 'simpleTL-addOn--main--1.0', bzrBaseAddOnUrl,
+                RCS.Bazaar('','simpleTL-addOn', 'main', '1.0'))
+
+udp = Library('./modules/tl/udp--unstable--1.0', 'udp--unstable--1.0', bzrBaseURL,
+              RCS.Bazaar('./modules/tl/udp--unstable--1.0',
+                          'udp', 'unstable', '1.0'),
+              [], 'UDP')
+
+udp_addon = AddOn(udp, 'udp-addOn--unstable--1.0', bzrBaseAddOnUrl,
+                         RCS.Bazaar('','udp-addOn', 'unstable', '1.0'))
+
+tcp = Library('./modules/tl/tcp--unstable--1.0', 'tcp--unstable--1.0', bzrBaseURL,
+              RCS.Bazaar('./modules/tl/tcp--unstable--1.0',
+                          'tcp', 'unstable', '1.0'),
+              [], 'TCP')
+
+tcp_addon = AddOn(tcp, 'tcp-addOn--unstable--1.0', bzrBaseAddOnUrl,
+                         RCS.Bazaar('','tcp-addOn', 'unstable', '1.0'))
+
+moduleTemplate = Library('./framework/ModuleTemplate--main--1.0', 'ModuleTemplate--main--1.0', bzrBaseURL,
+                         RCS.Bazaar('./framework/ModuleTemplate--main--1.0',
+                                     'ModuleTemplate', 'main', '1.0'),
+                         [])
+
+moduleTemplate_addon = AddOn(moduleTemplate, 'ModuleTemplate-addOn--main--1.0', bzrBaseAddOnUrl,
+                             RCS.Bazaar('','ModuleTemplate-addOn', 'main', '1.0'))
+
+tutorialSolution = Library('./framework/TutorialSolution--main--1.0', 'TutorialSolution--main--1.0', bzrBaseAddOnUrl,
+                           RCS.Bazaar('./framework/TutorialSolution--main--1.0',
+                                       'TutorialSolution', 'main', '1.0'),
+                           [], 'TUTORIALSOLUTION')
+
+ip_test = SystemTest('./tests/system/ip-Tests--main--1.0', 'ip-Tests--main--1.0', bzrBaseAddOnUrl,
+                     RCS.Bazaar('./tests/system/ip-Tests--main--1.0',
+                                 'ip-Tests', 'main', '1.0'))
+
+glue_test = SystemTest('./tests/system/glue-Tests--main--1.0', 'glue-Tests--main--1.0', bzrBaseAddOnUrl,
+                       RCS.Bazaar('./tests/system/glue-Tests--main--1.0',
+                                   'glue-Tests', 'main', '1.0'))
+
+winprostTDD_test = SystemTest('./tests/system/WinProStTDD-Tests--main--1.0', 'WinProStTDD-Tests--main--1.0', bzrBaseAddOnUrl,
+                              RCS.Bazaar('./tests/system/WinProStTDD-Tests--main--1.0',
+                                         'WinProStTDD-Tests', 'main', '1.0'))
+
+winprostMobility_test = SystemTest('./tests/system/WinProStMobility-Tests--main--1.0', 'WinProStMobility-Tests--main--1.0', bzrBaseAddOnUrl,
+                                   RCS.Bazaar('./tests/system/WinProStMobility-Tests--main--1.0',
+                                               'WinProStMobility-Tests', 'main', '1.0'))
+
+winprostFDD_test = SystemTest('./tests/system/WinProStFDD-Tests--main--1.0', 'WinProStFDD-Tests--main--1.0', bzrBaseAddOnUrl,
+                                   RCS.Bazaar('./tests/system/WinProStFDD-Tests--main--1.0',
+                                               'WinProStFDD-Tests', 'main', '1.0'))
+
+winprostHalfDuplexFDD_test = SystemTest('./tests/system/WinProStHalfDuplexFDD-Tests--main--1.0', 'WinProStHalfDuplexFDD-Tests--main--1.0', bzrBaseAddOnUrl,
+                                   RCS.Bazaar('./tests/system/WinProStHalfDuplexFDD-Tests--main--1.0',
+                                               'WinProStHalfDuplexFDD-Tests', 'main', '1.0'))
+
+winprostCQI_test = SystemTest('./tests/system/WinProStCQI-Tests--main--1.0', 'WinProStCQI-Tests--main--1.0', bzrBaseAddOnUrl,
+                                   RCS.Bazaar('./tests/system/WinProStCQI-Tests--main--1.0',
+                                               'WinProStCQI-Tests', 'main', '1.0'))
+
+wimac_test = SystemTest('./tests/system/WiMAC-Tests--main--1.2', 'WiMAC-Tests--main--1.2', bzrBaseAddOnUrl,
+                        RCS.Bazaar('./tests/system/WiMAC-Tests--main--1.2',
+                                    'WiMAC-Tests', 'main', '1.2'))
+
+coopRRM_test = SystemTest('./tests/system/coopRRM-Tests--main--1.0', 'coopRRM-Tests--main--1.0', bzrBaseAddOnUrl,
+                                   RCS.Bazaar('./tests/system/coopRRM-Tests--main--1.0',
+                                               'coopRRM-Tests', 'main', '1.0'))
+
+constanze_test = SystemTest('./tests/system/Constanze-Tests--main--1.0', 'Constanze-Tests--main--1.0', bzrBaseAddOnUrl,
+                            RCS.Bazaar('./tests/system/Constanze-Tests--main--1.0',
+                                        'Constanze-Tests', 'main', '1.0'))
+
+udp_test = SystemTest('./tests/system/udp-Tests--main--1.0', 'udp-Tests--main--1.0', bzrBaseAddOnUrl,
+                      RCS.Bazaar('./tests/system/udp-Tests--main--1.0',
+                                  'udp-Tests', 'main', '1.0'))
+
+tcp_test = SystemTest('./tests/system/tcp-Tests--main--1.0', 'tcp-Tests--main--1.0', bzrBaseAddOnUrl,
+                      RCS.Bazaar('./tests/system/tcp-Tests--main--1.0',
+                                  'tcp-Tests', 'main', '1.0'))
+
+mih_test = SystemTest('./tests/system/mih-Tests--main--0.2', 'mih-Tests--main--0.2', bzrBaseAddOnUrl,
+                      RCS.Bazaar('./tests/system/mih-Tests--main--0.2',
+                                  'mih-Tests', 'main', '0.2'))
+
+mobility_test = SystemTest('./tests/system/Mobility-Tests--main--1.0', 'Mobility-Tests--main--1.0', bzrBaseAddOnUrl,
+                      RCS.Bazaar('./tests/system/Mobility-Tests--main--1.0',
+                                  'Mobility-Tests', 'main', '1.0'))
+
+multimode_test = SystemTest('./tests/system/MultiMode-Tests--main--1.0', 'MultiMode-Tests--main--1.0', bzrBaseAddOnUrl,
+                            RCS.Bazaar('./tests/system/MultiMode-Tests--main--1.0',
+                                        'MultiMode-Tests', 'main', '1.0'))
+
+ofdmaScanner_test = SystemTest('./tests/system/OFDMAScanner-Tests--main--1.0', 'OFDMAScanner-Tests--main--1.0', bzrBaseAddOnUrl,
+                               RCS.Bazaar('./tests/system/OFDMAScanner-Tests--main--1.0',
+                                           'OFDMAScanner-Tests', 'main', '1.0'))
+
+wifimac_test = SystemTest('./tests/system/WiFiMAC-Tests--main--1.0', 'WiFiMAC-Tests--main--1.0', bzrBaseAddOnUrl,
+                          RCS.Bazaar('./tests/system/WiFiMAC-Tests--main--1.0',
+                                      'WiFiMAC-Tests', 'main', '1.0'))
+
+wnsDocumentation = Generic('./WNS-Documentation--main--1.0', 'WNS-Documentation--main--1.0', bzrBaseAddOnUrl,
+                           RCS.Bazaar('./WNS-Documentation--main--1.0',
+                                       'WNS-Documentation', 'main', '1.0'),
+                           alias="doc")
+
+liveCDBuilder = Generic('./framework/LiveCDBuilder--main--1.0', 'LiveCDBuilder--main--1.0', bzrBaseAddOnUrl,
+                        RCS.Bazaar('./framework/LiveCDBuilder--main--1.0',
+                                    'LiveCDBuilder', 'main', '1.0'))
+
+wrowser = Python('./framework/Wrowser--main--0.9', 'Wrowser--main--0.9', bzrBaseAddOnUrl,
+                 RCS.Bazaar('./framework/Wrowser--main--0.9',
+                            'Wrowser', 'main', '0.9'))
+
+all = [ root,
+        unitTests,
+        buildSupport,
+        pywns,
+
+        libwns,
+        libwns_addon,
+        wns_core,
+
+        rise,
+        rise_addon,
+
+        dllBase,
+        dllBase_addon,
+        tutorial,
+        glue,
+        glue_addon,
+        copper,
+        copper_addon,
+
+        ip,
+        ip_addon,
+        constanze,
+        constanze_addon,
+        ofdmaPhy,
+	ofdmaPhy_addon,
+        winprost,
+        winprost_addon,
+        wimac,
+        wimac_addon,
+        wifimac,
+        wifimac_addon,
+        mih,
+        mih_addon,
+        cooprrm,
+        cooprrm_addon,
+        simpleTL,
+        simpleTL_addon,
+        udp,
+        udp_addon,
+        tcp,
+        tcp_addon,
+        moduleTemplate,
+        moduleTemplate_addon,
+        tutorialSolution,
+
+        ip_test,
+        glue_test,
+        winprostTDD_test,
+        winprostMobility_test,
+        winprostFDD_test,
+        winprostHalfDuplexFDD_test,
+        winprostCQI_test,
+        wimac_test,
+        coopRRM_test,
+        constanze_test,
+        udp_test,
+        tcp_test,
+        mih_test,
+        mobility_test,
+        multimode_test,
+        ofdmaScanner_test,
+        wifimac_test,
+
+        wnsDocumentation,
+        liveCDBuilder,
+        wrowser,
+
+        ]
 
 # commands to prepare the sandbox for playground.py
 # list of tuples, where tuples are (command, directory to execute command in)
-prereqCommands = [('scons', 'framework/pywns')]
+prereqCommands = [('scons', 'framework/PyWNS--main--1.0')]
