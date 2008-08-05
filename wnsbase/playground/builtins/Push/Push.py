@@ -47,29 +47,49 @@ class PushCommand(wnsbase.playground.plugins.Command.Command):
 Push uploads all projects to the URL provided in projects.py. Use --noAsk option to suppress questions.
 Use together with --configFile to supply a different projects.py file containing different target locations.
 Use --create-prefix option if target directory does not exist.
-See ./playground --help for more information. 
+See ./playground --help for more information.
 """
         wnsbase.playground.plugins.Command.Command.__init__(self, "push", rationale, usage)
-        
+
         self.optParser.add_option("", "--create-prefix",
                                   dest = "createPrefix", default = False,
                                   action = "store_true",
                                   help = "create new remote repository if not present")
 
     def run(self):
-        wnsbase.playground.Core.getCore()._process_hooks("_pre_upgrade")
+        def push(project, otherProjects):
+            if otherProjects is None:
+                otherURL = project.getRCSUrl()
+            else:
+                print "Checking for another branch"
 
-        def push(project):
+                otherProject = None
+
+                for p in otherProjects.all:
+                    if project.getDir() == p.getDir():
+                        otherProject = p
+
+                if otherProject is None:
+                    print "WARNING: The alternate projects file does not contain %s" % project.getDir()
+                    print "Skipping %s" % project.getDir()
+                else:
+                    otherURL = otherProject.getRCSUrl()
+
+
             rcs = project.getRCS()
+
             if rcs.isPinned():
                 sys.stdout.write("\nSkipping module in %s, because it is pinned to %s\n\n"
                                  % (project.getDir(), rcs.getPinnedPatchLevel()))
                 return
             checkForConflictsAndExit(".")
             core = wnsbase.playground.Core.getCore()
-            warning = "Do you realy want to push " + project.getDir() + " to " + project.getRCSUrl() 
-            if (core.userFeedback.askForConfirmation(warning)):
-                print "\nPushing '" + project.getDir() + " to " + project.getRCSUrl() + "' ..."
-                rcs.push(project.getRCSUrl(), self.options.createPrefix).realtimePrint()
+            if otherURL is not None:
+                warning = "Do you really want to push " + project.getDir() + " to " + otherURL
+                if (core.userFeedback.askForConfirmation(warning)):
+                    print "\nPushing '" + project.getDir() + " to " + otherURL + "' ..."
+                    rcs.push(otherURL, self.options.createPrefix).realtimePrint()
 
-        core.foreachProject(push)
+        core._process_hooks("_pre_push")
+
+        core.foreachProject(push, otherProjects = core.otherProjects)
