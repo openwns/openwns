@@ -62,12 +62,11 @@ sim = openwns.Simulator(simulationModel = mm1,
 
 sim.eventSchedulerMonitor = None
 
-sim.environment.probeBusRegistry = openwns.probebus.ProbeBusRegistry(openwns.probebus.MasterProbeBus())
+pbr = sim.environment.probeBusRegistry
 
-sim.environment.probeBusRegistry.insertProbeBus("openwns.queuingsystem.MM1.sojournTime",
-                                                statisticsProbeBus)
-sim.environment.probeBusRegistry.insertProbeBus("openwns.queuingsystem.MM1.sojournTime",
-                                                loggingProbeBus)
+pbr.getMeasurementSource("openwns.queuingsystem.MM1.sojournTime").addObserver(statisticsProbeBus)
+
+pbr.getMeasurementSource("openwns.queuingsystem.MM1.sojournTime").addObserver(loggingProbeBus)
 
 # set the configuration for this simulation
 openwns.setSimulator(sim)
