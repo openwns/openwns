@@ -89,4 +89,4 @@ afterwards:
             print "None"
 
         # Maybe projects.py has changed. Trigger reload
-        core.readProjectsConfig()
+        core.readProjectsConfig(core.projectsFile)

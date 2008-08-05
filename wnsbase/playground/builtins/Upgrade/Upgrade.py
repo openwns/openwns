@@ -51,12 +51,29 @@ patches from the remote repository (if any are available).
         wnsbase.playground.plugins.Command.Command.__init__(self, "upgrade", rationale, usage)
 
     def run(self):
-        wnsbase.playground.Core.getCore()._process_hooks("_pre_upgrade")
+        core._process_hooks("_pre_upgrade")
         updateCommand = UpdateCommand()
         updateCommand.startup([])
         updateCommand.run()
 
-        def upgrade(project):
+        def upgrade(project, otherProjects):
+
+            if otherProjects is None:
+                otherURL = project.getRCSUrl()
+            else:
+                otherProject = None
+
+                for p in otherProjects.all:
+                    if project.getDir() == p.getDir():
+                        otherProject = p
+
+                if otherProject is None:
+                    print "WARNING: The alternate projects file does not contain %s" % project.getDir()
+                    print "Executing upgrade on parent branch"
+                    otherURL = project.getRCSUrl()
+                else:
+                    otherURL = otherProject.getRCSUrl()
+
             rcs = project.getRCS()
             if rcs.isPinned():
                 sys.stdout.write("\nSkipping module in %s, because it is pinned to %s\n\n"
@@ -64,20 +81,20 @@ patches from the remote repository (if any are available).
                 return
             sys.stdout.write("Checking for new patches in: %s ... " % (project.getDir()))
             sys.stdout.flush()
-            missing = str(rcs.missing(project.getRCSUrl() , {"-s":""}))
+            missing = str(rcs.missing(otherURL , {"-s":""}))
             if(missing != ""):
                 print "Found:"
                 print missing
                 checkForConflictsAndExit(".")
                 print "\nRetrieving new patches for '" + project.getDir() + "' ..."
                 try:
-                    rcs.update(fromRepository=project.getRCSUrl()).realtimePrint()
+                    rcs.update(fromRepository=otherURL).realtimePrint()
                     checkForConflictsAndExit(".")
                 except wnsbase.rcs.Bazaar.BzrMergeNeededException, e:
                     core = wnsbase.playground.Core.getCore()
                     if (not core.userFeedback.askForReject("These branches have diverged! Do you want me to merge?")):
-                        rcs.merge(fromRepository=project.getRCSUrl()).realtimePrint()
+                        rcs.merge(fromRepository=otherURL).realtimePrint()
             else:
                 print "None"
 
-        core.foreachProject(upgrade)
+        core.foreachProject(upgrade, otherProjects = core.otherProjects)

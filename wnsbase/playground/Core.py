@@ -118,6 +118,10 @@ class Core:
         self.configFile = os.path.join(os.environ["HOME"], ".wns", "playground.config")
         self.projects = None
 
+        # Will be set if commands need a second projects configuration
+        # For example: missing and upgrade from another branch
+        self.otherProjects = None
+
         self._loadConfigFile()
         self.pluginPaths = ["./wnsbase/playground/plugins"] + self.pluginPaths
         self._loadBuiltins()
@@ -139,7 +143,17 @@ class Core:
         else:
             self.printUsage()
 
-        self.projects = self.readProjectsConfig()
+        if (self.projectsFile == "config/projects.py"):
+            if not os.path.exists(self.projectsFile):
+                self._process_hooks("_projects_py_not_available")
+            # if there is no hook we need to make a symlink to the template
+            if not os.path.exists(self.projectsFile):
+                os.symlink('projects.py.template', "config/projects.py")
+        else:
+            if not os.path.exists(self.projectsFile):
+                print "Cannot open configuration file " + str(self.projectsFile)
+
+        self.projects = self.readProjectsConfig(self.projectsFile)
 
         missingProjects = self.checkForMissingProjects()
 
@@ -535,24 +549,14 @@ class Core:
         depth = self.getDirectoryDepth(path)
         return os.path.normpath(("/").join([".."]*depth))
 
-    def readProjectsConfig(self):
+    def readProjectsConfig(self, filename):
         """ Read the projects config file config/projects.py
         """
         self._process_hooks("_pre_parse_project")
 
         sys.path.append("config")
         foobar = {}
-        if (self.projectsFile == "config/projects.py"):
-            if not os.path.exists(self.projectsFile):
-                self._process_hooks("_projects_py_not_available")
-            # if there is no hook we need to make a symlink to the template
-            if not os.path.exists(self.projectsFile):
-                os.symlink('projects.py.template', "config/projects.py")
-        else:
-            if not os.path.exists(self.projectsFile):
-                print "Cannot open configuration file " + str(self.projectsFile)
-
-        execfile(self.projectsFile, foobar)
+        execfile(filename, foobar)
         sys.path.remove("config")
 
         self._process_hooks("_post_parse_project")
