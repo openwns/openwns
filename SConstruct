@@ -42,6 +42,7 @@ includeDir=os.path.join(os.getcwd(),'include')
 for env in environments:
     env.Append(CPPPATH = ['#include', '/usr/include/python2.5'])
     env.Append(LIBPATH = '#' + 'sandbox/' + env.flavour)
+    env.Replace(CXX = 'icecc')
     installDir=os.path.join(os.getcwd(), 'sandbox', env.flavour)
 
     for project in projects.all:
