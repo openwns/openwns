@@ -58,6 +58,7 @@ See ./playground --help for more information.
 
     def run(self):
         def push(project, otherProjects):
+            otherURL = None
             if otherProjects is None:
                 otherURL = project.getRCSUrl()
             else:
