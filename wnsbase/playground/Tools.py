@@ -96,6 +96,11 @@ class UserMadeDecision:
                     answer = None
         return alternativesDict[keys[answer]]
 
+    def askForInput(self, question):
+        answer = None
+        answer = raw_input(question)
+        return answer
+
 class AcceptDefaultDecision:
     """ This always accepts default decisions. AskForConfirmation always returns
     True. AskForReject always returns False."""
@@ -109,6 +114,9 @@ class AcceptDefaultDecision:
 
     def askForChoice(self, question, alternativesDict, defaultKey):
         return alternativesDict[defaultKey]
+
+    def askForInput(self, question):
+        raise "Don't know how to apply --noAsk to askForInput!"
 
 class CommandQueue:
     """ A queue for commands. """
