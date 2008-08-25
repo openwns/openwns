@@ -51,18 +51,46 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
 
         wnsbase.playground.plugins.Command.Command.__init__(self, "createmodule", rationale, usage)
 
+        c = core.getConfig()
+
+        if not c.has_section("builtin.CreateModule"):
+            self.initConfigFile()
+
+    def initConfigFile(self):
+        print "You have not yet configured CreateModule. Now initializing"
+
+        c = core.getConfig()
+        c.add_section("builtin.CreateModule")
+
+        output = subprocess.Popen(["bzr", "whoami"], stdout=subprocess.PIPE).communicate()[0].rstrip()
+
+        defaultMaintainer = core.userFeedback.askForInput("Who will be the default maintainer of a new module?", output)
+
+        dbl = "bzr://bazaar.comnets.rwth-aachen.de/" + str(os.environ['USER']).upper()
+
+        defaultBranchLocation = core.userFeedback.askForInput("Where will be the default branch location", dbl)
+
+        c.set("builtin.CreateModule", "defaultBranchLocation", defaultBranchLocation)
+
+        c.set("builtin.CreateModule", "defaultMaintainer", defaultMaintainer)
+
+        core.updateConfig()
+        
     def run(self):
-        moduleName = core.userFeedback.askForInput("What is the name of your module (e.g.: ProjNameModule) ? ")
 
-        moduleSeries = core.userFeedback.askForInput("What is the series of your module (e.g.: main, trunk, etc.) ? ")
+        c = core.getConfig()
 
-        moduleVersion = core.userFeedback.askForInput("What is the version of your module (e.g. 0.8, 1.2, etc.) ? ")
+        moduleName = core.userFeedback.askForInput("What is the name of your module", "ProjModule")
 
-        branchLocation = core.userFeedback.askForInput("Where should the branch be pushed (e.g.: file:///home/you/archive/) ? ")
+        moduleSeries = core.userFeedback.askForInput("What is the series of your module", "main")
 
-        sdkLocation = core.userFeedback.askForInput("Where should the files be locate in the SDK (e.g.: ./modules/dll/) ? ")
+        moduleVersion = core.userFeedback.askForInput("What is the version of your module", "0.8")
 
-        maintainer = core.userFeedback.askForInput("Who is the maintainer of the module (e.g. John Doe <john.doe@example.com>) ? ")
+        branchLocation = core.userFeedback.askForInput("Where should the branch be pushed", c.get("builtin.CreateModule", "defaultBranchLocation")) 
+
+        sdkLocation = core.userFeedback.askForInput("Where should the files be locate in the SDK", "./modules/dll/")
+
+        maintainer = core.userFeedback.askForInput("Who is the maintainer of the module", c.get("builtin.CreateModule", "defaultMaintainer"))
 
         dest = os.path.join(sdkLocation, moduleName + '--' + moduleSeries + '--' + moduleVersion)
 
