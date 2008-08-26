@@ -51,11 +51,6 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
 
         wnsbase.playground.plugins.Command.Command.__init__(self, "createmodule", rationale, usage)
 
-        c = core.getConfig()
-
-        if not c.has_section("builtin.CreateModule"):
-            self.initConfigFile()
-
     def initConfigFile(self):
         print "You have not yet configured CreateModule. Now initializing"
 
@@ -79,6 +74,9 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
     def run(self):
 
         c = core.getConfig()
+
+        if not c.has_section("builtin.CreateModule"):
+            self.initConfigFile()
 
         moduleName = core.userFeedback.askForInput("What is the name of your module", "ProjModule")
 
