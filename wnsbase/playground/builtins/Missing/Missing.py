@@ -51,8 +51,30 @@ patches are local or remote
         wnsbase.playground.plugins.Command.Command.__init__(self, "missing", rationale, usage)
 
     def run(self):
-        def checkMissing(project):
-            print "Missing in", project.getDir(), "..."
-            print project.getRCS().missing(project.getRCSUrl() ,{"-s":""})
+        def checkMissing(project, otherProjects):
+            if otherProjects is None:
+                otherURL = project.getRCSUrl()
+            else:
+                print "Checking for another branch"
 
-        core.foreachProject(checkMissing)
+                otherProject = None
+
+                for p in otherProjects.all:
+                    if project.getDir() == p.getDir():
+                        otherProject = p
+
+                if otherProject is None:
+                    print "WARNING: The alternate projects file does not contain %s" % project.getDir()
+                    print "Executing missing on parent branch"
+                    otherURL = project.getRCSUrl()
+                else:
+                    otherURL = otherProject.getRCSUrl()
+
+            print "Missing in", project.getDir(), "..."
+            print project.getRCS().missing(otherURL ,{"-s":""})
+
+        core = wnsbase.playground.Core.getCore()
+
+        core._process_hooks("_pre_missing")
+
+        core.foreachProject(checkMissing, otherProjects = core.otherProjects)
