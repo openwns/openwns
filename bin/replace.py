@@ -116,7 +116,7 @@ def replace(dryRun, query):
     if directory==None or searchString==None or replaceString==None or doNothing==None:
         help()
     for (dirpath, dirnames, filenames) in os.walk(directory):
-            for i in [f for f in filenames if re.match("^.*(\.hpp|\.cpp|\.h|\.py)$", f) and not f == 'bversion.hpp' and not os.path.islink(os.path.join(dirpath, f))]:
+            for i in [f for f in filenames if re.match("^.*(\.hpp|\.cpp|\.h|\.py|Conscript)$", f) and not f == 'bversion.hpp' and not os.path.islink(os.path.join(dirpath, f))]:
                 oldFile = os.path.join(dirpath, i)
                 print "Replacing in: " + oldFile
                 changes = None

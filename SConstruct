@@ -5,24 +5,30 @@ sys.path.append('config')
 import projects
 sys.path.remove('config')
 
-profile = ARGUMENTS.get('profile', False)
-static = ARGUMENTS.get('static', False)
+opts = Options('options.py')
+opts.Add(BoolOption('static', 'Set to build the static version', False))
+opts.Add(PathOption('buildDir', 'Path to the build directory',  os.path.join(os.getcwd(), '.build')))
+opts.Add(BoolOption('profile', 'Set to enable profiling support', False))
+opts.Add(PathOption('sandboxDir', 'Path to the sandbox', os.path.join(os.getcwd(), 'sandbox')))
+opts.Add(PackageOption('cacheDir', 'Path to the object cache', False))
 environments = []
 installDirs = {}
 
 # Debug environment
-dbgenv = Environment(CPPDEFINES= {'WNS_ASSERT': '1'}
-                     )
+dbgenv = Environment(options = opts, CPPDEFINES= {'WNS_ASSERT': '1'})
 dbgenv.Append(CXXFLAGS = ['-g', '-O0', '-fno-inline'])
 
 dbgenv.flavour = 'dbg'
 environments.append(dbgenv)
 
+#we use only the debug environment to generate the help text for the options
+Help(opts.GenerateHelpText(dbgenv))
+
 # Opt Environment
-optenv = Environment(CPPDEFINES= {'NDEBUG': '1',
-                                  'WNS_NDEBUG' : '1',
-                                  'WNS_NO_LOGGING' : '1'},
-                      )
+optenv = Environment(options = opts, CPPDEFINES= {'NDEBUG': '1',
+                                                  'WNS_NDEBUG' : '1',
+                                                  'WNS_NO_LOGGING' : '1'},)
+
 optenv.Append(CXXFLAGS = ['-O3',
                           '-fno-strict-aliasing',
                           '-Wno-unused-variable',
@@ -37,19 +43,21 @@ for env in environments:
     env.Append(LIBPATH = os.path.join('#sandbox', env.flavour, 'lib'))
     env.Replace(CXX = 'icecc')
     #env.SetOption('implicit-cache',1)
-    env.installDir = os.path.join(os.getcwd(), 'sandbox', env.flavour)
+    env.installDir = os.path.join(env['sandboxDir'], env.flavour)
     env.includeDir = includeDir
+    if env['cacheDir']:
+        env.CacheDir(env['cacheDir'])
     installDirs[env.flavour] = Dir(env.installDir)
     Alias(env.flavour, installDirs[env.flavour])
 
-    if profile:
+    if env['profile']:
         env.Append(CXXFLAGS = '-pg')
         env.Append(LINKFLAGS = '-pg')
 
     for project in projects.all:
         if isinstance(project, wnsbase.playground.Project.Root) or isinstance(project, wnsbase.playground.Project.SystemTest):
             continue
-        buildDir = os.path.join('.build/', env.flavour, project.getRCSSubDir())
+        buildDir = os.path.join(env['buildDir'], env.flavour, project.getRCSSubDir())
         env.BuildDir(buildDir, project.getDir())
         env.SConscript(os.path.join(buildDir, 'SConscript'), exports='env')
     
