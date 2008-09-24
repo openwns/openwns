@@ -37,6 +37,27 @@ optenv.flavour = 'opt'
 environments.append(optenv)
 
 includeDir = os.path.join(os.getcwd(),'include')
+libraries = []
+for project in projects.all:
+    if isinstance(project, wnsbase.playground.Project.Root) or isinstance(project, wnsbase.playground.Project.SystemTest):
+        continue
+    if isinstance(project, wnsbase.playground.Project.Library):
+        libname,srcFiles,headers,pyconfigs,dependencies = SConscript(os.path.join(project.getDir(), 'config', 'libfiles.py'))
+        if len(srcFiles) != 0:
+            libraries.append(libname)
+            # if we static link we also need to include the dependencies of the libraries
+            # if we compile for a different flavour than debug, the following is also true
+            if dbgenv['static']:
+                libraries += dependencies
+
+    if project.includeBaseName is not None:
+        libname,srcFiles,headers,pyconfigs,dependencies = SConscript(os.path.join(project.getDir(), 'config', 'libfiles.py'))
+        headertargets = [header.replace('src/', '') for header in headers]
+        InstallAs([os.path.join(includeDir, project.includeBaseName ,target) for target in headertargets],\
+                  [os.path.join(project.getDir(), header) for header in headers])
+
+# remove duplicates
+libraries = list(set(libraries))
     
 for env in environments:
     env.Append(CPPPATH = ['#include', '/usr/include/python2.5'])
@@ -45,6 +66,7 @@ for env in environments:
     #env.SetOption('implicit-cache',1)
     env.installDir = os.path.join(env['sandboxDir'], env.flavour)
     env.includeDir = includeDir
+    env['libraries'] = libraries
     if env['cacheDir']:
         env.CacheDir(env['cacheDir'])
     installDirs[env.flavour] = Dir(env.installDir)
@@ -61,15 +83,6 @@ for env in environments:
         env.BuildDir(buildDir, project.getDir())
         env.SConscript(os.path.join(buildDir, 'SConscript'), exports='env')
     
-
-for project in projects.all:
-    if isinstance(project, wnsbase.playground.Project.Root) or isinstance(project, wnsbase.playground.Project.SystemTest):
-        continue
-    if project.includeBaseName is not None:
-        srcFiles,headers,pyconfigs = SConscript(os.path.join(project.getDir(), 'config', 'libfiles.py'))
-        headertargets = [header.replace('src/', '') for header in headers]
-        InstallAs([os.path.join(includeDir, project.includeBaseName ,target) for target in headertargets],\
-                  [os.path.join(project.getDir(), header) for header in headers])
 
 
 
