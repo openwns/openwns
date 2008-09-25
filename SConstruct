@@ -7,9 +7,9 @@ sys.path.remove('config')
 
 opts = Options('options.py')
 opts.Add(BoolOption('static', 'Set to build the static version', False))
-opts.Add(PathOption('buildDir', 'Path to the build directory',  os.path.join(os.getcwd(), '.build')))
+opts.Add(PathOption('buildDir', 'Path to the build directory',  os.path.join(os.getcwd(), '.build'), PathOption.PathIsDirCreate))
 opts.Add(BoolOption('profile', 'Set to enable profiling support', False))
-opts.Add(PathOption('sandboxDir', 'Path to the sandbox', os.path.join(os.getcwd(), 'sandbox')))
+opts.Add(PathOption('sandboxDir', 'Path to the sandbox', os.path.join(os.getcwd(), 'sandbox'), PathOption.PathIsDirCreate))
 opts.Add(PackageOption('cacheDir', 'Path to the object cache', False))
 environments = []
 installDirs = {}
