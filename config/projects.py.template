@@ -28,8 +28,8 @@
 from wnsbase.playground.Project import *
 import wnsbase.RCS as RCS
 
-bzrBaseURL = "bzr://bazaar.comnets.rwth-aachen.de/KKS/main"
-bzrBaseAddOnUrl = "bzr://bazaar.comnets.rwth-aachen.de/KKS/addOns/main"
+bzrBaseURL = "bzr://bazaar.comnets.rwth-aachen.de/KKS/buildSystem/main"
+bzrBaseAddOnUrl = "bzr://bazaar.comnets.rwth-aachen.de/KKS/buildSystem/addOns/main"
 
 root         = Root('./', "openWNS--main--1.0", bzrBaseURL,
                     RCS.Bazaar('.', 'openWNS', 'main', '1.0'))
@@ -152,14 +152,6 @@ mih = Library('./modules/dll/mih--main--1.0', 'mih--main--1.0', bzrBaseURL,
 mih_addon = AddOn(mih, 'mih-addOn--main--1.0', bzrBaseAddOnUrl,
                   RCS.Bazaar('','mih-addOn', 'main', '1.0'))
 
-cooprrm = Library('./modules/rrm/coopRRM--main--1.0', 'coopRRM--main--1.0', bzrBaseURL,
-                  RCS.Bazaar('./modules/rrm/coopRRM--main--1.0',
-                              'coopRRM', 'main', '1.0'),
-                  [], 'COOPRRM')
-
-cooprrm_addon = AddOn(cooprrm, 'coopRRM-addOn--main--1.0', bzrBaseAddOnUrl,
-                RCS.Bazaar('','coopRRM-addOn', 'main', '1.0'))
-
 simpleTL = Library('./modules/mock/simpleTL--main--1.0', 'simpleTL--main--1.0', bzrBaseURL,
                    RCS.Bazaar('./modules/mock/simpleTL--main--1.0',
                                'simpleTL', 'main', '1.0'),
@@ -167,14 +159,6 @@ simpleTL = Library('./modules/mock/simpleTL--main--1.0', 'simpleTL--main--1.0', 
 
 simpleTL_addon = AddOn(simpleTL, 'simpleTL-addOn--main--1.0', bzrBaseAddOnUrl,
                 RCS.Bazaar('','simpleTL-addOn', 'main', '1.0'))
-
-udp = Library('./modules/tl/udp--unstable--1.0', 'udp--unstable--1.0', bzrBaseURL,
-              RCS.Bazaar('./modules/tl/udp--unstable--1.0',
-                          'udp', 'unstable', '1.0'),
-              [], 'UDP')
-
-udp_addon = AddOn(udp, 'udp-addOn--unstable--1.0', bzrBaseAddOnUrl,
-                         RCS.Bazaar('','udp-addOn', 'unstable', '1.0'))
 
 tcp = Library('./modules/tl/tcp--unstable--1.0', 'tcp--unstable--1.0', bzrBaseURL,
               RCS.Bazaar('./modules/tl/tcp--unstable--1.0',
@@ -187,7 +171,7 @@ tcp_addon = AddOn(tcp, 'tcp-addOn--unstable--1.0', bzrBaseAddOnUrl,
 moduleTemplate = Library('./framework/ModuleTemplate--main--1.0', 'ModuleTemplate--main--1.0', bzrBaseURL,
                          RCS.Bazaar('./framework/ModuleTemplate--main--1.0',
                                      'ModuleTemplate', 'main', '1.0'),
-                         [])
+                         [], 'PROJNAME')
 
 moduleTemplate_addon = AddOn(moduleTemplate, 'ModuleTemplate-addOn--main--1.0', bzrBaseAddOnUrl,
                              RCS.Bazaar('','ModuleTemplate-addOn', 'main', '1.0'))
@@ -229,17 +213,9 @@ wimac_test = SystemTest('./tests/system/WiMAC-Tests--main--1.2', 'WiMAC-Tests--m
                         RCS.Bazaar('./tests/system/WiMAC-Tests--main--1.2',
                                     'WiMAC-Tests', 'main', '1.2'))
 
-coopRRM_test = SystemTest('./tests/system/coopRRM-Tests--main--1.0', 'coopRRM-Tests--main--1.0', bzrBaseAddOnUrl,
-                                   RCS.Bazaar('./tests/system/coopRRM-Tests--main--1.0',
-                                               'coopRRM-Tests', 'main', '1.0'))
-
 constanze_test = SystemTest('./tests/system/Constanze-Tests--main--1.0', 'Constanze-Tests--main--1.0', bzrBaseAddOnUrl,
                             RCS.Bazaar('./tests/system/Constanze-Tests--main--1.0',
                                         'Constanze-Tests', 'main', '1.0'))
-
-udp_test = SystemTest('./tests/system/udp-Tests--main--1.0', 'udp-Tests--main--1.0', bzrBaseAddOnUrl,
-                      RCS.Bazaar('./tests/system/udp-Tests--main--1.0',
-                                  'udp-Tests', 'main', '1.0'))
 
 tcp_test = SystemTest('./tests/system/tcp-Tests--main--1.0', 'tcp-Tests--main--1.0', bzrBaseAddOnUrl,
                       RCS.Bazaar('./tests/system/tcp-Tests--main--1.0',
@@ -312,12 +288,8 @@ all = [ root,
         wifimac_addon,
         mih,
         mih_addon,
-        cooprrm,
-        cooprrm_addon,
         simpleTL,
         simpleTL_addon,
-        udp,
-        udp_addon,
         tcp,
         tcp_addon,
         moduleTemplate,
@@ -332,9 +304,7 @@ all = [ root,
         winprostHalfDuplexFDD_test,
         winprostCQI_test,
         wimac_test,
-        coopRRM_test,
         constanze_test,
-        udp_test,
         tcp_test,
         mih_test,
         mobility_test,
