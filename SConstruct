@@ -15,7 +15,7 @@ environments = []
 installDirs = {}
 
 # Debug environment
-dbgenv = Environment(options = opts, CPPDEFINES= {'WNS_ASSERT': '1'})
+dbgenv = Environment(options = opts)
 dbgenv.Append(CXXFLAGS = ['-g', '-O0', '-fno-inline'])
 
 dbgenv.flavour = 'dbg'
