@@ -56,6 +56,16 @@ application = Binary('./framework/application', "openwns-application/application
 pywns = Python("./framework/pywns", "openwns-pywns/pywns--main--1.0", bzrBaseURL,
                RCS.Bazaar('framework/pywns', "pywns", "main", "1.0"))
 
+constanze = Library('./modules/loadgen/constanze', 'openwns-constanze/constanze--main--1.0', bzrBaseURL,
+                    RCS.Bazaar('./modules/loadgen/constanze',
+                                'constanze', 'main', '1.0'),
+                    [library])
+
+simpleTL = Library('./modules/mock/simpletl', 'openwns-simpletl/simpletl--main--1.0', bzrBaseURL,
+                   RCS.Bazaar('./modules/mock/simpletl',
+                               'simpletl', 'main', '1.0'),
+                   [library])
+
 all = [
     root,
     unitTests,
@@ -64,7 +74,10 @@ all = [
     library,
     moduleTemplate,
     application,
-    pywns
+    pywns,
+
+    constanze,
+    simpleTL,
     ]
 
 # commands to prepare the sandbox for playground.py
