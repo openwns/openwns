@@ -117,12 +117,17 @@ be placed in ./doxydoc.
         doxygenConfig.append("STRIP_FROM_INC_PATH", os.getcwd())
         doxygenConfig.append("ALIASES", 'pyco{1}="<dl><dt><b>Configuration Class:</b></dt><dd><A HREF=\\"PyCoDoc/PyConfig.\\1-class.html\\">\\1</A></dd></dl>"')
         doxygenConfig.append("ALIASES", 'pycoshort{1}="<A HREF=\\"PyCoDoc/PyConfig.\\1-class.html\\">\\1</A>"')
+        doxygenConfig.append("ALIASES", 'tableOfContents="<DIV id=\\"pageToc\\" class=\\"pageToc\\"></DIV>"')
         doxygenConfig.append("MSCGEN_PATH", "./bin")
 
         # if the masterProject has a special header.htm will use this as header
         customHeader = os.path.join(masterDocumentationProject.getDir(), "config/header.htm")
+        customCSS = os.path.join(masterDocumentationProject.getDir(), "config/doxygen.css")
         if os.path.exists(customHeader):
             doxygenConfig.set("HTML_HEADER", customHeader)
+
+        if os.path.exists(customHeader):
+            doxygenConfig.set("HTML_STYLESHEET", customCSS)
 
         # feed configuration to doxygen on stdin
 	print "Calling doxygen ... please wait: 'doxygen -'"
