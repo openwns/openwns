@@ -47,6 +47,12 @@ class CPPDocuCommand(wnsbase.playground.plugins.Command.Command):
 be placed in ./doxydoc.
 """
         wnsbase.playground.plugins.Command.Command.__init__(self, "cppdocu", rationale, usage)
+
+        self.optParser.add_option("", "--only-examples",
+                                  dest = "onlyExamples", default = False,
+                                  action = "store_true",
+                                  help = "Only generate examples")
+
         self.examplesPath = ".doxydocExamples"
 
     def run(self):
@@ -67,14 +73,10 @@ be placed in ./doxydoc.
         # we need exactly one master documentation project
         assert masterDocumentationProject != None
 
-        # remove old examples
-        print "Preparing examples."
-        print "Removing old examples."
-        shutil.rmtree(self.examplesPath, True)
-        os.mkdir(self.examplesPath)
-        for project in docProjects:
-            print "Generating examples for " + project.getDir()
-            generateExamples(os.path.join(project.getDir(), "src"), self.examplesPath)
+        prepareExamples()
+
+        if self.options.onlyExamples:
+            return
 
         # find the right doxygen file
         dirNameOfThisModule = os.path.dirname(__file__)
@@ -155,12 +157,31 @@ be placed in ./doxydoc.
 
         shutil.copytree("doxydoc/html", "sandbox/default/doc")
 
+def prepareExamples(examplesPath, docProjects):
+        # remove old examples
+        print "Preparing examples."
+        print "Removing old examples."
+        shutil.rmtree(examplesPath, True)
+        os.mkdir(examplesPath)
+        for project in docProjects:
+            print "Generating C++ examples for " + project.getDir()
+            generateExamples('c++', os.path.join(project.getDir(), "src"), examplesPath)
+            print "Generating Python examples for " + project.getDir()
+            generateExamples('python', os.path.join(project.getDir(), "PyConfig"), examplesPath)
 
-def processFile(path, fileName, dstPath):
+def processFile(mode, path, fileName, dstPath):
     """Search a file for examples and store them at dstPath.
     """
-    start_re = re.compile(r'\s*//\s*begin\s+example\s+"(.+)".*')
-    stop_re = re.compile(r'\s*//\s*end\s+example.*')
+
+    assert mode=='c++' or mode=='python', "Unsupported mode given to generateExamples"
+
+    if mode == 'c++':
+        start_re = re.compile(r'\s*//\s*begin\s+example\s+"(.+)".*')
+        stop_re = re.compile(r'\s*//\s*end\s+example.*')
+
+    if mode == 'python':
+        start_re = re.compile(r'\s*#\s*begin\s+example\s+"(.+)".*')
+        stop_re = re.compile(r'\s*#\s*end\s+example.*')
 
     fullFileName = os.path.join(path, fileName)
 
@@ -194,18 +215,25 @@ def processFile(path, fileName, dstPath):
             example.append(line)
 
 
-def generateExamples(path, dst):
-    """Search all *.{cpp|hpp} files in path for examples.
+def generateExamples(mode, path, dst):
+    """If mode=='c++' :Search all *.{cpp|hpp} files in path for examples.
+       If mode=='python' :Search all *.{py} files in path for examples.
 
        Every example found will be written to a file with the name
        given at the 'begin example' tag.
        All the example files will be stored in the directory dst.
     """
 
+    assert mode=='c++' or mode=='python', "Unsupported mode given to generateExamples"
+
     for root, dirs, files in os.walk(path):
         for f in files:
-            if f.endswith('.hpp') or f.endswith('.cpp'):
-                processFile(root, f, dst)
+            if mode == 'c++':
+                if f.endswith('.hpp') or f.endswith('.cpp'):
+                    processFile(mode, root, f, dst)
+            if mode == 'python':
+                if f.endswith('.py'):
+                    processFile(mode, root, f, dst)
 
 class DoxygenConfigParser:
     """Parser for doxygen config files"""
