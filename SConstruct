@@ -5,6 +5,9 @@ sys.path.append('config')
 import projects
 sys.path.remove('config')
 
+SetOption('num_jobs', os.sysconf('SC_NPROCESSORS_ONLN'))
+SetOption('implicit_cache', True)
+
 opts = Options('options.py')
 opts.Add(BoolOption('static', 'Set to build the static version', False))
 opts.Add(PathOption('buildDir', 'Path to the build directory',  os.path.join(os.getcwd(), '.build'), PathOption.PathIsDirCreate))
@@ -39,7 +42,7 @@ environments.append(optenv)
 includeDir = os.path.join(os.getcwd(),'include')
 libraries = []
 for project in projects.all:
-    if isinstance(project, wnsbase.playground.Project.Root) or isinstance(project, wnsbase.playground.Project.SystemTest):
+    if isinstance(project, wnsbase.playground.Project.Root) or isinstance(project, wnsbase.playground.Project.SystemTest) or isinstance(project, wnsbase.playground.Project.Generic):
         continue
     if isinstance(project, wnsbase.playground.Project.Library):
         libname,srcFiles,headers,pyconfigs,dependencies = SConscript(os.path.join(project.getDir(), 'config', 'libfiles.py'))
@@ -63,7 +66,6 @@ for env in environments:
     env.Append(CPPPATH = ['#include', '/usr/include/python2.5'])
     env.Append(LIBPATH = os.path.join('#sandbox', env.flavour, 'lib'))
     env.Replace(CXX = 'icecc')
-    #env.SetOption('implicit-cache',1)
     env.installDir = os.path.join(env['sandboxDir'], env.flavour)
     env.includeDir = includeDir
     env['libraries'] = libraries
@@ -77,13 +79,17 @@ for env in environments:
         env.Append(LINKFLAGS = '-pg')
 
     for project in projects.all:
-        if isinstance(project, wnsbase.playground.Project.Root) or isinstance(project, wnsbase.playground.Project.SystemTest):
+        if isinstance(project, wnsbase.playground.Project.Root) or isinstance(project, wnsbase.playground.Project.SystemTest) or isinstance(project, wnsbase.playground.Project.Generic):
             continue
         buildDir = os.path.join(env['buildDir'], env.flavour, project.getRCSSubDir())
         env.BuildDir(buildDir, project.getDir())
         env.SConscript(os.path.join(buildDir, 'SConscript'), exports='env')
     
 
-
+## The documentation environment.
+## TODO implement the correct call of the documentation build
+docuEnv = Environment(tools = ['default', 'doxygen'], toolpath = '.')
+docu = docuEnv.SConscript('WNS-Documentation--main--1.0/SConscript', exports='docuEnv')
+Alias('docu', docu)
 
 Default(installDirs['dbg'])
