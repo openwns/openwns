@@ -73,7 +73,7 @@ be placed in ./doxydoc.
         # we need exactly one master documentation project
         assert masterDocumentationProject != None
 
-        prepareExamples()
+        prepareExamples(self.examplesPath, docProjects)
 
         if self.options.onlyExamples:
             return
