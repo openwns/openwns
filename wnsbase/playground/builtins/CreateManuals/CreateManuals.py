@@ -36,7 +36,9 @@ import re
 import textwrap
 import subprocess
 
-class CPPDocuCommand(wnsbase.playground.plugins.Command.Command):
+from wnsbase.playground.builtins.CPPDocumentation.CPPDocumentation import prepareExamples
+
+class CreateManualsCommand(wnsbase.playground.plugins.Command.Command):
 
     def __init__(self):
         usage = "\n%prog cppdocu\n\n"
@@ -46,14 +48,9 @@ class CPPDocuCommand(wnsbase.playground.plugins.Command.Command):
         usage += """ Build the CPP documentation for the whole project. The created documentation will
 be placed in ./doxydoc.
 """
-        wnsbase.playground.plugins.Command.Command.__init__(self, "cppdocu", rationale, usage)
+        wnsbase.playground.plugins.Command.Command.__init__(self, "createmanuals", rationale, usage)
 
-        self.optParser.add_option("", "--only-examples",
-                                  dest = "onlyExamples", default = False,
-                                  action = "store_true",
-                                  help = "Only generate examples")
-
-        self.examplesPath = ".doxydocExamples"
+        self.workingdir = '.createManualsWorkingDir'
 
     def run(self):
         core = wnsbase.playground.Core.getCore()
@@ -73,10 +70,68 @@ be placed in ./doxydoc.
         # we need exactly one master documentation project
         assert masterDocumentationProject != None
 
-        prepareExamples(self.examplesPath, docProjects)
+        import doxygenParser
+        p = doxygenParser.Parser()
 
-        if self.options.onlyExamples:
-            return
+        # remove old working dir
+        shutil.rmtree(self.workingdir, True)
+        os.mkdir(self.workingdir)
+
+        prepareExamples(self.workingdir, docProjects)
+
+        for project in docProjects:
+            print "Finding documentation pages for " + project.getDir()
+            findDocumentation(p, os.path.join(project.getDir(), "src"))
+            findDocumentation(p, os.path.join(project.getDir(), "doc"))
+
+        # Create the manual structure. Note that swallow automatically shifts pages to sections,
+        # sections to subsections, etc. So that the swalloed node is one level below the
+        # swallower in the document hierarchy
+
+        document = doxygenParser.createRoot()
+
+        gs = document.swallow(doxygenParser.createPage("createmanuals_gettingstarted", "Getting Started"))
+        gs.swallow(p.root.getChildByName("prerequisites"))
+        gs.swallow(p.root.getChildByName("download"))
+        gs.swallow(p.root.getChildByName("installation"))
+        gs.swallow(p.root.getChildByName("SDKLayout"))
+
+        sdk = document.swallow(doxygenParser.createPage("createmanuals_sdk", "The Software Developer's Kit (SDK)"))
+        sdk.swallow(p.root.getChildByName("wns_documentation_playground"))
+        sdk.swallow(p.root.getChildByName("wns_documentation_branchingandmerging"))
+        sdk.swallow(p.root.getChildByName("wns_documentation_performancetips"))
+
+        sp = document.swallow(doxygenParser.createPage("createmanuals_simulationplatform", "The Simulation Platform"))
+        sp.swallow(p.root.getChildByName("schedulerBestPractices"))
+        sp.swallow(p.root.getChildByName("wns_documentation_randomnumberdistributions"))
+        sp.swallow(p.root.getChildByName("wns_probe_bus_probing"))
+        sp.swallow(p.root.getChildByName("wns_probe_bus_contextcollector"))
+        sp.swallow(p.root.getChildByName("openwns_evaluation"))
+        sp.swallow(p.root.getChildByName("BuildingSub"))
+        sp.swallow(p.root.getChildByName("HowToWriteFiniteStateMachine"))
+
+        md = document.swallow(doxygenParser.createPage("createmanuals_moduledocs", "Module Documentation"))
+        md.swallow(p.root.getChildByName("wns_ip_overview"))
+        
+        wc = document.swallow(doxygenParser.createPage("createmanuals_writing", "Writing Code"))
+        wc.swallow(p.root.getChildByName("wns_documentation_codingguidelines"))
+        wc.swallow(p.root.getChildByName("wns_documentation_documentationvscomments"))
+        wc.swallow(p.root.getChildByName("wns_documentation_createnewmodule"))
+        wc.swallow(p.root.getChildByName("wns_documentation_writingunittests"))
+        wc.swallow(p.root.getChildByName("wns_documentation_clean"))
+
+        document.swallow(p.root.getChildByName("wns_documentation_codingguidelines_short"))
+        document.swallow(p.root.getChildByName("wns_documentation_networksimulators"))
+
+        i = 0
+        for pageName in document.getChildNames():
+            out = open(os.path.join(self.workingdir,'%d_%s.txt' % (i, pageName)),"w")
+            out.write("/**\n")
+            document.getChildByName(pageName).writeToFile(out, release=False)
+            out.write("*/")
+            out.close()
+
+            i += 1
 
         # find the right doxygen file
         dirNameOfThisModule = os.path.dirname(__file__)
@@ -91,45 +146,12 @@ be placed in ./doxydoc.
         doxygenConfig = DoxygenConfigParser(doxygenFileName)
 
         # force output to doxdoc
-        doxygenConfig.set("OUTPUT_DIRECTORY", "doxydoc")
-        doxygenConfig.set("HTML_OUTPUT", "html")
-        doxygenConfig.set("LATEX_OUTPUT", "latex")
-
-        for project in docProjects:
-            # default path to source files
-            srcPath = os.path.join(project.getDir(), "src")
-            if os.path.exists(srcPath):
-                doxygenConfig.append("INPUT", srcPath)
-
-            # default path to documentation files
-            docPath = os.path.join(project.getDir(), "doc")
-            if os.path.exists(docPath):
-                doxygenConfig.append("INPUT", docPath)
-
-            # default path to images
-            imgPath = os.path.join(project.getDir(), "doc/pics")
-            if os.path.exists(imgPath):
-                doxygenConfig.append("IMAGE_PATH", imgPath)
-
-            doxygenConfig.append("STRIP_FROM_INC_PATH", os.path.join(os.getcwd(), project.getDir(), "src"))
-
-        doxygenConfig.append("FILE_PATTERNS", "*.hpp *.cpp *.txt *.h")
-        doxygenConfig.append("EXAMPLE_PATH", self.examplesPath)
-        doxygenConfig.append("STRIP_FROM_PATH", os.getcwd())
-        doxygenConfig.append("STRIP_FROM_INC_PATH", os.getcwd())
-        doxygenConfig.append("ALIASES", 'pyco{1}="<dl><dt><b>Configuration Class:</b></dt><dd><A HREF=\\"PyCoDoc/PyConfig.\\1-class.html\\">\\1</A></dd></dl>"')
-        doxygenConfig.append("ALIASES", 'pycoshort{1}="<A HREF=\\"PyCoDoc/PyConfig.\\1-class.html\\">\\1</A>"')
-        doxygenConfig.append("ALIASES", 'tableOfContents="<DIV id=\\"pageToc\\" class=\\"pageToc\\"></DIV>"')
+        doxygenConfig.set("OUTPUT_DIRECTORY", os.path.join(self.workingdir,"doxydoc"))
+        doxygenConfig.set("INPUT", self.workingdir)
+        doxygenConfig.append("EXAMPLE_PATH", self.workingdir)
+        doxygenConfig.set("FILE_PATTERNS", "*.txt")
         doxygenConfig.append("MSCGEN_PATH", "./bin")
-
-        # if the masterProject has a special header.htm will use this as header
-        customHeader = os.path.join(masterDocumentationProject.getDir(), "config/header.htm")
-        customCSS = os.path.join(masterDocumentationProject.getDir(), "config/doxygen.css")
-        if os.path.exists(customHeader):
-            doxygenConfig.set("HTML_HEADER", customHeader)
-
-        if os.path.exists(customHeader):
-            doxygenConfig.set("HTML_STYLESHEET", customCSS)
+        doxygenConfig.append("LATEX_HEADER", os.path.join(masterDocumentationProject.getDir(), "config", "header.tex"))
 
         # feed configuration to doxygen on stdin
 	print "Calling doxygen ... please wait: 'doxygen -'"
@@ -145,95 +167,45 @@ be placed in ./doxydoc.
 		conf = i.upper() + " = " + doxygenConfig.get(i) + "\n"
 		stdIn.write(conf)
 	stdIn.close()
+        usedConfig = open(os.path.join(self.workingdir,'Doxyfile'), "w")
+        for i in doxygenConfig.options():
+            conf = i.upper() + " = " + doxygenConfig.get(i) + "\n"
+            usedConfig.write(conf)
+	usedConfig.close()
         for line in stdOutAndErr:
 		print line.strip()
         print "Done!"
         doxygenProcess.wait()
         if doxygenProcess.returncode != 0:
             raise Exception("Doxygen failed to create the documentation.")
-        print "Copying files to sandbox/default/doc"
-        if os.path.exists("sandbox/default/doc"):
-            shutil.rmtree("sandbox/default/doc")
 
-        shutil.copytree("doxydoc/html", "sandbox/default/doc")
+        shutil.copy(os.path.join(dirNameOfThisModule, "Makefile"),
+                    os.path.join(self.workingdir, "doxydoc", "latex"))
 
-def prepareExamples(examplesPath, docProjects):
-        # remove old examples
-        print "Preparing examples."
-        print "Removing old examples."
-        shutil.rmtree(examplesPath, True)
-        os.mkdir(examplesPath)
-        for project in docProjects:
-            print "Generating C++ examples for " + project.getDir()
-            generateExamples('c++', os.path.join(project.getDir(), "src"), examplesPath)
-            print "Generating Python examples for " + project.getDir()
-            generateExamples('python', os.path.join(project.getDir(), "PyConfig"), examplesPath)
+        # Copy our custom stylesheet
+        shutil.copy(os.path.join(masterDocumentationProject.getDir(), "config", "doxygen.sty"),
+                    os.path.join(self.workingdir, "doxydoc", "latex"))
 
-def processFile(mode, path, fileName, dstPath):
-    """Search a file for examples and store them at dstPath.
-    """
+        cur = os.getcwd()
+        os.chdir(os.path.join(self.workingdir, 'doxydoc', 'latex'))
 
-    assert mode=='c++' or mode=='python', "Unsupported mode given to generateExamples"
+        retcode = subprocess.call("make", shell=True)
+        os.chdir(cur)
 
-    if mode == 'c++':
-        start_re = re.compile(r'\s*//\s*begin\s+example\s+"(.+)".*')
-        stop_re = re.compile(r'\s*//\s*end\s+example.*')
+        print "Generated your manual at %s" % os.path.join(self.workingdir, "doxydoc", "latex", "refman.pdf")
 
-    if mode == 'python':
-        start_re = re.compile(r'\s*#\s*begin\s+example\s+"(.+)".*')
-        stop_re = re.compile(r'\s*#\s*end\s+example.*')
-
+def processFile(parser, path, fileName):
+    curr = os.getcwd()
     fullFileName = os.path.join(path, fileName)
+    fullFileName = fullFileName.replace(curr, ".")
+    parser.parseFile(fullFileName)
 
-    unquote = False
-    example = None
-    for line in file(fullFileName):
-        match = start_re.match(line)
-        if match is not None:
-	    unquote = "unquote" in line
-            exampleName = match.group(1)
-            example = []
-            continue
-
-        match = stop_re.match(line)
-        if match is not None:
-            example = textwrap.dedent(''.join(example))
-            example = example.replace('CPPUNIT_', '')
-
-            exampleFileName = os.path.join(dstPath, exampleName)
-            fd = os.open(exampleFileName, os.O_WRONLY | os.O_CREAT | os.O_EXCL)
-            f = os.fdopen(fd, "w")
-            f.write("\n" + example)
-
-            example = None
-            continue
-
-        if example is not None:
-	    if unquote:
-		    line = line.strip().lstrip('"').rstrip('"').rstrip('\\n').replace('\\"', '"')
-		    line += "\n"
-            example.append(line)
-
-
-def generateExamples(mode, path, dst):
-    """If mode=='c++' :Search all *.{cpp|hpp} files in path for examples.
-       If mode=='python' :Search all *.{py} files in path for examples.
-
-       Every example found will be written to a file with the name
-       given at the 'begin example' tag.
-       All the example files will be stored in the directory dst.
-    """
-
-    assert mode=='c++' or mode=='python', "Unsupported mode given to generateExamples"
+def findDocumentation(parser, path):
 
     for root, dirs, files in os.walk(path):
         for f in files:
-            if mode == 'c++':
-                if f.endswith('.hpp') or f.endswith('.cpp'):
-                    processFile(mode, root, f, dst)
-            if mode == 'python':
-                if f.endswith('.py'):
-                    processFile(mode, root, f, dst)
+            if f.endswith('.hpp') or f.endswith('.cpp') or f.endswith('.txt'):
+                processFile(parser, root, f)
 
 class DoxygenConfigParser:
     """Parser for doxygen config files"""
