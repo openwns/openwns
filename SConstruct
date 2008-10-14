@@ -42,7 +42,7 @@ environments.append(optenv)
 includeDir = os.path.join(os.getcwd(),'include')
 libraries = []
 for project in projects.all:
-    if isinstance(project, wnsbase.playground.Project.Root) or isinstance(project, wnsbase.playground.Project.SystemTest) or isinstance(project, wnsbase.playground.Project.Generic):
+    if isinstance(project, (wnsbase.playground.Project.Root, wnsbase.playground.Project.SystemTest, wnsbase.playground.Project.Generic)):
         continue
     if isinstance(project, wnsbase.playground.Project.Library):
         libname,srcFiles,headers,pyconfigs,dependencies = SConscript(os.path.join(project.getDir(), 'config', 'libfiles.py'))
@@ -54,6 +54,7 @@ for project in projects.all:
                 libraries += dependencies
 
     if project.includeBaseName is not None:
+        #print 'Checking for header files in ', project.getDir(), ' as ', project.includeBaseName
         libname,srcFiles,headers,pyconfigs,dependencies = SConscript(os.path.join(project.getDir(), 'config', 'libfiles.py'))
         headertargets = [header.replace('src/', '') for header in headers]
         InstallAs([os.path.join(includeDir, project.includeBaseName ,target) for target in headertargets],\
@@ -79,9 +80,10 @@ for env in environments:
         env.Append(LINKFLAGS = '-pg')
 
     for project in projects.all:
-        if isinstance(project, wnsbase.playground.Project.Root) or isinstance(project, wnsbase.playground.Project.SystemTest) or isinstance(project, wnsbase.playground.Project.Generic):
+        if isinstance(project, (wnsbase.playground.Project.Root, wnsbase.playground.Project.SystemTest, wnsbase.playground.Project.Generic, wnsbase.playground.Project.AddOn)):
             continue
         buildDir = os.path.join(env['buildDir'], env.flavour, project.getRCSSubDir())
+        #buildDir =  os.path.join(env['buildDir'], env.flavour, project.getDir().replace('./', ''))
         env.BuildDir(buildDir, project.getDir())
         env.SConscript(os.path.join(buildDir, 'SConscript'), exports='env')
     
