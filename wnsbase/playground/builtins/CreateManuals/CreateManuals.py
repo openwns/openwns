@@ -35,6 +35,7 @@ import wnsrc
 import re
 import textwrap
 import subprocess
+import glob
 
 from wnsbase.playground.builtins.CPPDocumentation.CPPDocumentation import prepareExamples
 
@@ -82,6 +83,14 @@ be placed in ./doxydoc.
         cur = os.getcwd()
         os.chdir(masterDocumentationProject.getDir())
 
+        print "Generating HTML manual"
+        retcode = subprocess.call("make html", shell=True)
+
+        if retcode != 0:
+            print "\n\nThere were errors during processing of documentation\n\n"
+            exit(1)
+
+        print "Generating PDF manual"
         retcode = subprocess.call("make latex", shell=True)
 
         if retcode != 0:
@@ -97,6 +106,30 @@ be placed in ./doxydoc.
             exit(1)
 
         os.chdir(cur)
+
+        containedFiles = glob.glob("sandbox/default/doc/*") + glob.glob("sandbox/default/doc/.*")
+        # Do not touch the api subdirectory. This is managed by CPPDocuementation command
+        toBeDeleted = [f for f in containedFiles if not f.endswith("api")]
+
+        for file in toBeDeleted:
+            if os.path.isdir(file):
+                shutil.rmtree(file)
+            else:
+                os.remove(file)
+
+        source = os.path.join(masterDocumentationProject.getDir(), "build", "html")
+        toBeCopied = glob.glob(source + "/*") + glob.glob(source + "/.*")
+        for file in toBeCopied:
+            if os.path.isdir(file):
+                subdirname = os.path.basename(file)
+                shutil.copytree(file, "sandbox/default/doc" + "/" + subdirname)
+            else:
+                shutil.copy(file, "sandbox/default/doc")
+
+        source = os.path.join(masterDocumentationProject.getDir(), "build", "latex")
+        pdfFiles = glob.glob(source + "/*.pdf")
+        for pdf in pdfFiles:
+            shutil.copy(pdf, "sandbox/default/doc/")
 
 def processFile(parser, path, fileName):
     curr = os.getcwd()

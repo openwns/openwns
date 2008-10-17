@@ -151,11 +151,11 @@ be placed in ./doxydoc.
         doxygenProcess.wait()
         if doxygenProcess.returncode != 0:
             raise Exception("Doxygen failed to create the documentation.")
-        print "Copying files to sandbox/default/doc"
-        if os.path.exists("sandbox/default/doc"):
-            shutil.rmtree("sandbox/default/doc")
+        print "Copying files to sandbox/default/doc/api"
+        if os.path.exists("sandbox/default/doc/api"):
+            shutil.rmtree("sandbox/default/doc/api")
 
-        shutil.copytree("doxydoc/html", "sandbox/default/doc")
+        shutil.copytree("doxydoc/html", "sandbox/default/doc/api")
 
 def prepareExamples(examplesPath, docProjects):
         # remove old examples
