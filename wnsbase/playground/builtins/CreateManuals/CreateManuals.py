@@ -60,7 +60,10 @@ be placed in ./doxydoc.
         docProjects = []
         masterDocumentationProject = None
         for project in core.getProjects().all:
-            if isinstance(project, (wnsbase.playground.Project.Library, wnsbase.playground.Project.Binary, wnsbase.playground.Project.Documentation)):
+            if isinstance(project, (wnsbase.playground.Project.Library,
+                                    wnsbase.playground.Project.Binary,
+                                    wnsbase.playground.Project.Documentation,
+                                    wnsbase.playground.Project.SystemTest)):
                 print "... found: " + project.getDir()
                 docProjects.append(project)
                 if isinstance(project, wnsbase.playground.Project.MasterDocumentation):
