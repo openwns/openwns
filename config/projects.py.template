@@ -1,3 +1,5 @@
+# __projectFetcher__from: http://openwns.comnets.rwth-aachen.de/Wiki/InstallationTutorial?action=AttachFile&do=get&target=projects.py
+# __projectFetcher__from: http://openwns.comnets.rwth-aachen.de/Wiki/InstallationTutorial?action=AttachFile&do=get&target=projects.py
 ###############################################################################
 # This file is part of openWNS (open Wireless Network Simulator)
 # _____________________________________________________________________________
@@ -28,8 +30,8 @@
 from wnsbase.playground.Project import *
 import wnsbase.RCS as RCS
 
-bzrBaseURL = "bzr://bazaar.comnets.rwth-aachen.de/KKS/openWNS/main"
-bzrBaseAddOnUrl = "bzr://bazaar.comnets.rwth-aachen.de/KKS/openWNS/addOns/main"
+bzrBaseURL = "bzr://bazaar.comnets.rwth-aachen.de/openWNS/main"
+bzrBaseAddOnUrl = "bzr://bazaar.comnets.rwth-aachen.de/openWNS/addOns/main"
 
 root         = Root('./', "openWNS--main--1.0", bzrBaseURL,
                     RCS.Bazaar('.', 'openWNS', 'main', '1.0'))
@@ -120,6 +122,14 @@ ofdmaPhy = Library('./modules/phy/OFDMAPhy--unstable--0.3', 'OFDMAPhy--unstable-
 ofdmaPhy_addon = AddOn(ofdmaPhy, 'OFDMAPhy-addOn--unstable--0.3', bzrBaseAddOnUrl,
 		       RCS.Bazaar('', 'OFDMAPhy-addOn', 'unstable', '0.3'))
 
+winprost = Library('./modules/dll/WinProSt--main--0.3', 'WinProSt--main--0.3', bzrBaseURL,
+                   RCS.Bazaar('./modules/dll/WinProSt--main--0.3',
+                              'WinProSt', 'main', '0.3'),
+                   [], 'WINPROST')
+
+winprost_addon = AddOn(winprost, 'WinProSt-addOn--main--0.3', bzrBaseAddOnUrl,
+                         RCS.Bazaar('','WinProSt-addOn', 'main', '0.3'))
+
 wimac = Library('./modules/dll/WiMAC--main--1.0', 'WiMAC--main--1.0', bzrBaseURL,
                 RCS.Bazaar('./modules/dll/WiMAC--main--1.0',
                             'WiMAC', 'main', '1.0'),
@@ -163,7 +173,7 @@ tcp_addon = AddOn(tcp, 'tcp-addOn--unstable--1.0', bzrBaseAddOnUrl,
 moduleTemplate = Library('./framework/ModuleTemplate--main--1.0', 'ModuleTemplate--main--1.0', bzrBaseURL,
                          RCS.Bazaar('./framework/ModuleTemplate--main--1.0',
                                      'ModuleTemplate', 'main', '1.0'),
-                         [], 'PROJNAME')
+                         [libwns, ])
 
 moduleTemplate_addon = AddOn(moduleTemplate, 'ModuleTemplate-addOn--main--1.0', bzrBaseAddOnUrl,
                              RCS.Bazaar('','ModuleTemplate-addOn', 'main', '1.0'))
@@ -180,6 +190,26 @@ ip_test = SystemTest('./tests/system/ip-Tests--main--1.0', 'ip-Tests--main--1.0'
 glue_test = SystemTest('./tests/system/glue-Tests--main--1.0', 'glue-Tests--main--1.0', bzrBaseAddOnUrl,
                        RCS.Bazaar('./tests/system/glue-Tests--main--1.0',
                                    'glue-Tests', 'main', '1.0'))
+
+winprostTDD_test = SystemTest('./tests/system/WinProStTDD-Tests--main--1.0', 'WinProStTDD-Tests--main--1.0', bzrBaseAddOnUrl,
+                              RCS.Bazaar('./tests/system/WinProStTDD-Tests--main--1.0',
+                                         'WinProStTDD-Tests', 'main', '1.0'))
+
+winprostMobility_test = SystemTest('./tests/system/WinProStMobility-Tests--main--1.0', 'WinProStMobility-Tests--main--1.0', bzrBaseAddOnUrl,
+                                   RCS.Bazaar('./tests/system/WinProStMobility-Tests--main--1.0',
+                                               'WinProStMobility-Tests', 'main', '1.0'))
+
+winprostFDD_test = SystemTest('./tests/system/WinProStFDD-Tests--main--1.0', 'WinProStFDD-Tests--main--1.0', bzrBaseAddOnUrl,
+                                   RCS.Bazaar('./tests/system/WinProStFDD-Tests--main--1.0',
+                                               'WinProStFDD-Tests', 'main', '1.0'))
+
+winprostHalfDuplexFDD_test = SystemTest('./tests/system/WinProStHalfDuplexFDD-Tests--main--1.0', 'WinProStHalfDuplexFDD-Tests--main--1.0', bzrBaseAddOnUrl,
+                                   RCS.Bazaar('./tests/system/WinProStHalfDuplexFDD-Tests--main--1.0',
+                                               'WinProStHalfDuplexFDD-Tests', 'main', '1.0'))
+
+winprostCQI_test = SystemTest('./tests/system/WinProStCQI-Tests--main--1.0', 'WinProStCQI-Tests--main--1.0', bzrBaseAddOnUrl,
+                                   RCS.Bazaar('./tests/system/WinProStCQI-Tests--main--1.0',
+                                               'WinProStCQI-Tests', 'main', '1.0'))
 
 wimac_test = SystemTest('./tests/system/WiMAC-Tests--main--1.2', 'WiMAC-Tests--main--1.2', bzrBaseAddOnUrl,
                         RCS.Bazaar('./tests/system/WiMAC-Tests--main--1.2',
@@ -201,10 +231,6 @@ mobility_test = SystemTest('./tests/system/Mobility-Tests--main--1.0', 'Mobility
                       RCS.Bazaar('./tests/system/Mobility-Tests--main--1.0',
                                   'Mobility-Tests', 'main', '1.0'))
 
-multimode_test = SystemTest('./tests/system/MultiMode-Tests--main--1.0', 'MultiMode-Tests--main--1.0', bzrBaseAddOnUrl,
-                            RCS.Bazaar('./tests/system/MultiMode-Tests--main--1.0',
-                                        'MultiMode-Tests', 'main', '1.0'))
-
 ofdmaScanner_test = SystemTest('./tests/system/OFDMAScanner-Tests--main--1.0', 'OFDMAScanner-Tests--main--1.0', bzrBaseAddOnUrl,
                                RCS.Bazaar('./tests/system/OFDMAScanner-Tests--main--1.0',
                                            'OFDMAScanner-Tests', 'main', '1.0'))
@@ -213,10 +239,9 @@ wifimac_test = SystemTest('./tests/system/WiFiMAC-Tests--main--1.0', 'WiFiMAC-Te
                           RCS.Bazaar('./tests/system/WiFiMAC-Tests--main--1.0',
                                       'WiFiMAC-Tests', 'main', '1.0'))
 
-wnsDocumentation = Generic('./WNS-Documentation--main--1.0', 'WNS-Documentation--main--1.0', bzrBaseAddOnUrl,
-                           RCS.Bazaar('./WNS-Documentation--main--1.0',
-                                       'WNS-Documentation', 'main', '1.0'),
-                           alias="doc")
+wnsDocumentation = MasterDocumentation('./documentation--main--1.0', 'documentation--main--1.0', bzrBaseURL,
+                           RCS.Bazaar('./documentation--main--1.0',
+                                       'documentation', 'main', '1.0'))
 
 liveCDBuilder = Generic('./framework/LiveCDBuilder--main--1.0', 'LiveCDBuilder--main--1.0', bzrBaseAddOnUrl,
                         RCS.Bazaar('./framework/LiveCDBuilder--main--1.0',
@@ -252,6 +277,8 @@ all = [ root,
         constanze_addon,
         ofdmaPhy,
 	ofdmaPhy_addon,
+        winprost,
+        winprost_addon,
         wimac,
         wimac_addon,
         wifimac,
@@ -268,12 +295,16 @@ all = [ root,
 
         ip_test,
         glue_test,
+        winprostTDD_test,
+        winprostMobility_test,
+        winprostFDD_test,
+        winprostHalfDuplexFDD_test,
+        winprostCQI_test,
         wimac_test,
         constanze_test,
         tcp_test,
         mih_test,
         mobility_test,
-        multimode_test,
         ofdmaScanner_test,
         wifimac_test,
 
