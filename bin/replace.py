@@ -39,17 +39,23 @@ doNothing = False
 undo = False
 clean = False
 query = False
+regularExpression = False
 backupExtension = "replace_bak"
+fileName = None
 
 def help():
     print """
-Usage: replace.py -d "directory" [options]
+Usage: replace.py [options] filename
+   or: replace.py [options] -d directoryname
+    -s "search string"\tstring to search for
+    -S filename\tFile that contains the (multiline) string to search for
+    -r "replace string"\treplace "search string" with this string
+    -R filename\tFile that contains the (multiline) string to replace the search string
+    -x \t\t\tuse regular expression during the search
     -c \t\t\tremove all backup files
     -d "directory"\tpeform replace in this dir
     -e extension\tBackup extension (default \""""+backupExtension+"""\")
     -n \t\t\tdry run (print output)
-    -r "replace string"\treplace "search string" with this string
-    -s "search string"\tstring to search for
     -q \t\t\tquery before replacing
     -u \t\t\tundo all changes
     -h | -v | -?\tprint this help
@@ -71,6 +77,19 @@ def removeAllBackupFiles():
             os.remove(os.path.join(dirpath, i))
 
 def replaceInFile(oldFile, query):
+
+    if doNothing:
+        fileContent = file(oldFile).read()
+        if(regularExpression):
+            expr = re.compile(searchString, re.DOTALL)
+            newFileContent = expr.sub(replaceString, fileContent)
+        else:
+            newFileContent = fileContent.replace(searchString, replaceString)
+        if not newFileContent == fileContent:
+            return(difflib.unified_diff(fileContent.split("\n"), newFileContent.split("\n")))
+        else:
+            return None
+
     backupFile = oldFile+"."+backupExtension
     if os.path.isfile(backupFile):
         answer = raw_input("An backup file is already existing! Overwrite? (Y/n)")
@@ -85,11 +104,17 @@ def replaceInFile(oldFile, query):
 
     shutil.move(oldFile, backupFile)
     fileContent = file(backupFile).read()
-    expr = re.compile(searchString, re.DOTALL)
-    newFileContent = expr.sub(replaceString, fileContent)
+
+    if(regularExpression):
+        expr = re.compile(searchString, re.DOTALL)
+        newFileContent = expr.sub(replaceString, fileContent)
+    else:
+        newFileContent = fileContent.replace(searchString, replaceString)
+
     newFile = file(oldFile, 'w')
     newFile.write(newFileContent)
     newFile.close()
+
     if not newFileContent == fileContent:
         diffs = difflib.unified_diff(fileContent.split("\n"), newFileContent.split("\n"))
         if query == True:
@@ -110,35 +135,35 @@ def replaceInFile(oldFile, query):
         shutil.copymode(backupFile, oldFile)
         return diffs
     shutil.copymode(backupFile, oldFile)
+
     return None
 
-def replace(dryRun, query):
+def replaceDir(query):
     if directory==None or searchString==None or replaceString==None or doNothing==None:
         help()
+
     for (dirpath, dirnames, filenames) in os.walk(directory):
             for i in [f for f in filenames if re.match("^.*(\.hpp|\.cpp|\.h|\.py|Conscript)$", f) and not f == 'bversion.hpp' and not os.path.islink(os.path.join(dirpath, f))]:
                 oldFile = os.path.join(dirpath, i)
-                print "Replacing in: " + oldFile
-                changes = None
-                if dryRun == True:
-                    fileContent = file(oldFile).read()
-                    expr = re.compile(searchString, re.DOTALL)
-                    newFileContent = expr.sub(replaceString, fileContent)
-                    if not newFileContent == fileContent:
-                        for diff in difflib.unified_diff(fileContent.split("\n"), newFileContent.split("\n")):
-                            print diff
-                else:
-                    changes = replaceInFile(oldFile, query)
-                    if not changes == None:
-                        print "Replaced following in " + oldFile + ":"
-                        for c in changes:
-                            print c
-                    else:
-                        os.remove(oldFile+'.'+backupExtension)
-                        print "Replaced nothing in " + oldFile + ":"
+                replace(oldFile, query)
+
+def replace(fName, query):
+    if fName==None or searchString==None or replaceString==None or doNothing==None:
+        help()
+    print "Replacing in: " + fName
+    changes = replaceInFile(fName, query)
+    if not changes == None:
+        print "Replaced following in " + fName + ":"
+        for c in changes:
+            print c
+    else:
+        if not doNothing:
+            os.remove(fName+'.'+backupExtension)
+        print "Replaced nothing in " + fName + ":"
+
 
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], 'd:s:r:ncuhvq?')
+    optlist, args = getopt.getopt(sys.argv[1:], 'd:s:r:S:R:xncuhvq?')
 except getopt.GetoptError, x:
     print "\nError: "+str(x)
     help()
@@ -148,6 +173,12 @@ for opt, value in optlist:
         searchString = value
     elif opt == '-r':
         replaceString = value
+    elif opt == '-S':
+        searchString = file(value).read()
+    elif opt == '-R':
+        replaceString = file(value).read()
+    elif opt == '-x':
+        regularExpression = True
     elif opt == '-e':
         backupExtension = value
     elif opt == '-c':
@@ -163,10 +194,12 @@ for opt, value in optlist:
     elif opt == '-h' or opt == '-?' or opt == '-v':
         help()
 
-
 if undo == True:
     undoAll()
 elif clean == True:
     removeAllBackupFiles()
+elif len(args) > 0:
+    for fn in args:
+        replace(fn, query)
 else:
-    replace(doNothing, query)
+    replaceDir(query)

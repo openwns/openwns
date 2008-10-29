@@ -34,11 +34,11 @@ class Parser:
                 indox = True
 
             if not inverbatim:
-                line = line.rstrip('/ *')
-                line = line.lstrip(' *')
-
                 if line.count('*/') > 0:
                     indox = False
+
+                line = line.rstrip('/ *')
+                line = line.lstrip(' *')
 
             if indox:
                 doxydocstring += line + "\n"
@@ -48,6 +48,10 @@ class Parser:
 
             if line.count('@endverbatim') > 0:
                 inverbatim = False
+
+            if line.count('@code') > 0:
+                if indox:
+                    doxydocstring += "Hack:LatexWillSkipThisInsteadofTheFirstCodeLine\n"
 
         return doxydocstring
 
@@ -173,7 +177,31 @@ class Child(object):
             file.write(self.content)
 
         for c in self.orderedChildren:
-            c.writeToFile(file)
+            c.writeToFile(file, release)
+
+    def writeAsReSTFile(self, file, release=False):
+        if self.type!="Root":
+            file.write(self.niceTitle + "\n")
+            
+            if self.type == "page":
+                markup = "="
+
+            if self.type == "section":
+                markup = "-"
+
+            if self.type == "subsection":
+                markup = "'"
+
+            file.write("%s\n" % (markup * len(self.niceTitle)))
+
+            if not release:
+                file.write("\n.. note::\n\n")
+                file.write("  This sections linkid is *%s*. It can be found in ``%s``\n" % 
+                           (self.title, self._filenameForDebugOutput))
+            file.write(self.content + "\n")
+
+        for c in self.orderedChildren:
+            c.writeAsReSTFile(file, release)
 
     def _appendRawContent(self, line):
         # Alway insert content that passes us to raw content

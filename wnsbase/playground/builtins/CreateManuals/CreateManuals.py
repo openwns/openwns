@@ -35,6 +35,7 @@ import wnsrc
 import re
 import textwrap
 import subprocess
+import glob
 
 from wnsbase.playground.builtins.CPPDocumentation.CPPDocumentation import prepareExamples
 
@@ -59,7 +60,10 @@ be placed in ./doxydoc.
         docProjects = []
         masterDocumentationProject = None
         for project in core.getProjects().all:
-            if isinstance(project, (wnsbase.playground.Project.Library, wnsbase.playground.Project.Binary, wnsbase.playground.Project.Documentation)):
+            if isinstance(project, (wnsbase.playground.Project.Library,
+                                    wnsbase.playground.Project.Binary,
+                                    wnsbase.playground.Project.Documentation,
+                                    wnsbase.playground.Project.SystemTest)):
                 print "... found: " + project.getDir()
                 docProjects.append(project)
                 if isinstance(project, wnsbase.playground.Project.MasterDocumentation):
@@ -79,120 +83,114 @@ be placed in ./doxydoc.
 
         prepareExamples(self.workingdir, docProjects)
 
-        for project in docProjects:
-            print "Finding documentation pages for " + project.getDir()
-            findDocumentation(p, os.path.join(project.getDir(), "src"))
-            findDocumentation(p, os.path.join(project.getDir(), "doc"))
-
-        # Create the manual structure. Note that swallow automatically shifts pages to sections,
-        # sections to subsections, etc. So that the swalloed node is one level below the
-        # swallower in the document hierarchy
-
-        document = doxygenParser.createRoot()
-
-        gs = document.swallow(doxygenParser.createPage("createmanuals_gettingstarted", "Getting Started"))
-        gs.swallow(p.root.getChildByName("prerequisites"))
-        gs.swallow(p.root.getChildByName("download"))
-        gs.swallow(p.root.getChildByName("installation"))
-        gs.swallow(p.root.getChildByName("SDKLayout"))
-
-        sdk = document.swallow(doxygenParser.createPage("createmanuals_sdk", "The Software Developer's Kit (SDK)"))
-        sdk.swallow(p.root.getChildByName("wns_documentation_playground"))
-        sdk.swallow(p.root.getChildByName("wns_documentation_branchingandmerging"))
-        sdk.swallow(p.root.getChildByName("wns_documentation_performancetips"))
-
-        sp = document.swallow(doxygenParser.createPage("createmanuals_simulationplatform", "The Simulation Platform"))
-        sp.swallow(p.root.getChildByName("schedulerBestPractices"))
-        sp.swallow(p.root.getChildByName("wns_documentation_randomnumberdistributions"))
-        sp.swallow(p.root.getChildByName("wns_probe_bus_probing"))
-        sp.swallow(p.root.getChildByName("wns_probe_bus_contextcollector"))
-        sp.swallow(p.root.getChildByName("openwns_evaluation"))
-        sp.swallow(p.root.getChildByName("BuildingSub"))
-        sp.swallow(p.root.getChildByName("HowToWriteFiniteStateMachine"))
-
-        md = document.swallow(doxygenParser.createPage("createmanuals_moduledocs", "Module Documentation"))
-        md.swallow(p.root.getChildByName("wns_ip_overview"))
-        
-        wc = document.swallow(doxygenParser.createPage("createmanuals_writing", "Writing Code"))
-        wc.swallow(p.root.getChildByName("wns_documentation_codingguidelines"))
-        wc.swallow(p.root.getChildByName("wns_documentation_documentationvscomments"))
-        wc.swallow(p.root.getChildByName("wns_documentation_createnewmodule"))
-        wc.swallow(p.root.getChildByName("wns_documentation_writingunittests"))
-        wc.swallow(p.root.getChildByName("wns_documentation_clean"))
-
-        document.swallow(p.root.getChildByName("wns_documentation_codingguidelines_short"))
-        document.swallow(p.root.getChildByName("wns_documentation_networksimulators"))
-
-        i = 0
-        for pageName in document.getChildNames():
-            out = open(os.path.join(self.workingdir,'%d_%s.txt' % (i, pageName)),"w")
-            out.write("/**\n")
-            document.getChildByName(pageName).writeToFile(out, release=False)
-            out.write("*/")
-            out.close()
-
-            i += 1
-
-        # find the right doxygen file
-        dirNameOfThisModule = os.path.dirname(__file__)
-        doxygenFileName = os.path.join(dirNameOfThisModule, "Doxyfile")
-        # try if we have a directory "doc". This is the documentation
-        # of the SDK. If available use documentation from there.
-        masterDocDoxyfile = os.path.join(masterDocumentationProject.getDir(), "config/Doxyfile")
-        if os.path.exists(masterDocDoxyfile):
-            doxygenFileName = masterDocDoxyfile
-
-        # read the doxygen file and modify according to our needs ...
-        doxygenConfig = DoxygenConfigParser(doxygenFileName)
-
-        # force output to doxdoc
-        doxygenConfig.set("OUTPUT_DIRECTORY", os.path.join(self.workingdir,"doxydoc"))
-        doxygenConfig.set("INPUT", self.workingdir)
-        doxygenConfig.append("EXAMPLE_PATH", self.workingdir)
-        doxygenConfig.set("FILE_PATTERNS", "*.txt")
-        doxygenConfig.append("MSCGEN_PATH", "./bin")
-        doxygenConfig.append("LATEX_HEADER", os.path.join(masterDocumentationProject.getDir(), "config", "header.tex"))
-
-        # feed configuration to doxygen on stdin
-	print "Calling doxygen ... please wait: 'doxygen -'"
-        doxygenProcess = subprocess.Popen('doxygen -',
-                                          shell=True,
-                                          stdout=subprocess.PIPE,
-                                          stdin=subprocess.PIPE,
-                                          stderr=subprocess.STDOUT,
-                                          close_fds=True)
-        stdIn = doxygenProcess.stdin
-        stdOutAndErr = doxygenProcess.stdout
-	for i in doxygenConfig.options():
-		conf = i.upper() + " = " + doxygenConfig.get(i) + "\n"
-		stdIn.write(conf)
-	stdIn.close()
-        usedConfig = open(os.path.join(self.workingdir,'Doxyfile'), "w")
-        for i in doxygenConfig.options():
-            conf = i.upper() + " = " + doxygenConfig.get(i) + "\n"
-            usedConfig.write(conf)
-	usedConfig.close()
-        for line in stdOutAndErr:
-		print line.strip()
-        print "Done!"
-        doxygenProcess.wait()
-        if doxygenProcess.returncode != 0:
-            raise Exception("Doxygen failed to create the documentation.")
-
-        shutil.copy(os.path.join(dirNameOfThisModule, "Makefile"),
-                    os.path.join(self.workingdir, "doxydoc", "latex"))
-
-        # Copy our custom stylesheet
-        shutil.copy(os.path.join(masterDocumentationProject.getDir(), "config", "doxygen.sty"),
-                    os.path.join(self.workingdir, "doxydoc", "latex"))
-
         cur = os.getcwd()
-        os.chdir(os.path.join(self.workingdir, 'doxydoc', 'latex'))
+        os.chdir(masterDocumentationProject.getDir())
 
-        retcode = subprocess.call("make", shell=True)
+        print "Cleaning..."
+        retcode = subprocess.call("make -f MakefileDevelopersGuide clean", shell=True)
+
+        if retcode != 0:
+            print "\n\nThere were errors during cleanup\n\n"
+            exit(1)
+
+        retcode = subprocess.call("make -f MakefileUsersGuide clean", shell=True)
+
+        if retcode != 0:
+            print "\n\nThere were errors during cleanup\n\n"
+            exit(1)
+
+        print "Generating HTML Developers Guide"
+        retcode = subprocess.call("make -f MakefileDevelopersGuide html", shell=True)
+
+        if retcode != 0:
+            print "\n\nThere were errors during processing of documentation\n\n"
+            exit(1)
+
+        print "Generating PDF Developers Guide"
+        retcode = subprocess.call("make -f MakefileDevelopersGuide latex", shell=True)
+
+        if retcode != 0:
+            print "\n\nThere were errors during processing of documentation\n\n"
+            exit(1)
+
+        os.chdir(os.path.join(masterDocumentationProject.getDir(), "buildDevelopersGuide", "latex"))
+
+        retcode = subprocess.call("make all-pdf", shell=True)
+
+        if retcode != 0:
+            print "\n\nThere were errors when executin latex\n\n"
+            exit(1)
+
         os.chdir(cur)
 
-        print "Generated your manual at %s" % os.path.join(self.workingdir, "doxydoc", "latex", "refman.pdf")
+
+        os.chdir(masterDocumentationProject.getDir())
+
+        print "Generating HTML Users Guide"
+        retcode = subprocess.call("make -f MakefileUsersGuide html", shell=True)
+
+        if retcode != 0:
+            print "\n\nThere were errors during processing of documentation\n\n"
+            exit(1)
+
+        print "Generating PDF Users Guide"
+        retcode = subprocess.call("make -f MakefileUsersGuide latex", shell=True)
+
+        if retcode != 0:
+            print "\n\nThere were errors during processing of documentation\n\n"
+            exit(1)
+
+        os.chdir(os.path.join(masterDocumentationProject.getDir(), "buildUsersGuide", "latex"))
+
+        retcode = subprocess.call("make all-pdf", shell=True)
+
+        if retcode != 0:
+            print "\n\nThere were errors when executin latex\n\n"
+            exit(1)
+
+        os.chdir(cur)
+
+
+        containedFiles = glob.glob("sandbox/default/doc/*") + glob.glob("sandbox/default/doc/.*")
+        # Do not touch the api subdirectory. This is managed by CPPDocuementation command
+        toBeDeleted = [f for f in containedFiles if not f.endswith("api")]
+
+        for file in toBeDeleted:
+            if os.path.isdir(file):
+                shutil.rmtree(file)
+            else:
+                os.remove(file)
+
+        # Install the developers guide to the root of the sandbox's documentation directory
+        source = os.path.join(masterDocumentationProject.getDir(), "buildDevelopersGuide", "html")
+        toBeCopied = glob.glob(source + "/*") + glob.glob(source + "/.*")
+        for file in toBeCopied:
+            if os.path.isdir(file):
+                subdirname = os.path.basename(file)
+                shutil.copytree(file, "sandbox/default/doc" + "/" + subdirname)
+            else:
+                shutil.copy(file, "sandbox/default/doc")
+
+        source = os.path.join(masterDocumentationProject.getDir(), "buildDevelopersGuide", "latex")
+        pdfFiles = glob.glob(source + "/*.pdf")
+        for pdf in pdfFiles:
+            shutil.copy(pdf, "sandbox/default/doc/")
+
+        # Install the users guide to the usersGuide subdirectory in the sandbox's documentation directory
+        os.mkdir("sandbox/default/doc/usersGuide")
+        source = os.path.join(masterDocumentationProject.getDir(), "buildUsersGuide", "html")
+        toBeCopied = glob.glob(source + "/*") + glob.glob(source + "/.*")
+        for file in toBeCopied:
+            if os.path.isdir(file):
+                subdirname = os.path.basename(file)
+                shutil.copytree(file, "sandbox/default/doc/usersGuide" + "/" + subdirname)
+            else:
+                shutil.copy(file, "sandbox/default/doc/usersGuide")
+
+        source = os.path.join(masterDocumentationProject.getDir(), "buildUsersGuide", "latex")
+        pdfFiles = glob.glob(source + "/*.pdf")
+        for pdf in pdfFiles:
+            shutil.copy(pdf, "sandbox/default/doc/usersGuide")
 
 def processFile(parser, path, fileName):
     curr = os.getcwd()
