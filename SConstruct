@@ -91,7 +91,7 @@ for env in environments:
 ## The documentation environment.
 ## TODO implement the correct call of the documentation build
 docuEnv = Environment(tools = ['default', 'doxygen'], toolpath = '.')
-docu = docuEnv.SConscript('WNS-Documentation--main--1.0/SConscript', exports='docuEnv')
+docu = docuEnv.SConscript('documentation--main--1.0/SConscript', exports='docuEnv')
 Alias('docu', docu)
 
 Default(installDirs['dbg'])
