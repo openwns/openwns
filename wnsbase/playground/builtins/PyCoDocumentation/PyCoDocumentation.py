@@ -1,4 +1,5 @@
 import os
+import shutil
 import wnsbase.playground.plugins.Command
 from wnsbase.playground.Tools import *
 import wnsbase.playground.Core
@@ -43,11 +44,14 @@ Note: EpyDoc currently produces a lot of warnings.
         if not (result is None):
             print "Could not execute %s" % command
 
-        destination = "sandbox/default/doc/PyCoDoc"
+        destination = "sandbox/default/doc/api/PyCoDoc"
         package = "sandbox/%s/lib/PyConfig/" % self.options.flavour
 
-        # create destination if necessary
-        if not os.path.exists(destination):
+        print "Creating Python Documentation"
+        if os.path.exists(destination):
+
+            shutil.rmtree(destination)
+
             os.makedirs(destination)
 
         command = "PYTHONPATH=$PYTHONPATH:%s epydoc -o %s --html --show-sourcecode --simple-term --name=openWNS --graph=all %s" % (package, destination, package)
