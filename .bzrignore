@@ -40,3 +40,4 @@ config/.temp_otherProjects.py
 .build
 .createManualsWorkingDir
 config/projects.py
+include
