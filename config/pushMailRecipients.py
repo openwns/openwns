@@ -18,4 +18,6 @@ recipients = [(".*@bazaar.launchpad.net/~comnets.*",
                (".*@bazaar-extern.comnets.rwth-aachen.de:1122/home/scponly/bazaar/openWNS.*",
                "friendly-user@openwns.org"),
                (".*@bazaar-extern.comnets.rwth-aachen.de:1122/~/.*",
-               "mue@comnets.rwth-aachen.de dbn@comnets.rwth-aachen.de msg@comnets.rwth-aachen.de")]
+               "mue@comnets.rwth-aachen.de dbn@comnets.rwth-aachen.de msg@comnets.rwth-aachen.de"),
+              (".*@bazaar.comnets.rwth-aachen.de/KKS.*",
+               "kks@comnets.rwth-aachen.de")]

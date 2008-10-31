@@ -1,62 +1,111 @@
-import sys
 import os
+import sys
+import wnsbase.playground.Project
 sys.path.append('config')
 import projects
 sys.path.remove('config')
 
-# This enables filtering of SCons output ...
-jobs = ARGUMENTS.get('j', '')
-nc = ARGUMENTS.get('no-color', '0')
-ni = ARGUMENTS.get('no-inf', '0')
-nf = ARGUMENTS.get('no-filter', '0')
-noAddOns = ARGUMENTS.get('no-addOns', '0')
-pda = ARGUMENTS.get('project-dependent-aliases', '0')
-flavour = ARGUMENTS.get('flavour', 'dbg')
-static = ARGUMENTS.get('static', '0')
-sandboxDir = ARGUMENTS.get('sandboxDir', '')
+SetOption('num_jobs', os.sysconf('SC_NPROCESSORS_ONLN'))
+SetOption('implicit_cache', True)
 
-options = "no-color='%s' no-inf='%s' no-filter='%s' project-dependent-aliases='%s' flavour='%s' static='%s' sandboxDir='%s' no-addOns='%s'" % (nc, ni, nf, pda, flavour, static, sandboxDir, noAddOns)
+opts = Options('options.py')
+opts.Add(BoolOption('static', 'Set to build the static version', False))
+opts.Add(PathOption('buildDir', 'Path to the build directory',  os.path.join(os.getcwd(), '.build'), PathOption.PathIsDirCreate))
+opts.Add(BoolOption('profile', 'Set to enable profiling support', False))
+opts.Add(PathOption('sandboxDir', 'Path to the sandbox', os.path.join(os.getcwd(), 'sandbox'), PathOption.PathIsDirCreate))
+opts.Add(PackageOption('cacheDir', 'Path to the object cache', False))
+environments = []
+installDirs = {}
 
-def getTargetName(project):
-    head, tail = os.path.split(project.getDir())
-    return "_target_"+tail
+# Debug environment
+dbgenv = Environment(options = opts)
+dbgenv.Append(CXXFLAGS = ['-g', '-O0', '-fno-inline'])
 
-def projectDepth(projectPath):
-    # calculate the depth with respect to the testbed dir
-    # this returns the path in normalized fashion ("foo/bar")
-    normalizedPath = os.path.normpath(projectPath)
-    # by splitting at the slashes we can find the depth
-    return len(normalizedPath.split(os.sep))
+dbgenv.flavour = 'dbg'
+environments.append(dbgenv)
 
-def relativePathToTestbed(projectPath):
-    depth = projectDepth(projectPath)
-    return os.path.normpath(("/").join([".."]*depth))
+#we use only the debug environment to generate the help text for the options
+Help(opts.GenerateHelpText(dbgenv))
 
-targets = []
+# Opt Environment
+optenv = Environment(options = opts, CPPDEFINES= {'NDEBUG': '1',
+                                                  'WNS_NDEBUG' : '1',
+                                                  'WNS_NO_LOGGING' : '1'})
 
-# setup all targets
+optenv.Append(CXXFLAGS = ['-O3',
+                          '-fno-strict-aliasing',
+                          '-Wno-unused-variable',
+                          '-Wno-unused-parameter'])
+optenv.flavour = 'opt'
+environments.append(optenv)
+
+# Callgrind environment
+callgrindenv = Environment(options = opts, CPPDEFINES = {'NDEBUG': '1',
+                                                         'WNS_NDEBUG' : '1',
+                                                         'WNS_NO_LOGGING': '1',
+                                                         'CALLGRIND': '1'})
+callgrindenv.Append(CXXFLAGS = ['-O3',
+                                '-fno-strict-aliasing',
+                                '-Wno-unused-variable',
+                                '-Wno-unused-parameter',
+                                '-g'])
+callgrindenv.flavour = 'callgrind'
+environments.append(callgrindenv)
+
+
+includeDir = os.path.join(os.getcwd(),'include')
+libraries = []
 for project in projects.all:
-    if project.getExe() != None:
-        if project.getExe() in ["bin", "lib"]:
-            if not os.path.exists(os.path.join(project.getDir(), "config", "private.py")):
-                os.symlink(os.path.join(relativePathToTestbed(project.getDir()), "..", "config", "private.py"),
-                           os.path.join(project.getDir(), "config", "private.py"))
+    if isinstance(project, (wnsbase.playground.Project.Root, wnsbase.playground.Project.SystemTest, wnsbase.playground.Project.Generic)):
+        continue
+    if isinstance(project, wnsbase.playground.Project.Library):
+        libname,srcFiles,headers,pyconfigs,dependencies = SConscript(os.path.join(project.getDir(), 'config', 'libfiles.py'))
+        if len(srcFiles) != 0:
+            libraries.append(libname)
+            # if we static link we also need to include the dependencies of the libraries
+            # if we compile for a different flavour than debug, the following is also true
+            if dbgenv['static']:
+                libraries += dependencies
 
-        command = 'bash -c "cd ' + project.getDir() + ';'
+    if isinstance(project, wnsbase.playground.Project.Python):
+        # here we install python files from pure Python projects
+        # w. l. o. g. we can use the dbg environment here
+        env = dbgenv
+        env.SConscript(os.path.join(project.getDir(), 'SConscript'), exports='env')
 
-        command += ' scons '
-        if jobs != '':
-            command += " -j " + jobs + " "
-        command += options + '"'
-        targets.append(Command(getTargetName(project), None, command, ENV=os.environ))
+    if project.includeBaseName is not None:
+        libname,srcFiles,headers,pyconfigs,dependencies = SConscript(os.path.join(project.getDir(), 'config', 'libfiles.py'))
+        headertargets = [header.replace('src/', '') for header in headers]
+        InstallAs([os.path.join(includeDir, project.includeBaseName ,target) for target in headertargets],\
+                  [os.path.join(project.getDir(), header) for header in headers])
+
+# remove duplicates
+libraries = list(set(libraries))
+
+for env in environments:
+    env.Append(CPPPATH = ['#include', '/usr/include/python2.5'])
+    env.Append(LIBPATH = os.path.join('#sandbox', env.flavour, 'lib'))
+    env.Replace(CXX = 'icecc')
+    env.installDir = os.path.join(env['sandboxDir'], env.flavour)
+    env.includeDir = includeDir
+    env['libraries'] = libraries
+    if env['cacheDir']:
+        env.CacheDir(env['cacheDir'])
+    installDirs[env.flavour] = Dir(env.installDir)
+    Alias(env.flavour, installDirs[env.flavour])
+
+    if env['profile']:
+        env.Append(CXXFLAGS = '-pg')
+        env.Append(LINKFLAGS = '-pg')
+
+    for project in projects.all:
+        if isinstance(project, (wnsbase.playground.Project.Root, wnsbase.playground.Project.SystemTest, wnsbase.playground.Project.Generic, wnsbase.playground.Project.AddOn, wnsbase.playground.Project.Python)):
+            continue
+        buildDir = os.path.join(env['buildDir'], env.flavour, project.getRCSSubDir())
+        env.BuildDir(buildDir, project.getDir())
+        env.SConscript(os.path.join(buildDir, 'SConscript'), exports='env')
+    
 
 
-# setup dependencies between targets
-for project in projects.all:
-    if project.getExe() != None:
-        for dependency in project.dependencies:
-            Depends(getTargetName(project), getTargetName(dependency))
 
-Alias("install", targets)
-
-Default("install")
+Default(installDirs['dbg'])
