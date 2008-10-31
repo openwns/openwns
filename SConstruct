@@ -30,7 +30,7 @@ Help(opts.GenerateHelpText(dbgenv))
 # Opt Environment
 optenv = Environment(options = opts, CPPDEFINES= {'NDEBUG': '1',
                                                   'WNS_NDEBUG' : '1',
-                                                  'WNS_NO_LOGGING' : '1'},)
+                                                  'WNS_NO_LOGGING' : '1'})
 
 optenv.Append(CXXFLAGS = ['-O3',
                           '-fno-strict-aliasing',
@@ -38,6 +38,20 @@ optenv.Append(CXXFLAGS = ['-O3',
                           '-Wno-unused-parameter'])
 optenv.flavour = 'opt'
 environments.append(optenv)
+
+# Callgrind environment
+callgrindenv = Environment(options = opts, CPPDEFINES = {'NDEBUG': '1',
+                                                         'WNS_NDEBUG' : '1',
+                                                         'WNS_NO_LOGGING': '1',
+                                                         'CALLGRIND': '1'})
+callgrindenv.Append(CXXFLAGS = ['-O3',
+                                '-fno-strict-aliasing',
+                                '-Wno-unused-variable',
+                                '-Wno-unused-parameter',
+                                '-g'])
+callgrindenv.flavour = 'callgrind'
+environments.append(callgrindenv)
+
 
 includeDir = os.path.join(os.getcwd(),'include')
 libraries = []
@@ -53,8 +67,13 @@ for project in projects.all:
             if dbgenv['static']:
                 libraries += dependencies
 
+    if isinstance(project, wnsbase.playground.Project.Python):
+        # here we install python files from pure Python projects
+        # w. l. o. g. we can use the dbg environment here
+        env = dbgenv
+        env.SConscript(os.path.join(project.getDir(), 'SConscript'), exports='env')
+
     if project.includeBaseName is not None:
-        #print 'Checking for header files in ', project.getDir(), ' as ', project.includeBaseName
         libname,srcFiles,headers,pyconfigs,dependencies = SConscript(os.path.join(project.getDir(), 'config', 'libfiles.py'))
         headertargets = [header.replace('src/', '') for header in headers]
         InstallAs([os.path.join(includeDir, project.includeBaseName ,target) for target in headertargets],\
@@ -62,7 +81,7 @@ for project in projects.all:
 
 # remove duplicates
 libraries = list(set(libraries))
-    
+
 for env in environments:
     env.Append(CPPPATH = ['#include', '/usr/include/python2.5'])
     env.Append(LIBPATH = os.path.join('#sandbox', env.flavour, 'lib'))
@@ -80,18 +99,13 @@ for env in environments:
         env.Append(LINKFLAGS = '-pg')
 
     for project in projects.all:
-        if isinstance(project, (wnsbase.playground.Project.Root, wnsbase.playground.Project.SystemTest, wnsbase.playground.Project.Generic, wnsbase.playground.Project.AddOn)):
+        if isinstance(project, (wnsbase.playground.Project.Root, wnsbase.playground.Project.SystemTest, wnsbase.playground.Project.Generic, wnsbase.playground.Project.AddOn, wnsbase.playground.Project.Python)):
             continue
         buildDir = os.path.join(env['buildDir'], env.flavour, project.getRCSSubDir())
-        #buildDir =  os.path.join(env['buildDir'], env.flavour, project.getDir().replace('./', ''))
         env.BuildDir(buildDir, project.getDir())
         env.SConscript(os.path.join(buildDir, 'SConscript'), exports='env')
     
 
-## The documentation environment.
-## TODO implement the correct call of the documentation build
-docuEnv = Environment(tools = ['default', 'doxygen'], toolpath = '.')
-docu = docuEnv.SConscript('documentation--main--1.0/SConscript', exports='docuEnv')
-Alias('docu', docu)
+
 
 Default(installDirs['dbg'])
