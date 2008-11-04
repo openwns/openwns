@@ -30,6 +30,8 @@ import wnsbase.RCS as RCS
 
 bzrBaseURL = "https://launchpad.net/~comnets/"
 
+bzrURL = "bzr://bazaar.comnets.rwth-aachen.de/openWNS/main"
+
 root = Root('./',"openwns-sdk/sdk--main--1.0", bzrBaseURL,
             RCS.Bazaar('.', 'sdk', 'main', '1.0'))
 
@@ -43,15 +45,12 @@ documentation = MasterDocumentation('./documentation', 'openwns-documentation/do
                                    RCS.Bazaar('./documentation', 'documentation', 'main', '1.0'))
 
 library = Library('./framework/library',"openwns-library/library--main--1.0", bzrBaseURL,
-                  RCS.Bazaar('framework/library', 'library', 'main', '1.0'))
-
-moduleTemplate = Library('./framework/moduleTemplate', 'openwns-moduletemplate/moduletemplate--main--1.0', bzrBaseURL,
-                         RCS.Bazaar('./framework/moduleTemplate', 'ModuleTemplate', 'main', '1.0'),
-                         dependencies = [library])
+                  RCS.Bazaar('framework/library', 'library', 'main', '1.0'),
+		  [], 'WNS')
 
 application = Binary('./framework/application', "openwns-application/application--main--1.0", bzrBaseURL,
                      RCS.Bazaar('framework/application', 'application', 'main', '1.0'),
-                     dependencies = [library])
+                     dependencies = [])
 
 pywns = Python("./framework/pywns", "openwns-pywns/pywns--main--1.0", bzrBaseURL,
                RCS.Bazaar('framework/pywns', "pywns", "main", "1.0"))
@@ -59,12 +58,21 @@ pywns = Python("./framework/pywns", "openwns-pywns/pywns--main--1.0", bzrBaseURL
 constanze = Library('./modules/loadgen/constanze', 'openwns-constanze/constanze--main--1.0', bzrBaseURL,
                     RCS.Bazaar('./modules/loadgen/constanze',
                                 'constanze', 'main', '1.0'),
-                    [library])
+                    [], 'CONSTANZE')
 
 simpleTL = Library('./modules/mock/simpletl', 'openwns-simpletl/simpletl--main--1.0', bzrBaseURL,
                    RCS.Bazaar('./modules/mock/simpletl',
                                'simpletl', 'main', '1.0'),
-                   [library])
+                   [], 'SIMPLETL')
+
+                       
+simpletl_test = SystemTest('./tests/system/simpletl-tests', 'simpletl-tests', bzrURL,
+                            RCS.Bazaar('./tests/system/simpletl-tests',
+                                        'simpletl-tests', 'main', '1.0'))
+
+libwns_test = SystemTest('./tests/system/libwns-tests', 'libwns-tests', bzrURL,
+                            RCS.Bazaar('./tests/system/libwns-tests',
+					'libwns-tests', 'main', '1.0'))
 
 all = [
     root,
@@ -72,14 +80,15 @@ all = [
     buildSupport,
     documentation,
     library,
-    moduleTemplate,
     application,
     pywns,
 
     constanze,
     simpleTL,
+    simpletl_test,
+    libwns_test
     ]
 
 # commands to prepare the sandbox for playground.py
 # list of tuples, where tuples are (command, directory to execute command in)
-prereqCommands = [('scons', 'framework/pywns')]
+prereqCommands = [('scons sandbox/default', '.')]

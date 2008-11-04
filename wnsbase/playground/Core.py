@@ -171,7 +171,7 @@ class Core:
             line = stdout.readline()
             while line:
                 line = stdout.readline()
-                os.chdir(savedDir)
+            os.chdir(savedDir)
 
     def run(self):
         """ Runs the command selected in the startup phase.
