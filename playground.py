@@ -48,21 +48,6 @@ def installEnvironment():
     if not os.path.exists("sandbox"):
         os.mkdir("sandbox")
 
-    # The wnsrc.py will always be copied.
-    shutil.copy("config/wnsrc.py", wnsDir)
-    if not os.environ.has_key("PYTHONPATH") or wnsDir not in os.environ["PYTHONPATH"]:
-        print "\nERROR:"
-        print "Please add '" + wnsDir + "' to the environment variable PYTHONPATH"
-        print "You have three options:"
-        print "1.) type 'export PYTHONPATH=$PYTHONPATH:"+wnsDir+"' in your current shell"
-        print "    This affects only your current shell!"
-        print "2.) add the above line to your ~/.bashrc"
-        print "    Prefered: next time you login the variable will already be set."
-        print "3.) call " + os.path.join(os.getcwd(), "bin", "setEnvironment")
-        print "    Again, this affects only your current shell!"
-        print
-        sys.exit(1)
-
 def installWNSBase():
     """ Installs wnsbase package to the sandbox.
 
@@ -88,7 +73,14 @@ def installWNSBase():
 installEnvironment()
 installWNSBase()
 
-import wnsrc
+try:
+    import wnsrc
+except:
+    import sys
+    wnsDir = os.path.join(os.environ["HOME"], ".wns")
+    sys.path.append(wnsDir)
+    import wnsrc
+
 import wnsbase.playground.Core
 
 if __name__ == "__main__":

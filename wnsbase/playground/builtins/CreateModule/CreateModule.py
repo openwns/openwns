@@ -27,7 +27,13 @@
 
 import os
 import shutil
-import wnsrc
+try:
+    import wnsrc
+except:
+    import sys
+    wnsDir = os.path.join(os.environ["HOME"], ".wns")
+    sys.path.append(wnsDir)
+    import wnsrc
 import subprocess
 import FilePatcher
 

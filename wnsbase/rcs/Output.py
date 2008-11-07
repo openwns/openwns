@@ -27,36 +27,46 @@
 
 class Output:
 	def __init__(self, sout, serr):
-		self.sout = sout
-		self.serr = serr
-		self.hasError = False
+		self._sout = sout
+		self._serr = serr
+		self._error = ""
+		self._hasError = False
 
 	def __str__(self):
 		s = ""
-		self.error = ""
-		for it in self.serr:
-			self.error += it
-		if self.error != "":
-			self.hasError = True
 
-		for i in self.sout:
+		for i in self._sout:
 			s += i
 
-		if self.hasError:
+		if self._hasError:
 			s = "stdout:\n%s\n\nstderr:\n%s\n" % (s, self.error)
 		return s.strip("\n")
 
 	def __iter__(self):
-		for s in self.sout, self.serr:
+		for s in self._sout, self._serr:
 			line = s.readline()
 			while line:
-				if s == self.serr:
-					self.hasError = True
+				if s == self._serr:
+					self._hasError = True
 				yield line.strip('\n')
 				line = s.readline()
+
+	def hasError(self):
+		for it in self._serr:
+			self._error += it
+		if self._error != "":
+			self._hasError = True
+
+		return self._hasError
+
+	def getErrorMessage(self):
+		if self.hasError():
+			return self._error
+		else:
+			return ""
 
 	def realtimePrint(self, prepend=""):
 		for it in self:
 			print prepend + it
-		if self.hasError:
+		if self._hasError:
 			raise Exception("An error during RCS action occured!")

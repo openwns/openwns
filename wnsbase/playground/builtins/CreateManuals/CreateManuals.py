@@ -31,7 +31,6 @@ import shutil
 import ConfigParser
 import StringIO
 import os.path
-import wnsrc
 import re
 import textwrap
 import subprocess
