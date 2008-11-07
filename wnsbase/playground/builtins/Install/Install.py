@@ -27,6 +27,7 @@
 
 import sys
 from wnsbase.playground.Tools import *
+import wnsrc
 
 import wnsbase.playground.Core
 core = wnsbase.playground.Core.getCore()

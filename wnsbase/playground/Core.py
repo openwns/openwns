@@ -35,13 +35,7 @@ import exceptions
 import ConfigParser
 
 import wnsbase.rcs.Bazaar
-try:
-    import wnsrc
-except:
-    import sys
-    wnsDir = os.path.join(os.environ["HOME"], ".wns")
-    sys.path.append(wnsDir)
-    import wnsrc
+import wnsrc
 
 from wnsbase.playground.Tools import *
 

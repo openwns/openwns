@@ -25,14 +25,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-try:
-    import wnsrc
-except:
-    import sys
-    wnsDir = os.path.join(os.environ["HOME"], ".wns")
-    sys.path.append(wnsDir)
-    import wnsrc
-
+import wnsrc
 import os
 import sys
 import shutil

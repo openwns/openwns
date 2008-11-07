@@ -3,13 +3,7 @@
 import types
 import sys
 import imp
-try:
-    import wnsrc
-except:
-    import sys
-    wnsDir = os.path.join(os.environ["HOME"], ".wns")
-    sys.path.append(wnsDir)
-    import wnsrc
+import wnsrc
 
 class PyTree:
     maxSequence = 10
