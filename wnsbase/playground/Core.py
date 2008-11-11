@@ -159,9 +159,6 @@ class Core:
 
         self.updateMissingProjects(missingProjects)
 
-        if not os.path.exists(os.path.join('config', 'private.py')):
-            os.symlink('private.py.template', os.path.join('config', 'private.py'))
-
         # install necessary files
         # must happen after missing projects ...
         for preCommand, sourcePath in self.getProjects().prereqCommands:
@@ -439,9 +436,8 @@ class Core:
         self.fixConfigurationLinks()
 
     def fixConfigurationLinks(self):
-        """ Symlink config/private.py and config.pushMailRecipients.py to their templates if not found
+        """ Symlink config.pushMailRecipients.py to its template if not found
         """
-        self.foreachProject(self._linkPrivatePy)
         self.foreachProject(self._linkPushMailRecipientsPy)
 
     def foreachProject(self, fun, **args):
@@ -562,23 +558,6 @@ class Core:
         self._process_hooks("_post_parse_project")
 
         return Dict2Class(foobar)
-
-    def _linkPrivatePy(self, project):
-        """ Possibly link config/private.py in a project to the global openwns-sdk/config/private.py
-
-        If a project does not have a config/private.py a link to the global openwns-sdk/config/private.py
-        is created.
-
-        project : The project to check (wnsbase.playground.Project.Project)
-        """
-        if not project.getExe() in ["bin", "lib"]:
-            return
-
-
-        linksrc = os.path.join(self.getRelativePathToPlayground(project.getDir()), "config", "private.py")
-        linktarget = os.path.join("config", "private.py")
-
-        installLink(linksrc, linktarget)
 
     def _linkPushMailRecipientsPy(self, project):
         """ Possibly link config/pushMailRecipients.py in a project to the global openwns-sdk/config/pushMailRecipients.py
