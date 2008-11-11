@@ -8,7 +8,7 @@ sys.path.remove('config')
 SetOption('num_jobs', os.sysconf('SC_NPROCESSORS_ONLN'))
 SetOption('implicit_cache', True)
 
-opts = Options('options.py')
+opts = Options(os.path.join('config','options.py'))
 opts.Add(BoolOption('static', 'Set to build the static version', False))
 opts.Add(PathOption('buildDir', 'Path to the build directory',  os.path.join(os.getcwd(), '.build'), PathOption.PathIsDirCreate))
 opts.Add(BoolOption('profile', 'Set to enable profiling support', False))
@@ -85,7 +85,8 @@ libraries = list(set(libraries))
 for env in environments:
     env.Append(CPPPATH = ['#include', '/usr/include/python2.5'])
     env.Append(LIBPATH = os.path.join('#sandbox', env.flavour, 'lib'))
-    env.Replace(CXX = 'icecc')
+    if ARGUMENTS.get('CXX'):
+        env.Replace(CXX = ARGUMENTS.get('CXX'))
     env.installDir = os.path.join(env['sandboxDir'], env.flavour)
     env.includeDir = includeDir
     env['libraries'] = libraries
@@ -105,7 +106,4 @@ for env in environments:
         env.BuildDir(buildDir, project.getDir())
         env.SConscript(os.path.join(buildDir, 'SConscript'), exports='env')
     
-
-
-
 Default(installDirs['dbg'])
