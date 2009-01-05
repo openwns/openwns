@@ -37,6 +37,7 @@ sys.path.append(os.path.join(wnsrc.pathToWNS, 'framework/buildSupport'))
 import wnsbase.RCS
 import FilePatcher
 sys.path.remove(os.path.join(wnsrc.pathToWNS, 'framework/buildSupport'))
+import wnsbase.playground
 
 class Dict2Class:
     def __init__(self, dictionary):
@@ -77,8 +78,8 @@ def setupFileList():
 	projects = readProjectsConfig()
 	allFiles = []
 	for project in projects.all:
-		if project.getExe() in ['lib', 'bin']:
-			allFiles = allFiles + getProjectFiles(project)
+            if isinstance(project, wnsbase.playground.Project.Library) or isinstance(project, wnsbase.playground.Project.Binary):
+                allFiles = allFiles + getProjectFiles(project)
 
 	allFiles = [f.replace(wnsrc.pathToWNS + "/", "") for f in allFiles]
 
