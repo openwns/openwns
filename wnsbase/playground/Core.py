@@ -135,7 +135,8 @@ class Core:
         if len(self.pluginArgs) > 0:
             commandName = self.pluginArgs[0]
             if not self.commands.has_key(commandName):
-                print "\nERROR: Unknown Command %s" % commandName
+                if not self.pluginArgs[0] == "--help":
+                    print "\nERROR: Unknown Command %s" % commandName
                 self.printUsage()
             else:
                 self.command = self.commands[commandName]
