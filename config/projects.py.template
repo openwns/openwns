@@ -1,4 +1,3 @@
-# __projectFetcher__from: http://openwns.comnets.rwth-aachen.de/Wiki/InstallationTutorial?action=AttachFile&do=get&target=projects_noAddons.py
 ###############################################################################
 # This file is part of openWNS (open Wireless Network Simulator)
 # _____________________________________________________________________________
@@ -29,63 +28,147 @@
 from wnsbase.playground.Project import *
 import wnsbase.RCS as RCS
 
-bzrBaseURL = "bzr://bazaar.comnets.rwth-aachen.de/openWNS/main"
+bzrBaseURL = "https://launchpad.net/~comnets/"
 
-root         = Root('./', "openWNS--main--1.0", bzrBaseURL,
-                    RCS.Bazaar('.', 'openWNS', 'main', '1.0'))
+root = Root('./',"openwns-sdk/sdk--main--1.0", bzrBaseURL,
+            RCS.Bazaar('.', 'sdk', 'main', '1.0'))
 
-unitTests = Generic('./tests/unit', 'unitTest--main--1.0', bzrBaseURL,
-                    RCS.Bazaar('./tests/unit',
-                               'unitTest', 'main', '1.0'))
+unitTests = Generic('./tests/unit', 
+                'openwns-unittest/unittest--main--1.0', 
+                bzrBaseURL,
+                RCS.Bazaar('./tests/unit', 
+                    'unittest', 'main', '1.0'))
 
-buildSupport = Generic('./framework/cn-scons--main--1.0',"cn-scons--main--1.0", bzrBaseURL,
-                       RCS.Bazaar('framework/cn-scons--main--1.0', 'cn-scons', 'main', '1.0'),
-                       alias="buildSupport")
+buildSupport = Generic('./framework/buildSupport',
+                "openwns-buildsupport/buildsupport--main--1.0", 
+                bzrBaseURL,
+                RCS.Bazaar('./framework/buildSupport', 
+                    'buildsupport', 'main', '1.0'))
 
-documentation= MasterDocumentation('./documentation', 'documentation--main--1.0', bzrBaseURL,
-                       RCS.Bazaar('./documentation', 'documentation', 'main', '1.0'))
+documentation = MasterDocumentation('./documentation', 
+                'openwns-documentation/documentation--main--1.0', 
+                bzrBaseURL,
+                RCS.Bazaar('./documentation', 
+                    'documentation', 'main', '1.0'))
 
-pywns = Python("./framework/PyWNS--main--1.0", "PyWNS--main--1.0", bzrBaseURL,
-               RCS.Bazaar('./framework/PyWNS--main--1.0', "PyWNS", "main", "1.0"))
+library = Library('./framework/library',
+                "openwns-library/library--main--1.0", 
+                bzrBaseURL,
+                RCS.Bazaar('framework/library', 
+                    'library', 'main', '1.0'),
+                [], 'WNS')
 
-libwns       = Library('./framework/libwns--main--1.0',"libwns--main--1.0", bzrBaseURL,
-                       RCS.Bazaar('framework/libwns--main--1.0',
-                                  'libwns', 'main', '1.0'),
-				[], 'WNS')
+application = Binary('./framework/application', 
+                "openwns-application/application--main--1.0", 
+                bzrBaseURL,
+                RCS.Bazaar('framework/application', 
+                    'application', 'main', '1.0'),
+                dependencies = [])
 
-wns_core     = Binary('./framework/openWNS-core--main--1.0', "openWNS-core--main--1.0", bzrBaseURL,
-                       RCS.Bazaar('./framework/openWNS-core--main--1.0',
-                                  'openWNS-core', 'main', '1.0'),
-                       [])
-                       
-constanze = Library('./modules/loadgen/Constanze--unstable--1.0', 'Constanze--unstable--1.0', bzrBaseURL,
-                    RCS.Bazaar('./modules/loadgen/Constanze--unstable--1.0',
-                                'Constanze', 'unstable', '1.0'),
-                    [], 'CONSTANZE')
-                    
-simpleTL = Library('./modules/mock/simpleTL--main--1.0', 'simpleTL--main--1.0', bzrBaseURL,
-                   RCS.Bazaar('./modules/mock/simpleTL--main--1.0',
-                               'simpleTL', 'main', '1.0'),
-                   [], 'SIMPLETL')
-                       
-simpletl_test = SystemTest('./tests/system/simpletl-tests', 'simpletl-tests', bzrBaseURL,
-                            RCS.Bazaar('./tests/system/simpletl-tests',
-                                        'simpletl-tests', 'main', '1.0'))
-                       
-all = [ root,
-        unitTests,
-        buildSupport,
-        documentation,
-        pywns,
+pywns = Python("./framework/pywns", 
+                "openwns-pywns/pywns--main--1.0", 
+                bzrBaseURL,
+                RCS.Bazaar('framework/pywns', 
+                    "pywns", "main", "1.0"))
 
-        libwns,
-        wns_core,
-        constanze,
-        simpleTL,
-        simpletl_test
-        ]
+rise = Library('./framework/rise', 
+                'opewns-rise/rise--main--1.0', 
+                bzrBaseURL,
+                RCS.Bazaar('./framework/rise',
+                    'rise', 'main', '1.0'),
+                [], 'RISE')
+
+dllbase = Library('./framework/dllbase', 
+                'openwns-dllbase/dllbase--main--1.0', 
+                bzrBaseURL,
+                RCS.Bazaar('./framework/dllbase',
+                    'dllbase', 'main', '1.0'),
+                [], 'DLL')
+
+constanze = Library('./modules/loadgen/constanze', 
+                'openwns-constanze/constanze--main--1.0', 
+                bzrBaseURL,
+                RCS.Bazaar('./modules/loadgen/constanze',
+                    'constanze', 'main', '1.0'),
+                [], 'CONSTANZE')
+
+simpleTL = Library('./modules/mock/simpletl', 
+                'openwns-simpletl/simpletl--main--1.0', 
+                bzrBaseURL,
+                RCS.Bazaar('./modules/mock/simpletl',
+                    'simpletl', 'main', '1.0'),
+                [], 'SIMPLETL')
+
+ofdmaphy = Library('./modules/phy/ofdmaphy', 
+                'openwns-ofdmaphy/ofdmaphy--main--1.0', 
+                bzrBaseURL,
+                RCS.Bazaar('./modules/phy/ofdmaphy',
+                    'ofdmaphy', 'main', '1.0'),
+                [], 'OFDMAPHY')
+
+wifimac = Library('./modules/dll/wifimac', 
+                "openwns-wifimac/wifimac--main--1.0", 
+                bzrBaseURL,
+                RCS.Bazaar('./modules/dll/wifimac',
+                    'wifimac', 'main', '1.0'),
+                [], 'WIFIMAC')
+
+ip = Library('./modules/nl/ip', 
+                'openwns-ip/ip--main--1.0', 
+                bzrBaseURL,
+                RCS.Bazaar('./modules/nl/ip',
+                    'ip', 'main', '1.0'),
+                [], 'IP')
+                      
+simpletl_test = SystemTest('./tests/system/simpletl-tests',
+                'openwns-systemtest-simpletl/systemtest-simpletl--main--1.0', 
+                bzrBaseURL,
+                RCS.Bazaar('./tests/system/simpletl-tests',
+                    'simpletl-tests', 'main', '1.0'))
+
+libwns_test = SystemTest('./tests/system/libwns-tests', 
+                'openwns-systemtest-library/systemtest-library--main--1.0', 
+                bzrBaseURL,
+                RCS.Bazaar('./tests/system/libwns-tests',
+                    'library-tests', 'main', '1.0'))
+
+ofdma_test = SystemTest('./tests/system/ofdma-tests',
+                'openwns-systemtest-ofdmascanner/systemtest-ofdmascanner--main--1.0', 
+                bzrBaseURL,
+                RCS.Bazaar('./tests/system/ofdma-tests',
+                    'ofdma-test', 'main', '1.0'))
+
+
+wifimac_test = SystemTest('./tests/system/wifimac-tests', 
+                'openwns-systemtest-wifimac/systemtest-wifimac--main--1.0', 
+                bzrBaseURL,
+                RCS.Bazaar('./tests/system/wifimac-tests',
+                    'wifimac-tests', 'main', '1.0'))
+
+
+all = [
+    root,
+    unitTests,
+    buildSupport,
+    documentation,
+    library,
+    application,
+    pywns,
+    rise,
+    dllbase,
+
+    constanze,
+    simpleTL,
+    ofdmaphy,
+    wifimac,
+    ip,
+
+    simpletl_test,
+    libwns_test,
+    ofdma_test,
+    wifimac_test
+    ]
 
 # commands to prepare the sandbox for playground.py
 # list of tuples, where tuples are (command, directory to execute command in)
 prereqCommands = [('scons sandbox/default', '.')]
-
