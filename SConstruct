@@ -81,6 +81,7 @@ for project in projects.all:
 
 # remove duplicates
 libraries = list(set(libraries))
+pyConfigDirs = []
 
 for env in environments:
     env.Append(CPPPATH = ['#include', '/usr/include/python2.5'])
@@ -94,6 +95,7 @@ for env in environments:
         env.CacheDir(env['cacheDir'])
     installDirs[env.flavour] = Dir(env.installDir)
     Alias(env.flavour, installDirs[env.flavour])
+    pyConfigDirs.append(Alias(env.flavour + 'PyConfig', Dir(os.path.join(env.installDir, 'lib', 'PyConfig'))))
 
     if env['profile']:
         env.Append(CXXFLAGS = '-pg')
@@ -107,3 +109,4 @@ for env in environments:
         env.SConscript(os.path.join(buildDir, 'SConscript'), exports='env')
     
 Default(installDirs['dbg'])
+Alias('pyconfig', pyConfigDirs)
