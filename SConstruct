@@ -25,7 +25,18 @@ dbgenv.flavour = 'dbg'
 environments.append(dbgenv)
 
 #we use only the debug environment to generate the help text for the options
-Help(opts.GenerateHelpText(dbgenv))
+Help( """
+The openWNS SDK provides rich tools to build the framework and modules.
+
+Type: 'scons' to build all libraries and modules for the debug flavour.
+      'scons opt' to build all libraries and module for the opt flavour.
+      'scons sandbox/<flavour>/lib/<lib of your choice>' to build a single library.
+      'scons static=yes' to build openwns executable with statically linked libraries.
+      'scons pyconfig' to install the pyconfig files for all flavours.
+
+You can customize your build with the following arguments:
+""" +  opts.GenerateHelpText(dbgenv) 
+)
 
 # Opt Environment
 optenv = Environment(options = opts, CPPDEFINES= {'NDEBUG': '1',
