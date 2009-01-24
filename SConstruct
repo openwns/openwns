@@ -7,6 +7,7 @@ sys.path.remove('config')
 
 SetOption('num_jobs', os.sysconf('SC_NPROCESSORS_ONLN'))
 SetOption('implicit_cache', True)
+SetOption('warn','no-missing-sconscript')
 
 opts = Options(os.path.join('config','options.py'))
 opts.Add(BoolOption('static', 'Set to build the static version', False))
