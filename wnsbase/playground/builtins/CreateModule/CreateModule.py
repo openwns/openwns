@@ -80,10 +80,6 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
 
         moduleName = core.userFeedback.askForInput("What is the name of your module", "ProjModule")
 
-        #moduleSeries = core.userFeedback.askForInput("What is the series of your module", "main")
-
-        #moduleVersion = core.userFeedback.askForInput("What is the version of your module", "0.8")
-
         branchLocation = core.userFeedback.askForInput("Where should the branch be pushed", c.get("builtin.CreateModule", "defaultBranchLocation")) 
 
         sdkLocation = core.userFeedback.askForInput("Where should the files be locate in the SDK", "./modules/dll/")
