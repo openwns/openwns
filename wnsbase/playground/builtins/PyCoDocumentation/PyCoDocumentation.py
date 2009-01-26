@@ -28,16 +28,11 @@ Note: EpyDoc currently produces a lot of warnings.
 
     def run(self):
 
-        def installPyConfig(project):
-            # Currently only libs have PyConfig
-            if project.getExe() == "lib":
-                print "Install PyConfig for %s" % project.getDir()
-                command = "scons pyconfig flavour=%s" % self.options.flavour
-                result = runCommand(command)
-                if not (result is None):
-                    print "Could not execute %s" % command
-
-        core.foreachProject(installPyConfig)
+        print "Install PyConfig"
+        command = "scons %sPyConfig" % self.options.flavour
+        result = runCommand(command)
+        if not (result is None):
+            print "Could not execute %s" % command
 
         command = "touch sandbox/%s/lib/PyConfig/__init__.py" % self.options.flavour
         result = runCommand(command)
