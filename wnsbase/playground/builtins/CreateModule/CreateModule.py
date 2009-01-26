@@ -80,9 +80,9 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
 
         moduleName = core.userFeedback.askForInput("What is the name of your module", "ProjModule")
 
-        moduleSeries = core.userFeedback.askForInput("What is the series of your module", "main")
+        #moduleSeries = core.userFeedback.askForInput("What is the series of your module", "main")
 
-        moduleVersion = core.userFeedback.askForInput("What is the version of your module", "0.8")
+        #moduleVersion = core.userFeedback.askForInput("What is the version of your module", "0.8")
 
         branchLocation = core.userFeedback.askForInput("Where should the branch be pushed", c.get("builtin.CreateModule", "defaultBranchLocation")) 
 
@@ -90,21 +90,21 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
 
         maintainer = core.userFeedback.askForInput("Who is the maintainer of the module", c.get("builtin.CreateModule", "defaultMaintainer"))
 
-        dest = os.path.join(sdkLocation, moduleName + '--' + moduleSeries + '--' + moduleVersion)
+        dest = os.path.join(sdkLocation, moduleName)
 
         self._copyTemplate(dest)
         
         self._initBranch(dest)
 
-        self._patchProject(moduleName, moduleSeries, moduleVersion, branchLocation, dest, maintainer)
+        self._patchProject(moduleName, branchLocation, dest, maintainer)
         
-        self._appendToProjectsPy(moduleName, moduleSeries, moduleVersion, branchLocation, dest)
+        self._appendToProjectsPy(moduleName, branchLocation, dest)
 
         core.projects = core.readProjectsConfig(core.projectsFile)
 
         core.fixConfigurationLinks()
 
-        pushTarget = "%s/%s--%s--%s" % (branchLocation, moduleName, moduleSeries, moduleVersion)
+        pushTarget = "%s/%s" % (branchLocation, moduleName)
 
         if not core.userFeedback.askForReject("Do you want to push the project to %s" % pushTarget):
             # Push initial version
@@ -122,7 +122,12 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
         curdir = os.getcwd()
 
         os.chdir(destination)
-        
+
+        print os.path.join(wnsrc.wnsrc.pathToWNS, 'SConscript')
+
+        os.symlink(os.path.join(wnsrc.wnsrc.pathToWNS, 'SConscript'),
+                   'SConscript')
+
         subprocess.check_call(["bzr", "init"])
 
         subprocess.check_call(["bzr", "add"])
@@ -131,7 +136,7 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
 
         os.chdir(curdir)
 
-    def _patchProject(self, moduleName, moduleSeries, moduleVersion, branchLocation, dest, maintainer):
+    def _patchProject(self, moduleName, branchLocation, dest, maintainer):
 
         p = FilePatcher.FilePatcher(os.path.join(dest, "MAINTAINER"), "John Doe <jdoe@doh.no>", maintainer).replaceAll()
 
@@ -141,11 +146,16 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
 
         p = FilePatcher.FilePatcher(os.path.join(dest, "config", "common.py"),
                                     "RCS.Bazaar\('../', 'ModuleTemplate', 'main', '1.0'\),",
-                                    "RCS.Bazaar('../', '%s', '%s', '%s')," % (moduleName, moduleSeries, moduleVersion)).replaceAll()
+                                    "RCS.Bazaar('../', '%s', '%s', '%s')," % (moduleName, 'deprecated', 'deprecated')).replaceAll()
 
         p = FilePatcher.FilePatcher(os.path.join(dest, "config", "libfiles.py"),
                                     "ProjName",
                                     moduleName,
+                                    ignoreCase=False).replaceAll()
+
+        p = FilePatcher.FilePatcher(os.path.join(dest, "config", "libfiles.py"),
+                                    "projname",
+                                    moduleName.lower(),
                                     ignoreCase=False).replaceAll()
 
         p = FilePatcher.FilePatcher(os.path.join(dest, "src", "ProjNameModule.hpp"),
@@ -196,12 +206,6 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
                                     ignoreCase=False
                                     ).replaceAll()
 
-        p = FilePatcher.FilePatcher(os.path.join(dest, "PyConfig", "projname", "__init__.py"),
-                                    "-1.0",
-                                    "-%s" % moduleVersion,
-                                    ignoreCase=False
-                                    ).replaceAll()
-
         curdir = os.getcwd()
 
         os.chdir(dest)
@@ -212,20 +216,20 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
 
         subprocess.check_call(["bzr", "mv", "src/ProjNameModule.cpp", "src/%sModule.cpp" % moduleName ])
 
-        subprocess.check_call(["bzr", "ignore", ".objs", ".sconsign.dblite", "build", "include", "config/bversion.hpp", "config/private.py", "config/pushMailRecipients.py"])
+        subprocess.check_call(["bzr", "ignore", ".objs", ".sconsign.dblite", "build", "include", "config/private.py", "config/pushMailRecipients.py"])
  
         subprocess.check_call(["bzr", "commit", "-m", "'Applied your settings to the template'"])
 
         os.chdir(curdir)
 
 
-    def _appendToProjectsPy(self, moduleName, moduleSeries, moduleVersion, branchLocation, destination):
+    def _appendToProjectsPy(self, moduleName, branchLocation, destination):
 
         entry =  "\n"
-        entry += "%s = Library('%s','%s--%s--%s', '%s',\n" % (moduleName, destination, moduleName, moduleSeries, moduleVersion, branchLocation)
+        entry += "%s = Library('%s','%s', '%s',\n" % (moduleName, destination, moduleName, branchLocation)
         entry += "                 RCS.Bazaar('%s',\n" % (destination)
-        entry += "                            '%s', '%s', '%s'),\n" % ( moduleName, moduleSeries, moduleVersion )
-        entry += "%s           [ libwns ])\n" % (" " * len(moduleName))
+        entry += "                            '%s', '%s', '%s'),\n" % ( moduleName, 'deprecated', 'deprecated' )
+        entry += "%s           [ library ], '%s')\n" % (" " * len(moduleName), moduleName.upper())
 
         sourceName = os.path.join(wnsrc.wnsrc.pathToWNS, 'config', 'projects.py')
         origPPy = open(sourceName, "a")
