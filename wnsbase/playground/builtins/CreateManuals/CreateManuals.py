@@ -52,6 +52,42 @@ be placed in ./doxydoc.
         wnsbase.playground.plugins.Command.Command.__init__(self, "createmanuals", rationale, usage)
 
         self.workingdir = '.createManualsWorkingDir'
+    def startup(self, args):
+        wnsbase.playground.plugins.Command.Command.startup(self, args)
+
+        errorOccured = False
+        # Needs make, pdflatex
+        try:
+            print "Checking make Version"
+            print ""
+            retcode = subprocess.check_call(['make', '-v'])
+            if retcode != 0:
+                print "Cannot determine make version. Is it installed?"
+                errorOccured = True
+        except (OSError, subprocess.CalledProcessError):
+            print "Cannot find make."
+            errorOccured = True
+
+        try:
+            print "Checking pdflatex Version"
+            print ""
+            retcode = subprocess.check_call(['pdflatex', '-version'])
+            if retcode != 0:
+                print "Cannot determine pdflatex version. Is it installed?"
+                errorOccured = True
+        except (OSError, subprocess.CalledProcessError):
+            print "Cannot find pdflatex."
+            errorOccured = True
+
+        if errorOccured == True:
+            print "You need to have the doxygen and dot tool installed."
+            print ""
+            print "Try:"
+            print ""
+            print "  apt-get install make"
+            print "  apt-get install texlive-full"
+            print ""
+            exit(1)
 
     def run(self):
         core = wnsbase.playground.Core.getCore()
