@@ -18,6 +18,6 @@ recipients = [(".*@bazaar.launchpad.net/~comnets.*",
                (".*@bazaar-extern.comnets.rwth-aachen.de:1122/~/.*",
                "mue@comnets.rwth-aachen.de dbn@comnets.rwth-aachen.de msg@comnets.rwth-aachen.de"),
               (".*@bazaar.comnets.rwth-aachen.de/KKS.*",
-               "kks@comnets.rwth-aachen.de")]
+               "kks@comnets.rwth-aachen.de"),
               (".*bazaar.comnets.rwth-aachen.de/AOZ.*",
                "aoz@comnets.rwth-aachen.de rs@comnets.rwth-aachen.de cmr@comnets.rwth-aachen.de")]
