@@ -41,3 +41,4 @@ config/.temp_otherProjects.py
 .createManualsWorkingDir
 config/projects.py
 include
+config/options.py
