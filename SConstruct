@@ -1,12 +1,47 @@
 import os
 import sys
 import wnsbase.playground.Project
+
 sys.path.append('config')
 import projects
 sys.path.remove('config')
 
 SetOption('num_jobs', os.sysconf('SC_NPROCESSORS_ONLN'))
 SetOption('implicit_cache', True)
+
+# Load options from file and from command line
+optionFile = os.path.join('config','options.py')
+if not os.path.exists(optionFile):
+    print "No options file found. Creating empty options file..."
+    defaultoptions = \
+    """# This is the build option file. Specify your build options here.
+
+# The 'buildDir' option specifies a directory where the object files are built.
+# It is a good idea to choose a directory on a fast harddisk to speed up the
+# build process.
+#
+# buildDir = '/path/to/fast/harddisk/'
+
+# The 'profile' option specifies if the openWNS is built with profiling support.
+#
+# profile = False
+
+# The 'sandboxDir' specifies the directory where the modules and the openwns 
+# executable will be installed.
+#
+# sandboxDir = '/path/to/the/sandbox'
+
+# The 'cacheDir' option specifies a shared directory for object files.
+#
+# cacheDir = '/path/to/cacheDir'
+
+# With the 'static' option set to True, all modules will be linked statically.
+# 
+# static = False
+"""
+    of = open(optionFile, 'w')
+    of.write(defaultoptions)
+    of.close
 
 opts = Options(os.path.join('config','options.py'))
 opts.Add(BoolOption('static', 'Set to build the static version', False))
@@ -17,17 +52,16 @@ opts.Add(PackageOption('cacheDir', 'Path to the object cache', False))
 environments = []
 installDirs = {}
 
-# Debug environment
+
+# Create the debug environment
 dbgenv = Environment(options = opts)
 dbgenv.Append(CXXFLAGS = ['-g', '-O0', '-fno-inline'])
 
 dbgenv.flavour = 'dbg'
 environments.append(dbgenv)
 
-#we use only the debug environment to generate the help text for the options
-Help(opts.GenerateHelpText(dbgenv))
 
-# Opt Environment
+# Create the opt Environment
 optenv = Environment(options = opts, CPPDEFINES= {'NDEBUG': '1',
                                                   'WNS_NDEBUG' : '1',
                                                   'WNS_NO_LOGGING' : '1'})
@@ -39,7 +73,7 @@ optenv.Append(CXXFLAGS = ['-O3',
 optenv.flavour = 'opt'
 environments.append(optenv)
 
-# Callgrind environment
+# Create the callgrind environment
 callgrindenv = Environment(options = opts, CPPDEFINES = {'NDEBUG': '1',
                                                          'WNS_NDEBUG' : '1',
                                                          'WNS_NO_LOGGING': '1',
@@ -51,6 +85,21 @@ callgrindenv.Append(CXXFLAGS = ['-O3',
                                 '-g'])
 callgrindenv.flavour = 'callgrind'
 environments.append(callgrindenv)
+
+
+#we use only the debug environment to generate the help text for the options
+Help( """
+The openWNS SDK provides rich tools to build the framework and modules.
+
+Type: 'scons' to build all libraries and modules for the debug flavour.
+      'scons opt' to build all libraries and module for the opt flavour.
+      'scons sandbox/<flavour>/lib/<lib of your choice>' to build a single library.
+      'scons static=yes' to build openwns executable with statically linked libraries.
+      'scons pyconfig' to install the pyconfig files for all flavours.
+
+You can customize your build with the following arguments:
+""" +  opts.GenerateHelpText(dbgenv) 
+)
 
 
 includeDir = os.path.join(os.getcwd(),'include')
@@ -105,7 +154,7 @@ for env in environments:
         if isinstance(project, (wnsbase.playground.Project.Root, wnsbase.playground.Project.SystemTest, wnsbase.playground.Project.Generic, wnsbase.playground.Project.AddOn, wnsbase.playground.Project.Python)):
             continue
         buildDir = os.path.join(env['buildDir'], env.flavour, project.getRCSSubDir())
-        env.BuildDir(buildDir, project.getDir())
+        env.BuildDir(buildDir, project.getDir(), duplicate = False)
         env.SConscript(os.path.join(buildDir, 'SConscript'), exports='env')
     
 Default(installDirs['dbg'])
