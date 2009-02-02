@@ -8,7 +8,7 @@ sys.path.remove('config')
 SetOption('num_jobs', os.sysconf('SC_NPROCESSORS_ONLN'))
 SetOption('implicit_cache', True)
 
-opts = Options('options.py')
+opts = Options(os.path.join('config','options.py'))
 opts.Add(BoolOption('static', 'Set to build the static version', False))
 opts.Add(PathOption('buildDir', 'Path to the build directory',  os.path.join(os.getcwd(), '.build'), PathOption.PathIsDirCreate))
 opts.Add(BoolOption('profile', 'Set to enable profiling support', False))
@@ -81,11 +81,13 @@ for project in projects.all:
 
 # remove duplicates
 libraries = list(set(libraries))
+pyConfigDirs = []
 
 for env in environments:
     env.Append(CPPPATH = ['#include', '/usr/include/python2.5'])
     env.Append(LIBPATH = os.path.join('#sandbox', env.flavour, 'lib'))
-    env.Replace(CXX = 'icecc')
+    if ARGUMENTS.get('CXX'):
+        env.Replace(CXX = ARGUMENTS.get('CXX'))
     env.installDir = os.path.join(env['sandboxDir'], env.flavour)
     env.includeDir = includeDir
     env['libraries'] = libraries
@@ -93,6 +95,7 @@ for env in environments:
         env.CacheDir(env['cacheDir'])
     installDirs[env.flavour] = Dir(env.installDir)
     Alias(env.flavour, installDirs[env.flavour])
+    pyConfigDirs.append(Alias(env.flavour + 'PyConfig', Dir(os.path.join(env.installDir, 'lib', 'PyConfig'))))
 
     if env['profile']:
         env.Append(CXXFLAGS = '-pg')
@@ -105,7 +108,5 @@ for env in environments:
         env.BuildDir(buildDir, project.getDir())
         env.SConscript(os.path.join(buildDir, 'SConscript'), exports='env')
     
-
-
-
 Default(installDirs['dbg'])
+Alias('pyconfig', pyConfigDirs)
