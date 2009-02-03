@@ -87,7 +87,7 @@ callgrindenv.flavour = 'callgrind'
 environments.append(callgrindenv)
 
 
-#we use only the debug environment to generate the help text for the options
+# We use the debug environment to generate the help text for the options.
 Help( """
 The openWNS SDK provides rich tools to build the framework and modules.
 
@@ -100,6 +100,26 @@ Type: 'scons' to build all libraries and modules for the debug flavour.
 You can customize your build with the following arguments:
 """ +  opts.GenerateHelpText(dbgenv) 
 )
+
+
+# Check if we have to modify the compiler
+def CheckICECCBuilder(context):
+    context.Message('Checking for icecc compiler...')
+    result = context.TryCompile('int main (int, char**){return 0;}', '.cpp')
+    context.Result(result)
+    return result
+
+CXX = dbgenv['CXX']
+confenv = dbgenv.Clone()
+confenv.Replace(CXX ='icecc')
+conf = Configure(confenv, custom_tests ={'CheckICECCBuilder': CheckICECCBuilder})
+if conf.CheckICECCBuilder():
+    CXX = 'icecc'
+confenv = conf.Finish()
+
+# Overwrite compiler from command line, if available
+if ARGUMENTS.get('CXX'):
+    CXX = ARGUMENTS.get('CXX')
 
 
 includeDir = os.path.join(os.getcwd(),'include')
@@ -135,8 +155,7 @@ pyConfigDirs = []
 for env in environments:
     env.Append(CPPPATH = ['#include', '/usr/include/python2.5'])
     env.Append(LIBPATH = os.path.join('#sandbox', env.flavour, 'lib'))
-    if ARGUMENTS.get('CXX'):
-        env.Replace(CXX = ARGUMENTS.get('CXX'))
+    env.Replace(CXX = CXX)
     env.installDir = os.path.join(env['sandboxDir'], env.flavour)
     env.includeDir = includeDir
     env['libraries'] = libraries

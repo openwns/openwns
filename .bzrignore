@@ -42,3 +42,5 @@ config/.temp_otherProjects.py
 config/projects.py
 include
 config/options.py
+config.log
+.sconf_temp
