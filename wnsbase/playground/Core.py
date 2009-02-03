@@ -174,7 +174,13 @@ class Core:
     def run(self):
         """ Runs the command selected in the startup phase.
         """
-        self.command.run()
+        try:
+            self.command.run()
+        except wnsbase.rcs.Bazaar.BzrException, bzrException:
+            print ""
+            print "Error! Bazaar reports:"
+            print ""
+            print bzrException
 
     def shutdown(self, returnCode):
         """ Shutdown the core. Shutdown the selected command.
