@@ -72,7 +72,7 @@ pywns = Python("./framework/pywns",
                     "pywns", "main", "1.0"))
 
 rise = Library('./framework/rise', 
-                'opewns-rise/rise--main--1.0', 
+                'openwns-rise/rise--main--1.0', 
                 bzrBaseURL,
                 RCS.Bazaar('./framework/rise',
                     'rise', 'main', '1.0'),
