@@ -26,6 +26,7 @@
 ##############################################################################
 
 import sys
+import os
 from wnsbase.playground.Tools import *
 import wnsrc
 
@@ -65,7 +66,7 @@ optAssureMsg  :
         wnsbase.playground.plugins.Command.Command.__init__(self, "install", rationale, usage)
 
         self.optParser.add_option("-j", "--jobs",
-                                  type = "int", dest = "jobs", default = 1,
+                                  type = "int", dest = "jobs", default = os.sysconf('SC_NPROCESSORS_ONLN'),
                                   help = "use JOBS parallel compilation jobs", metavar = "JOBS")
 
         self.optParser.add_option("", "--flavour",
