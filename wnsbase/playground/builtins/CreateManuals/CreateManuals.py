@@ -186,6 +186,8 @@ be placed in ./doxydoc.
 
         os.chdir(cur)
 
+        if not os.path.exists("sandbox/default/doc"):
+            os.makedirs("sandbox/default/doc")
 
         containedFiles = glob.glob("sandbox/default/doc/*") + glob.glob("sandbox/default/doc/.*")
         # Do not touch the api subdirectory. This is managed by CPPDocuementation command
