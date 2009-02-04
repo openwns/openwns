@@ -176,5 +176,6 @@ for env in environments:
         env.BuildDir(buildDir, project.getDir(), duplicate = False)
         env.SConscript(os.path.join(buildDir, 'SConscript'), exports='env')
     
+Alias('default', os.path.join(env['sandboxDir'], 'default'))
 Default(installDirs['dbg'])
 Alias('pyconfig', pyConfigDirs)
