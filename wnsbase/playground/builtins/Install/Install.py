@@ -30,6 +30,8 @@ import os
 from wnsbase.playground.Tools import *
 import wnsrc
 
+import subprocess
+
 import wnsbase.playground.Core
 core = wnsbase.playground.Core.getCore()
 
@@ -92,7 +94,14 @@ callgrind     : Optimized version with debugging symbols for use with valgrind -
 
         command = 'scons ' + sconsOptions
         print 'Executing: ', command 
-        runCommand(command)
+
+	p = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, close_fds=True)
+
+        p.wait()
+
+        if p.returncode != 0:
+            sys.exit(p.returncode)
+
 
     def runProjectHook(self, project, hookName):
         if not hasattr(project, hookName):
