@@ -3,7 +3,15 @@
 import types
 import sys
 import imp
-import wnsrc
+
+def searchPathToSDK(path):
+    rootSign = ".thisIsTheRootOfWNS"
+    while rootSign not in os.listdir(path):
+        if path == os.sep:
+            # arrived in root dir
+            return None
+        path, tail = os.path.split(path)
+    return os.path.abspath(path)
 
 class PyTree:
     maxSequence = 10
@@ -35,7 +43,13 @@ class PyTree:
             self.ignorePaths += options.ignorePaths.split(':')
 
         if options.sandboxFlavour:
-            wnsrc.wnsrc.setPathToPyConfig(options.sandboxFlavour)
+	    pathToSDK = searchPathToSDK(os.path.abspath(os.path.dirname(sys.argv[0])))
+
+	    if pathToSDK is None:
+                print "Error! You are not within an openWNS-SDK. Giving up"
+                exit(1)
+
+	    sys.path.append(pathToSDK, "sandbox", options.sandboxFlavour, "lib", "PyConfig")
 
     def scan(self, obj, name = ''):
         # shortcut ignores:
@@ -169,7 +183,6 @@ if options.gui == True:
     del wx
     del parser
     del addPath
-    del wnsrc
     app.MainLoop()
 else:
     for it in args:

@@ -35,7 +35,6 @@ import exceptions
 import ConfigParser
 
 import wnsbase.rcs.Bazaar
-import wnsrc
 
 from wnsbase.playground.Tools import *
 
@@ -209,6 +208,12 @@ class Core:
         for plugins.
         """
         self.pluginPaths.append(path)
+
+    def setPathToSDK(self, pathToSDK):
+        self.pathToSDK = pathToSDK
+
+    def getPathToSDK(self):
+        return self.pathToSDK
 
     def _loadConfigFile(self):
         if not os.path.exists(self.configFile):
@@ -530,9 +535,8 @@ class Core:
         path : Directory to check
         returns Relative depth the the root of openwns-sdk (int)
         """
-        base = wnsrc.wnsrc.pathToWNS
         # calculate the depth with respect to the testbed dir
-        normalizedPath = os.path.normpath(path).replace(base, "")
+        normalizedPath = os.path.normpath(path).replace(self.getPathToSDK(), "")
         normalizedPath.lstrip("/")
         # by splitting at the slashes we can find the depth
         return len(normalizedPath.split(os.sep))

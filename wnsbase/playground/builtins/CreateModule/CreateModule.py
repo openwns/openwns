@@ -27,7 +27,6 @@
 
 import os
 import shutil
-import wnsrc
 import subprocess
 import FilePatcher
 
@@ -109,7 +108,7 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
 
     def _copyTemplate(self, sdkLocation):
 
-        orig = os.path.join(wnsrc.wnsrc.pathToWNS, "wnsbase", "playground", "builtins", "CreateModule", "moduleTemplate")
+        orig = os.path.join(core.getPathToSDK(), "wnsbase", "playground", "builtins", "CreateModule", "moduleTemplate")
 
         shutil.copytree(orig, sdkLocation)
 
@@ -119,9 +118,7 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
 
         os.chdir(destination)
 
-        print os.path.join(wnsrc.wnsrc.pathToWNS, 'SConscript')
-
-        os.symlink(os.path.join(wnsrc.wnsrc.pathToWNS, 'SConscript'),
+        os.symlink(os.path.join(core.getPathToSDK(), 'SConscript'),
                    'SConscript')
 
         subprocess.check_call(["bzr", "init"])
@@ -227,7 +224,7 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
         entry += "                            '%s', '%s', '%s'),\n" % ( moduleName, 'deprecated', 'deprecated' )
         entry += "%s           [ library ], '%s')\n" % (" " * len(moduleName), moduleName.upper())
 
-        sourceName = os.path.join(wnsrc.wnsrc.pathToWNS, 'config', 'projects.py')
+        sourceName = os.path.join(core.getPathToSDK(), 'config', 'projects.py')
         origPPy = open(sourceName, "a")
 
         origPPy.write(entry)
