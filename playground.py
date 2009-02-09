@@ -44,6 +44,11 @@ def installEnvironment():
     if not os.path.exists("sandbox"):
         os.mkdir("sandbox")
 
+    # Create ~/.wns if the users got a home
+    if os.path.exists(os.environ["HOME"]):
+        if not os.path.exists(os.path.join(os.environ["HOME"], ".wns")):
+            os.mkdir(os.path.join(os.environ["HOME"], ".wns"))
+
 def installWNSBase(sandboxDir):
     """ Installs wnsbase package to the sandbox.
 
