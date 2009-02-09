@@ -29,8 +29,9 @@ from wnsbase.playground.Project import *
 import wnsbase.RCS as RCS
 
 bzrBaseURL = "https://launchpad.net/~comnets/"
+bzrDBNBaseURL = "https://launchpad.net/~daniel.bueltmann/"
 
-root = Root('./',"openwns-sdk/sdk--main--1.0", bzrBaseURL,
+root = Root('./',"openwns-sdk/openwns-sdk-nownsrc", bzrDBNBaseURL,
             RCS.Bazaar('.', 'sdk', 'main', '1.0'))
 
 unitTests = Generic('./tests/unit', 
@@ -40,14 +41,14 @@ unitTests = Generic('./tests/unit',
                     'unittest', 'main', '1.0'))
 
 buildSupport = Generic('./framework/buildSupport',
-                "openwns-buildsupport/buildsupport--main--1.0", 
-                bzrBaseURL,
+                "openwns-buildsupport/buildsupport-nownsrc", 
+                bzrDBNBaseURL,
                 RCS.Bazaar('./framework/buildSupport', 
                     'buildsupport', 'main', '1.0'))
 
 documentation = MasterDocumentation('./documentation', 
-                'openwns-documentation/documentation--main--1.0', 
-                bzrBaseURL,
+                'openwns-documentation/documentation-nownsrc', 
+                bzrDBNBaseURL,
                 RCS.Bazaar('./documentation', 
                     'documentation', 'main', '1.0'))
 
@@ -66,8 +67,8 @@ application = Binary('./framework/application',
                 dependencies = [])
 
 pywns = Python("./framework/pywns", 
-                "openwns-pywns/pywns--main--1.0", 
-                bzrBaseURL,
+                "openwns-pywns/pywns-nownsrc", 
+                bzrDBNBaseURL,
                 RCS.Bazaar('framework/pywns', 
                     "pywns", "main", "1.0"))
 
@@ -133,15 +134,15 @@ libwns_test = SystemTest('./tests/system/libwns-tests',
                     'library-tests', 'main', '1.0'))
 
 ofdma_test = SystemTest('./tests/system/ofdma-tests',
-                'openwns-systemtest-ofdmascanner/systemtest-ofdmascanner--main--1.0', 
-                bzrBaseURL,
+                'openwns-systemtest-ofdmascanner/systemtest-ofdmascanner-nownsrc', 
+                bzrDBNBaseURL,
                 RCS.Bazaar('./tests/system/ofdma-tests',
                     'ofdma-test', 'main', '1.0'))
 
 
 wifimac_test = SystemTest('./tests/system/wifimac-tests', 
-                'openwns-systemtest-wifimac/systemtest-wifimac--main--1.0', 
-                bzrBaseURL,
+                'openwns-systemtest-wifimac/systemtest-wifimac-nownsrc', 
+                bzrDBNBaseURL,
                 RCS.Bazaar('./tests/system/wifimac-tests',
                     'wifimac-tests', 'main', '1.0'))
 

@@ -31,39 +31,25 @@ import commands
 import shutil
 import sys
 
+def searchPathToSDK(path):
+    rootSign = ".thisIsTheRootOfWNS"
+    while rootSign not in os.listdir(path):
+        if path == os.sep:
+            # arrived in root dir
+            return None
+        path, tail = os.path.split(path)
+    return os.path.abspath(path)
+
 def installEnvironment():
-    """ Installs wnsrc.py to /home/$USER/.wns
-
-    openWNS-sdk needs a common way to setup paths for some directories in
-    the sandbox. The entry point for this is wnsrc.py. The master wnsrc.py
-    file is under version and is located in openwns-sdk/config/wnsrc.py.
-    Changes in openwns-sdk/config/wnsrc.py will always be copied to
-    /home/$USER/.wns/wnsrc.py everytime playground.py is executed.
-    """
-
-    # This will install wnsrc.py to /home/$USER/.wns
-    wnsDir = os.path.join(os.environ["HOME"], ".wns")
-    if not os.path.exists(wnsDir):
-        os.mkdir(wnsDir)
     if not os.path.exists("sandbox"):
         os.mkdir("sandbox")
 
-    # The wnsrc.py will always be copied.
-    shutil.copy("config/wnsrc.py", wnsDir)
-    if not os.environ.has_key("PYTHONPATH") or wnsDir not in os.environ["PYTHONPATH"]:
-        print "\nERROR:"
-        print "Please add '" + wnsDir + "' to the environment variable PYTHONPATH"
-        print "You have three options:"
-        print "1.) type 'export PYTHONPATH=$PYTHONPATH:"+wnsDir+"' in your current shell"
-        print "    This affects only your current shell!"
-        print "2.) add the above line to your ~/.bashrc"
-        print "    Prefered: next time you login the variable will already be set."
-        print "3.) call " + os.path.join(os.getcwd(), "bin", "setEnvironment")
-        print "    Again, this affects only your current shell!"
-        print
-        sys.exit(1)
+    # Create ~/.wns if the users got a home
+    if os.path.exists(os.environ["HOME"]):
+        if not os.path.exists(os.path.join(os.environ["HOME"], ".wns")):
+            os.mkdir(os.path.join(os.environ["HOME"], ".wns"))
 
-def installWNSBase():
+def installWNSBase(sandboxDir):
     """ Installs wnsbase package to the sandbox.
 
     openWNS-sdk provides the python package wnsbase. This includes python classes that
@@ -72,30 +58,41 @@ def installWNSBase():
     """
 
     # Install all files in wnsbase to sandbox
+
     sandboxSrcSubDir = os.path.join("default", "lib", "python2.4", "site-packages", "wnsbase")
-    if commands.getstatusoutput("rm -rf sandbox/" + str(sandboxSrcSubDir))[0] != 0:
+    if commands.getstatusoutput("rm -rf " + str(os.path.join(sandboxDir,sandboxSrcSubDir)))[0] != 0:
         print "\nERROR:"
         print "Unable to remove path for wnsbase Python module in sandbox"
 
-    if commands.getstatusoutput("mkdir -p sandbox/" + str(sandboxSrcSubDir))[0] != 0:
+    if commands.getstatusoutput("mkdir -p " + str(os.path.join(sandboxDir, sandboxSrcSubDir)))[0] != 0:
         print "\nERROR:"
         print "Unable to create path for wnsbase Python module in sandbox"
 
-    if commands.getstatusoutput("cp -R wnsbase/* sandbox/" + str(sandboxSrcSubDir))[0] != 0:
+    if commands.getstatusoutput("cp -R wnsbase/* " + str(os.path.join(sandboxDir,sandboxSrcSubDir)))[0] != 0:
         print "\nERROR:"
         print "Unable to install wnsbase files to sandbox"
 
-installEnvironment()
-installWNSBase()
-
-import wnsrc
-import wnsbase.playground.Core
-
 if __name__ == "__main__":
+
+    pathToSDK = searchPathToSDK(os.path.abspath(os.path.dirname(sys.argv[0])))
+
+    if pathToSDK == None:
+        print "Error! You are note within an openWNS-SDK. Giving up"
+        exit(1)
+
+    installEnvironment()
+
+    installWNSBase(os.path.join(pathToSDK, "sandbox"))
+
+    sys.path.append(os.path.join(pathToSDK, "sandbox", "default", "lib", "python2.4", "site-packages"))
+
+    import wnsbase.playground.Core
 
     core = wnsbase.playground.Core.getCore()
 
     pywnsPluginsPath = os.path.join("sandbox", "default", "lib", "python2.4", "site-packages", "pywns", "playgroundPlugins")
+
+    core.setPathToSDK(pathToSDK)
 
     core.addPluginPath(pywnsPluginsPath)
 

@@ -28,7 +28,6 @@
 import sys
 import os
 from wnsbase.playground.Tools import *
-import wnsrc
 
 import subprocess
 
