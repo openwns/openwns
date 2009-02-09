@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.4
+#! /usr/bin/env python
 
 import types
 import sys
@@ -153,10 +153,16 @@ sys.path = ["."] + sys.path
 
 tree = PyTree(options)
 
+import wx
+import filling
+
 if options.gui == True:
-    import wx.py.filling
-    WNSConfiguration = imp.load_module('foo', file(args[0]), 'foo', ('.py', 'r', imp.PY_SOURCE))
-    app = wx.py.filling.App(useBestVisual=True)
+    WNSConfiguration = imp.load_module('mainconfig', file(args[0]), 'mainconfig', ('.py', 'r', imp.PY_SOURCE))
+    app = filling.App(rootObject=WNSConfiguration,
+                      rootLabel = str(args[0]),
+                      title='PyTree - The openWNS Configuration Browser [%s]' % str(args[0]))
+
+    #app = App()
     # some cleanup to have nicer namepsace viewer
     del args
     del options
@@ -166,15 +172,16 @@ if options.gui == True:
     del types
     del PyTree
     del imp
-    del wx
+    #del wx
     del parser
     del addPath
     del wnsrc
+
     app.MainLoop()
+
+    import os
+    os.remove('./mainconfigc')
 else:
     for it in args:
         module = imp.load_module('foo', file(it), 'foo', ('.py', 'r', imp.PY_SOURCE))
         tree.scan(module, '')
-
-import os
-os.remove('./fooc')
