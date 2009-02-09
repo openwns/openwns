@@ -114,7 +114,11 @@ class Core:
                 self.pluginArgs.append(a)
             i += 1
 
-        self.configFile = os.path.join(os.environ["HOME"], ".wns", "playground.config")
+        if os.path.exists(os.environ["HOME"]):
+            self.configFile = os.path.join(os.environ["HOME"], ".wns", "playground.config")
+        else:
+            self.configFile = os.path.join("/tmp/%s_playground.config" % os.environ["HOME"].replace(os.sep, "_"))
+
         self.projects = None
 
         # Will be set if commands need a second projects configuration
