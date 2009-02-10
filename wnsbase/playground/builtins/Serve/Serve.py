@@ -26,6 +26,7 @@
 ##############################################################################
 
 import sys
+import string
 from wnsbase.playground.Tools import *
 
 import wnsbase.playground.Core
@@ -47,6 +48,13 @@ class ServeCommand(wnsbase.playground.plugins.Command.Command):
         print "Preparing 'localRepo'"
         os.mkdir('localRepo')
         for project in core.getProjects().all:
+            # make link to repository and create any intermediate directories
+            baseName = os.path.basename(project.rcsSubDir)
+            dirName = os.path.dirname(project.rcsSubDir)
+
+            if dirName != '':
+                os.makedirs(os.path.join('localRepo', dirName))
+    
             print "Linking: " + project.getDir() + " -> " + os.path.join('localRepo', project.rcsSubDir)
             os.symlink(project.getDir(), os.path.join('localRepo', project.rcsSubDir))
 
