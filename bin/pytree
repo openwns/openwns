@@ -3,6 +3,7 @@
 import types
 import sys
 import imp
+import os
 
 def searchPathToSDK(path):
     rootSign = ".thisIsTheRootOfWNS"
@@ -49,7 +50,7 @@ class PyTree:
                 print "Error! You are not within an openWNS-SDK. Giving up"
                 exit(1)
 
-	    sys.path.append(pathToSDK, "sandbox", options.sandboxFlavour, "lib", "PyConfig")
+	    sys.path.append(os.path.join(pathToSDK, "sandbox", options.sandboxFlavour, "lib", "PyConfig"))
 
     def scan(self, obj, name = ''):
         # shortcut ignores:
