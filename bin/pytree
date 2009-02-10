@@ -69,8 +69,6 @@ class PyTree:
             print fmt % (name, ', '.join(map(repr, obj)))
             return
 
-#        print obj, type(obj)
-
         # if we already know an object, we just just print
         # a symbolic reference.
         # this helps to avoid infinite recursions and reduces
@@ -162,7 +160,6 @@ if options.gui == True:
                       rootLabel = str(args[0]),
                       title='PyTree - The openWNS Configuration Browser [%s]' % str(args[0]))
 
-    #app = App()
     # some cleanup to have nicer namepsace viewer
     del args
     del options
@@ -172,7 +169,6 @@ if options.gui == True:
     del types
     del PyTree
     del imp
-    #del wx
     del parser
     del addPath
     del wnsrc
