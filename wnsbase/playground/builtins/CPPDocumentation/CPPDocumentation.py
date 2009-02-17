@@ -55,6 +55,44 @@ be placed in ./doxydoc.
 
         self.examplesPath = ".doxydocExamples"
 
+    def startup(self, args):
+        wnsbase.playground.plugins.Command.Command.startup(self, args)
+
+        errorOccured = False
+        # Needs doxygen and dot
+        try:
+            print "Checking Doxygen Version"
+            print ""
+            retcode = subprocess.check_call(['doxygen', '--version'])
+            if retcode != 0:
+                print "Cannot determine doxygen version. Is it installed?"
+                errorOccured = True
+        except (OSError, subprocess.CalledProcessError):
+            print "Cannot find doxygen."
+            errorOccured = True
+
+        print ""
+        try:
+            print "Checking dot version"
+            print ""
+            retcode = subprocess.check_call(['dot', '-V'])
+            if retcode != 0:
+                print "Cannot determine dot version. Is it installed?"
+                errorOccured = True
+        except OSError:
+            print "Cannot find dot."
+            errorOccured = True
+
+        if errorOccured == True:
+            print "You need to have the doxygen and dot tool installed."
+            print ""
+            print "Try:"
+            print ""
+            print "  apt-get install doxygen"
+            print "  apt-get install graphviz"
+            print ""
+            exit(1)
+
     def run(self):
         core = wnsbase.playground.Core.getCore()
         print "Identifying projects for documentation ..."

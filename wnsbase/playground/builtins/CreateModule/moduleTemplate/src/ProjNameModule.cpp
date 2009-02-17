@@ -26,9 +26,6 @@
  ******************************************************************************/
 
 #include <PROJNAME/ProjNameModule.hpp>
-#include <PROJNAME/bversion.hpp>
-
-#include <WNS/module/VersionInformation.hpp>
 
 using namespace projname;
 
@@ -41,7 +38,6 @@ STATIC_FACTORY_REGISTER_WITH_CREATOR(
 ProjNameModule::ProjNameModule(const wns::pyconfig::View& _pyco) :
 	wns::module::Module<ProjNameModule>(_pyco)
 {
-	version = wns::module::VersionInformation(BUILDVINFO);
 }
 
 ProjNameModule::~ProjNameModule()

@@ -46,3 +46,6 @@ include
 ./WNS.kdevelop.filelist
 ./WNS.kdevelop.pcs
 ./WNS.kdevses
+config/options.py
+config.log
+.sconf_temp

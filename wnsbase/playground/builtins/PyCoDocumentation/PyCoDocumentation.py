@@ -1,5 +1,6 @@
 import os
 import shutil
+import subprocess
 import wnsbase.playground.plugins.Command
 from wnsbase.playground.Tools import *
 import wnsbase.playground.Core
@@ -26,18 +27,51 @@ Note: EpyDoc currently produces a lot of warnings.
                                   type="string", dest = "flavour", metavar = "TYPE", default = "dbg",
                                   help = "choose a flavour (TYPE=[dbg|opt|prof|...]) to operate with.")
 
+    def startup(self, args):
+        wnsbase.playground.plugins.Command.Command.startup(self, args)
+
+        errorOccured = False
+        # Needs epydoc and dot
+        try:
+            print "Checking EpyDoc Version"
+            print ""
+            retcode = subprocess.check_call(['epydoc', '--version'])
+            if retcode != 0:
+                print "Cannot determine epydoc version. Is it installed?"
+                errorOccured = True
+        except (OSError, subprocess.CalledProcessError):
+            print "Cannot find epydoc."
+            errorOccured = True
+
+        print ""
+        try:
+            print "Checking dot version"
+            print ""
+            retcode = subprocess.check_call(['dot', '-V'])
+            if retcode != 0:
+                print "Cannot determine dot version. Is it installed?"
+                errorOccured = True
+        except OSError:
+            print "Cannot find dot."
+            errorOccured = True
+
+        if errorOccured == True:
+            print "You need to have the doxygen and dot tool installed."
+            print ""
+            print "Try:"
+            print ""
+            print "  apt-get install python-epydoc"
+            print "  apt-get install graphviz"
+            print ""
+            exit(1)
+
     def run(self):
 
-        def installPyConfig(project):
-            # Currently only libs have PyConfig
-            if project.getExe() == "lib":
-                print "Install PyConfig for %s" % project.getDir()
-                command = "scons pyconfig flavour=%s" % self.options.flavour
-                result = runCommand(command)
-                if not (result is None):
-                    print "Could not execute %s" % command
-
-        core.foreachProject(installPyConfig)
+        print "Install PyConfig"
+        command = "scons %sPyConfig" % self.options.flavour
+        result = runCommand(command)
+        if not (result is None):
+            print "Could not execute %s" % command
 
         command = "touch sandbox/%s/lib/PyConfig/__init__.py" % self.options.flavour
         result = runCommand(command)

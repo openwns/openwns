@@ -30,7 +30,7 @@ import openwns.simulator
 
 class ProjName(openwns.module.Module):
     def __init__(self):
-        super(ProjName, self).__init__("projname", "projname-1.0")
+        super(ProjName, self).__init__("projname", "projname")
 
 # add the Module in order to get it loaded
 openwns.simulator.OpenWNS.modules.projname = ProjName()
