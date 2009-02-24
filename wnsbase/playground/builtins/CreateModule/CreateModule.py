@@ -144,63 +144,34 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
                                     "RCS.Bazaar\('../', 'ModuleTemplate', 'main', '1.0'\),",
                                     "RCS.Bazaar('../', '%s', '%s', '%s')," % (moduleName, 'deprecated', 'deprecated')).replaceAll()
 
-        p = FilePatcher.FilePatcher(os.path.join(dest, "config", "libfiles.py"),
-                                    "ProjName",
-                                    moduleName,
-                                    ignoreCase=False).replaceAll()
+        filesToPatch = [os.path.join(dest, "config", "libfiles.py"),
+                        os.path.join(dest, "src", "ProjNameModule.hpp"),
+                        os.path.join(dest, "src", "ProjNameModule.cpp"),
+                        os.path.join(dest, "src", "SimulationModel.hpp"),
+                        os.path.join(dest, "src", "SimulationModel.cpp"),
+                        os.path.join(dest, "PyConfig", "projname", "simulationmodel.py"),
+                        os.path.join(dest, "PyConfig", "projname", "__init__.py")]
 
-        p = FilePatcher.FilePatcher(os.path.join(dest, "config", "libfiles.py"),
-                                    "projname",
-                                    moduleName.lower(),
-                                    ignoreCase=False).replaceAll()
+        for filename in filesToPatch:
 
-        p = FilePatcher.FilePatcher(os.path.join(dest, "src", "ProjNameModule.hpp"),
-                                    "PROJNAME",
-                                    moduleName.upper(),
-                                    ignoreCase=False
-                                    ).replaceAll()
+            p = FilePatcher.FilePatcher(filename,
+                                        "PROJNAME",
+                                        moduleName.upper(),
+                                        ignoreCase=False
+                                        ).replaceAll()
 
-        p = FilePatcher.FilePatcher(os.path.join(dest, "src", "ProjNameModule.hpp"),
-                                    "ProjName",
-                                    moduleName,
-                                    ignoreCase=False
-                                    ).replaceAll()
+            p = FilePatcher.FilePatcher(filename,
+                                        "ProjName",
+                                        moduleName,
+                                        ignoreCase=False
+                                        ).replaceAll()
 
-        p = FilePatcher.FilePatcher(os.path.join(dest, "src", "ProjNameModule.hpp"),
-                                    "projname",
-                                    moduleName.lower(),
-                                    ignoreCase=False
-                                    ).replaceAll()
+            p = FilePatcher.FilePatcher(filename,
+                                        "projname",
+                                        moduleName.lower(),
+                                        ignoreCase=False
+                                        ).replaceAll()
 
-        p = FilePatcher.FilePatcher(os.path.join(dest, "src", "ProjNameModule.cpp"),
-                                    "PROJNAME",
-                                    moduleName.upper(),
-                                    ignoreCase=False
-                                    ).replaceAll()
-
-        p = FilePatcher.FilePatcher(os.path.join(dest, "src", "ProjNameModule.cpp"),
-                                    "ProjName",
-                                    moduleName,
-                                    ignoreCase=False
-                                    ).replaceAll()
-
-        p = FilePatcher.FilePatcher(os.path.join(dest, "src", "ProjNameModule.cpp"),
-                                    "projname",
-                                    moduleName.lower(),
-                                    ignoreCase=False
-                                    ).replaceAll()
-
-        p = FilePatcher.FilePatcher(os.path.join(dest, "PyConfig", "projname", "__init__.py"),
-                                    "projname",
-                                    moduleName.lower(),
-                                    ignoreCase=False
-                                    ).replaceAll()
-
-        p = FilePatcher.FilePatcher(os.path.join(dest, "PyConfig", "projname", "__init__.py"),
-                                    "ProjName",
-                                    moduleName,
-                                    ignoreCase=False
-                                    ).replaceAll()
 
         curdir = os.getcwd()
 
