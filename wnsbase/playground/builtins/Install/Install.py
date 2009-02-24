@@ -28,7 +28,6 @@
 import sys
 import os
 from wnsbase.playground.Tools import *
-import wnsrc
 
 import subprocess
 
@@ -79,6 +78,7 @@ callgrind     : Optimized version with debugging symbols for use with valgrind -
 
     def run(self):
         sconsOptions = self.options.flavour
+        sconsOptions += " --warn=no-missing-sconscript"
         if self.options.jobs != None:
             sconsOptions += ' -j ' + str(self.options.jobs)
         if self.options.sandboxDir != '':
