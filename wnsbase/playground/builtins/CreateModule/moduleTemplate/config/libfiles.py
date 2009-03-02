@@ -1,15 +1,18 @@
 libname = 'projname'
 
 srcFiles = [
-    'src/ProjNameModule.cpp'
+    'src/ProjNameModule.cpp',
+    'src/SimulationModel.cpp',
     ]
 
 hppFiles = [
-    'src/ProjNameModule.hpp'
+    'src/ProjNameModule.hpp',
+    'src/SimulationModel.hpp',
     ]
 
 pyconfigs = [
-    'projname/__init__.py'
+    'projname/__init__.py',
+    'projname/simulationmodel.py',
 ]
 
 dependencies = []
