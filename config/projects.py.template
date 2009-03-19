@@ -39,12 +39,6 @@ unitTests = Generic('./tests/unit',
                 RCS.Bazaar('./tests/unit', 
                     'unittest', 'main', '1.0'))
 
-buildSupport = Generic('./framework/buildSupport',
-                "openwns-buildsupport/buildsupport--main--1.0", 
-                bzrBaseURL,
-                RCS.Bazaar('./framework/buildSupport', 
-                    'buildsupport', 'main', '1.0'))
-
 documentation = MasterDocumentation('./documentation', 
                 'openwns-documentation/documentation--main--1.0', 
                 bzrBaseURL,
@@ -149,7 +143,6 @@ wifimac_test = SystemTest('./tests/system/wifimac-tests',
 all = [
     root,
     unitTests,
-    buildSupport,
     documentation,
     library,
     application,
