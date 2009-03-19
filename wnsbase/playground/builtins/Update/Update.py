@@ -49,6 +49,7 @@ afterwards:
         wnsbase.playground.plugins.Command.Command.__init__(self, "update", rationale, usage)
 
     def run(self):
+        core = wnsbase.playground.Core.getCore()
         projects = core.getProjects()
 
         myProject = projects.root
@@ -65,9 +66,9 @@ afterwards:
             print "\nRetrieving new patches for './' ... "
             try:
                 myProject.getRCS().update(myProject.getRCSUrl()).realtimePrint()
-            except:
-                print "An RCS error occured."
-                sys.exit(1)
+            except wnsbase.rcs.Bazaar.BzrMergeNeededException, e:
+                if (not core.userFeedback.askForReject("These branches have diverged! Do you want me to merge?")):
+                    myProject.getRCS().merge(fromRepository=myProject.getRCSUrl()).realtimePrint()
         else:
             print "None"
 
@@ -82,9 +83,9 @@ afterwards:
             try:
                 projects.buildSupport.getRCS().update(projects.buildSupport.getRCSUrl()).realtimePrint()
                 checkForConflictsAndExit("./framework/buildSupport")
-            except:
-                print "An RCS error occured."
-                sys.exit(1)
+            except wnsbase.rcs.Bazaar.BzrMergeNeededException, e:
+                if (not core.userFeedback.askForReject("These branches have diverged! Do you want me to merge?")):
+                    projects.buildSupport.getRCS().merge(fromRepository=projects.buildSupport.getRCSUrl()).realtimePrint()
         else:
             print "None"
 

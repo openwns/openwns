@@ -1,9 +1,18 @@
-#! /usr/bin/env python2.4
+#! /usr/bin/env python
 
 import types
 import sys
 import imp
-import wnsrc
+import os
+
+def searchPathToSDK(path):
+    rootSign = ".thisIsTheRootOfWNS"
+    while rootSign not in os.listdir(path):
+        if path == os.sep:
+            # arrived in root dir
+            return None
+        path, tail = os.path.split(path)
+    return os.path.abspath(path)
 
 class PyTree:
     maxSequence = 10
@@ -35,7 +44,13 @@ class PyTree:
             self.ignorePaths += options.ignorePaths.split(':')
 
         if options.sandboxFlavour:
-            wnsrc.wnsrc.setPathToPyConfig(options.sandboxFlavour)
+	    pathToSDK = searchPathToSDK(os.path.abspath(os.path.dirname(sys.argv[0])))
+
+	    if pathToSDK is None:
+                print "Error! You are not within an openWNS-SDK. Giving up"
+                exit(1)
+
+	    sys.path.append(os.path.join(pathToSDK, "sandbox", options.sandboxFlavour, "lib", "PyConfig"))
 
     def scan(self, obj, name = ''):
         # shortcut ignores:
@@ -68,8 +83,6 @@ class PyTree:
 
             print fmt % (name, ', '.join(map(repr, obj)))
             return
-
-#        print obj, type(obj)
 
         # if we already know an object, we just just print
         # a symbolic reference.
@@ -153,10 +166,15 @@ sys.path = ["."] + sys.path
 
 tree = PyTree(options)
 
+import wx
+import filling
+
 if options.gui == True:
-    import wx.py.filling
-    WNSConfiguration = imp.load_module('foo', file(args[0]), 'foo', ('.py', 'r', imp.PY_SOURCE))
-    app = wx.py.filling.App(useBestVisual=True)
+    WNSConfiguration = imp.load_module('mainconfig', file(args[0]), 'mainconfig', ('.py', 'r', imp.PY_SOURCE))
+    app = filling.App(rootObject=WNSConfiguration,
+                      rootLabel = str(args[0]),
+                      title='PyTree - The openWNS Configuration Browser [%s]' % str(args[0]))
+
     # some cleanup to have nicer namepsace viewer
     del args
     del options
@@ -166,15 +184,13 @@ if options.gui == True:
     del types
     del PyTree
     del imp
-    del wx
     del parser
     del addPath
-    del wnsrc
     app.MainLoop()
+
+    import os
+    os.remove('./mainconfigc')
 else:
     for it in args:
         module = imp.load_module('foo', file(it), 'foo', ('.py', 'r', imp.PY_SOURCE))
         tree.scan(module, '')
-
-import os
-os.remove('./fooc')
