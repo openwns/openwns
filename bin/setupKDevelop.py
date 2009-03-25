@@ -25,7 +25,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import wnsrc
 import os
 import sys
 import shutil
@@ -33,11 +32,25 @@ import shutil
 #We assume username@maildomain as E-Mail address
 maildomain = "comnets.rwth-aachen.de"
 
-sys.path.append(os.path.join(wnsrc.pathToWNS, 'framework/buildSupport'))
+def searchPathToSDK(path):
+    rootSign = ".thisIsTheRootOfWNS"
+    while rootSign not in os.listdir(path):
+        if path == os.sep:
+            # arrived in root dir
+            return None
+        path, tail = os.path.split(path)
+    return os.path.abspath(path)
+
+pathToSDK = searchPathToSDK(os.path.abspath(os.path.dirname(sys.argv[0])))
+
+if pathToSDK == None:
+    print "Error! You are note within an openWNS-SDK. Giving up"
+    exit(1)
+
+sys.path.append(os.path.join(pathToSDK, 'framework/buildSupport'))
 import wnsbase.RCS
 import FilePatcher
-sys.path.remove(os.path.join(wnsrc.pathToWNS, 'framework/buildSupport'))
-import wnsbase.playground
+sys.path.remove(os.path.join(pathToSDK, 'framework/buildSupport'))
 
 class Dict2Class:
     def __init__(self, dictionary):
@@ -54,17 +67,17 @@ def runCommand(command):
     return lines
 
 def readProjectsConfig():
-    sys.path.append(os.path.join(wnsrc.pathToWNS, "config"))
+    sys.path.append(os.path.join(pathToSDK, "config"))
     foobar = {}
-    execfile(os.path.join(wnsrc.pathToWNS, "config/projects.py"), foobar)
-    sys.path.remove(os.path.join(wnsrc.pathToWNS, "config"))
+    execfile(os.path.join(pathToSDK, "config/projects.py"), foobar)
+    sys.path.remove(os.path.join(pathToSDK, "config"))
     return Dict2Class(foobar)
 
 def getProjectFiles(project):
 	foundFiles = []
 	#print project
 	basedir = project.getDir()
-	incDir = os.path.join(wnsrc.pathToWNS, basedir, "src")
+	incDir = os.path.join(pathToSDK, basedir, "src")
 	for (dirname, dirs, files) in os.walk(incDir):
 			#print dirname
 			relDirname = dirname[len(incDir) + 1:]
@@ -78,13 +91,13 @@ def setupFileList():
 	projects = readProjectsConfig()
 	allFiles = []
 	for project in projects.all:
-            if isinstance(project, wnsbase.playground.Project.Library) or isinstance(project, wnsbase.playground.Project.Binary):
-                allFiles = allFiles + getProjectFiles(project)
+		if project.getExe() in ['lib', 'bin']:
+			allFiles = allFiles + getProjectFiles(project)
 
-	allFiles = [f.replace(wnsrc.pathToWNS + "/", "") for f in allFiles]
+	allFiles = [f.replace(pathToSDK + "/", "") for f in allFiles]
 
 	# Write to file
-	fc = open(os.path.join(wnsrc.pathToWNS, "WNS.kdevelop.filelist"), 'w')
+	fc = open(os.path.join(pathToSDK, "WNS.kdevelop.filelist"), 'w')
 	fc.write("# KDevelop Custom Project File List\n")
         fc.write("\n".join(allFiles))
         fc.close()
@@ -93,8 +106,8 @@ def setupProjectFile():
 	import getpass
 	import pwd
 
-	template = os.path.join(wnsrc.pathToWNS, "config/WNS.kdevelop.template")
-	projectFile = os.path.join(wnsrc.pathToWNS, "WNS.kdevelop")
+	template = os.path.join(pathToSDK, "config/WNS.kdevelop.template")
+	projectFile = os.path.join(pathToSDK, "WNS.kdevelop")
 	shutil.copy (template, projectFile)
 	username = getpass.getuser()
 	tmp = pwd.getpwnam(username)
@@ -102,7 +115,7 @@ def setupProjectFile():
 	email = username + "@" + maildomain
 	FilePatcher.FilePatcher(projectFile, "___AUTHORNAME___", authorname).replaceAll()
 	FilePatcher.FilePatcher(projectFile, "___EMAILADDRESS___", email).replaceAll()
-	FilePatcher.FilePatcher(projectFile, "___PATHTOWNS___", wnsrc.pathToWNS).replaceAll()
+	FilePatcher.FilePatcher(projectFile, "___PATHTOWNS___", pathToSDK).replaceAll()
 
 setupFileList()
 setupProjectFile()

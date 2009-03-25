@@ -31,7 +31,6 @@ import shutil
 import ConfigParser
 import StringIO
 import os.path
-import wnsrc
 import re
 import textwrap
 import subprocess
@@ -43,11 +42,11 @@ class CreateManualsCommand(wnsbase.playground.plugins.Command.Command):
 
     def __init__(self):
         usage = "\n%prog cppdocu\n\n"
-        rationale = "Build all in one project CPP documentation."
+        rationale = "Build the users manual and the developers guide."
 
         usage += rationale
-        usage += """ Build the CPP documentation for the whole project. The created documentation will
-be placed in ./doxydoc.
+        usage += """ Builds the users manual and the developers guide. HTML
+and PDF output can be found in ./sandbox/default/doc.
 """
         wnsbase.playground.plugins.Command.Command.__init__(self, "createmanuals", rationale, usage)
 
@@ -186,6 +185,8 @@ be placed in ./doxydoc.
 
         os.chdir(cur)
 
+        if not os.path.exists("sandbox/default/doc"):
+            os.makedirs("sandbox/default/doc")
 
         containedFiles = glob.glob("sandbox/default/doc/*") + glob.glob("sandbox/default/doc/.*")
         # Do not touch the api subdirectory. This is managed by CPPDocuementation command

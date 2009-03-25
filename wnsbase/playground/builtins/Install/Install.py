@@ -26,8 +26,10 @@
 ##############################################################################
 
 import sys
+import os
 from wnsbase.playground.Tools import *
-import wnsrc
+
+import subprocess
 
 import wnsbase.playground.Core
 core = wnsbase.playground.Core.getCore()
@@ -44,33 +46,21 @@ to the sandbox. Use --flavour=FLAVOUR to select a build flavour. Choose one of t
 
 dbg (default) : Build with debug symbols
 opt           : Build optimized version without debug symbols and assures
-optPentium4   :
-optPentium64  :
-optPentiumM   :
-optAthlonMP   :
-optK8         :
-prof          : Build version with profiling information for gprof. You must use --static to use this.
-profOpt       : Optimized profiling version
-size          :
-massif        : Optimized version with debugging symbols for use with valgrind --tool=massif
 callgrind     : Optimized version with debugging symbols for use with valgrind --tool=callgrind
               :   Starts and stops callgrind instrumentalisation just before and after main event loop
               :   Use 'valgrind --tool=callgrind --instr-atstart=no wns-core' to only trace main event loop
               :   Use 'valgrind --tool=callgrind wns-core' to trace all
               :   Use kcachegrind to view tracing results
-optAssure     :
-optMsg        :
-optAssureMsg  :
 """
         wnsbase.playground.plugins.Command.Command.__init__(self, "install", rationale, usage)
 
         self.optParser.add_option("-j", "--jobs",
-                                  type = "int", dest = "jobs", default = 1,
+                                  type = "int", dest = "jobs", default = os.sysconf('SC_NPROCESSORS_ONLN'),
                                   help = "use JOBS parallel compilation jobs", metavar = "JOBS")
 
         self.optParser.add_option("", "--flavour",
                                   type="string", dest = "flavour", metavar = "TYPE", default = "dbg",
-                                  help = "choose a flavour (TYPE=[dbg|opt|prof|...]) to operate with.")
+                                  help = "choose a flavour (TYPE=[dbg|opt|callgrind|...]) to operate with.")
 
         self.optParser.add_option("", "--static",
                                   dest = "static", default = False,
@@ -88,12 +78,30 @@ optAssureMsg  :
 
     def run(self):
         sconsOptions = self.options.flavour
-        sconsOptions += ' -j ' + str(self.options.jobs)
+        sconsOptions += " --warn=no-missing-sconscript"
+        if self.options.jobs != None:
+            sconsOptions += ' -j ' + str(self.options.jobs)
         if self.options.sandboxDir != '':
             sconsOptions += ' sandboxDir=' + str(self.options.sandboxDir)
+            defaultInstalls = os.path.join(self.options.sandboxDir, 'default')
+            sconsOptions += ' ' + defaultInstalls
+        else:
+            sconsOptions += ' default'
+        if self.options.scons != '':
+            sconsOptions += ' ' + self.options.scons
+        if self.options.static:
+            sconsOptions += ' --static'
+
         command = 'scons ' + sconsOptions
         print 'Executing: ', command 
-        runCommand(command)
+
+	p = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, close_fds=True)
+
+        p.wait()
+
+        if p.returncode != 0:
+            sys.exit(p.returncode)
+
 
     def runProjectHook(self, project, hookName):
         if not hasattr(project, hookName):

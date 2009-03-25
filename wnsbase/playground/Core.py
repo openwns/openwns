@@ -35,7 +35,6 @@ import exceptions
 import ConfigParser
 
 import wnsbase.rcs.Bazaar
-import wnsrc
 
 from wnsbase.playground.Tools import *
 
@@ -115,7 +114,11 @@ class Core:
                 self.pluginArgs.append(a)
             i += 1
 
-        self.configFile = os.path.join(os.environ["HOME"], ".wns", "playground.config")
+        if os.path.exists(os.environ["HOME"]):
+            self.configFile = os.path.join(os.environ["HOME"], ".wns", "playground.config")
+        else:
+            self.configFile = os.path.join("/tmp/%s_playground.config" % os.environ["HOME"].replace(os.sep, "_"))
+
         self.projects = None
 
         # Will be set if commands need a second projects configuration
@@ -174,7 +177,13 @@ class Core:
     def run(self):
         """ Runs the command selected in the startup phase.
         """
-        self.command.run()
+        try:
+            self.command.run()
+        except wnsbase.rcs.Bazaar.BzrException, bzrException:
+            print ""
+            print "Error! Bazaar reports:"
+            print ""
+            print bzrException
 
     def shutdown(self, returnCode):
         """ Shutdown the core. Shutdown the selected command.
@@ -209,6 +218,12 @@ class Core:
         for plugins.
         """
         self.pluginPaths.append(path)
+
+    def setPathToSDK(self, pathToSDK):
+        self.pathToSDK = pathToSDK
+
+    def getPathToSDK(self):
+        return self.pathToSDK
 
     def _loadConfigFile(self):
         if not os.path.exists(self.configFile):
@@ -530,9 +545,8 @@ class Core:
         path : Directory to check
         returns Relative depth the the root of openwns-sdk (int)
         """
-        base = wnsrc.wnsrc.pathToWNS
         # calculate the depth with respect to the testbed dir
-        normalizedPath = os.path.normpath(path).replace(base, "")
+        normalizedPath = os.path.normpath(path).replace(self.getPathToSDK(), "")
         normalizedPath.lstrip("/")
         # by splitting at the slashes we can find the depth
         return len(normalizedPath.split(os.sep))
