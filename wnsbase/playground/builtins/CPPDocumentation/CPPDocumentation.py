@@ -241,6 +241,7 @@ def processFile(mode, path, fileName, dstPath):
             fd = os.open(exampleFileName, os.O_WRONLY | os.O_CREAT | os.O_EXCL)
             f = os.fdopen(fd, "w")
             f.write("\n" + example)
+            f.close()
 
             example = None
             continue

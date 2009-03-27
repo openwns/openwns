@@ -126,7 +126,13 @@ class Core:
         self.otherProjects = None
 
         self._loadConfigFile()
-        self.pluginPaths = ["./wnsbase/playground/plugins"] + self.pluginPaths
+        self.addPluginPath("./wnsbase/playground/plugins")
+        # Read and add additional paths from the user's config
+        c = self.getConfig()
+        if c.has_section("AdditionalPluginPaths"):
+            for (k,p) in c.items("AdditionalPluginPaths"):
+                if(os.access(p, os.F_OK)):
+                    self.addPluginPath(p)
         self._loadBuiltins()
         self._setupCommandLineOptions()
         self._loadPlugins()
@@ -203,7 +209,7 @@ class Core:
         print "\nUsage : playground COMMAND options"
         print "\n\nYou can use one of following commands. Use COMMAND --help to get"
         print "detailed help for the command\n\n"
-        for commandname, command in self.commands.items():
+        for commandname, command in sorted(self.commands.items(), lambda x, y: cmp(x[0], y[0])):
             print "   " + commandname.ljust(20) + ":\t" + command.rationale
 
         print "\n\nThere are some global options that are available for all commands"
