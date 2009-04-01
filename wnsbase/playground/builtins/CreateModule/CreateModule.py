@@ -28,7 +28,7 @@
 import os
 import shutil
 import subprocess
-import FilePatcher
+from wnsbase import FilePatcher
 
 #from wnsbase.playground.Tools import *
 
@@ -132,14 +132,6 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
     def _patchProject(self, moduleName, branchLocation, dest, maintainer):
 
         p = FilePatcher.FilePatcher(os.path.join(dest, "MAINTAINER"), "John Doe <jdoe@doh.no>", maintainer).replaceAll()
-
-        p = FilePatcher.FilePatcher(os.path.join(dest, "config", "common.py"),
-                                    "PROJNAME       = 'projname',",
-                                    "PROJNAME       = '%s'," % moduleName.lower()).replaceAll()
-
-        p = FilePatcher.FilePatcher(os.path.join(dest, "config", "common.py"),
-                                    "RCS.Bazaar\('../', 'ModuleTemplate', 'main', '1.0'\),",
-                                    "RCS.Bazaar('../', '%s', '%s', '%s')," % (moduleName, 'deprecated', 'deprecated')).replaceAll()
 
         filesToPatch = [os.path.join(dest, "config", "libfiles.py"),
                         os.path.join(dest, "src", "ProjNameModule.hpp"),

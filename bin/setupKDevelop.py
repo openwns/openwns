@@ -47,10 +47,8 @@ if pathToSDK == None:
     print "Error! You are note within an openWNS-SDK. Giving up"
     exit(1)
 
-sys.path.append(os.path.join(pathToSDK, 'framework/buildSupport'))
 import wnsbase.RCS
-import FilePatcher
-sys.path.remove(os.path.join(pathToSDK, 'framework/buildSupport'))
+from wnsbase import FilePatcher
 
 class Dict2Class:
     def __init__(self, dictionary):
