@@ -90,7 +90,7 @@ callgrind     : Optimized version with debugging symbols for use with valgrind -
         if self.options.scons != '':
             sconsOptions += ' ' + self.options.scons
         if self.options.static:
-            sconsOptions += ' --static'
+            sconsOptions += ' static=True'
 
         command = 'scons ' + sconsOptions
         print 'Executing: ', command 
