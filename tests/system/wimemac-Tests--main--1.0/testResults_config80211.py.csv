@@ -1,4 +1,0 @@
-id, name
-./referenceOutput_config80211.py, REFERENCE
-./output_dbg_config80211.py, DBG
-./output_opt_config80211.py, OPT
