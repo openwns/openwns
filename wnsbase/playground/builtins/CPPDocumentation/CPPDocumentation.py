@@ -97,18 +97,11 @@ be placed in ./doxydoc.
         print "Identifying projects for documentation ..."
         # find all documentation projects:
         docProjects = []
-        masterDocumentationProject = None
+
         for project in core.getProjects().all:
             if isinstance(project, (wnsbase.playground.Project.Library, wnsbase.playground.Project.Binary, wnsbase.playground.Project.Documentation)):
                 print "... found: " + project.getDir()
                 docProjects.append(project)
-                if isinstance(project, wnsbase.playground.Project.MasterDocumentation):
-                    # we can have only 1 (in words: one) master documentation project
-                    assert masterDocumentationProject == None
-                    masterDocumentationProject = project
-
-        # we need exactly one master documentation project
-        assert masterDocumentationProject != None
 
         prepareExamples(self.examplesPath, docProjects)
 
@@ -118,11 +111,6 @@ be placed in ./doxydoc.
         # find the right doxygen file
         dirNameOfThisModule = os.path.dirname(__file__)
         doxygenFileName = os.path.join(dirNameOfThisModule, "Doxyfile")
-        # try if we have a directory "doc". This is the documentation
-        # of the SDK. If available use documentation from there.
-        masterDocDoxyfile = os.path.join(masterDocumentationProject.getDir(), "config/Doxyfile")
-        if os.path.exists(masterDocDoxyfile):
-            doxygenFileName = masterDocDoxyfile
 
         # read the doxygen file and modify according to our needs ...
         doxygenConfig = DoxygenConfigParser(doxygenFileName)
@@ -160,8 +148,8 @@ be placed in ./doxydoc.
         doxygenConfig.append("MSCGEN_PATH", "./bin")
 
         # if the masterProject has a special header.htm will use this as header
-        customHeader = os.path.join(masterDocumentationProject.getDir(), "config/header.htm")
-        customCSS = os.path.join(masterDocumentationProject.getDir(), "config/doxygen.css")
+        customHeader = os.path.join(dirNameOfThisModule, "header.htm")
+        customCSS = os.path.join(dirNameOfThisModule, "doxygen.css")
         if os.path.exists(customHeader):
             doxygenConfig.set("HTML_HEADER", customHeader)
 
@@ -192,6 +180,8 @@ be placed in ./doxydoc.
         if os.path.exists("sandbox/default/doc/api"):
             shutil.rmtree("sandbox/default/doc/api")
 
+        shutil.copy(os.path.join(dirNameOfThisModule, "RWTHAachen-ComNets.png"), "doxydoc/html/")
+        shutil.copy(os.path.join(dirNameOfThisModule, "openWNS.png"), "doxydoc/html/")
         shutil.copytree("doxydoc/html", "sandbox/default/doc/api")
 
 def prepareExamples(examplesPath, docProjects):
