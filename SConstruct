@@ -86,6 +86,12 @@ callgrindenv.Append(CXXFLAGS = ['-O3',
 callgrindenv.flavour = 'callgrind'
 environments.append(callgrindenv)
 
+smartptrdbgenv = Environment(options = opts)
+smartptrdbgenv.Append(CXXFLAGS = ['-g', '-O0', '-fno-inline'],
+                      CPPDEFINES = {'WNS_SMARTPTR_DEBUGGING' : '1'})
+
+smartptrdbgenv.flavour = 'smartptrdbg'
+environments.append(smartptrdbgenv)
 
 # We use the debug environment to generate the help text for the options.
 Help( """
