@@ -47,11 +47,11 @@ to the sandbox. Use --flavour=FLAVOUR to select a build flavour. Choose one of t
 dbg (default) : Build with debug symbols
 opt           : Build optimized version without debug symbols and assures
 callgrind     : Optimized version with debugging symbols for use with valgrind --tool=callgrind
-smartptrdbg   : Enable SmartPtr Debugging
               :   Starts and stops callgrind instrumentalisation just before and after main event loop
               :   Use 'valgrind --tool=callgrind --instr-atstart=no wns-core' to only trace main event loop
               :   Use 'valgrind --tool=callgrind wns-core' to trace all
               :   Use kcachegrind to view tracing results
+smartptrdbg   : Enable SmartPtr Debugging
 """
         wnsbase.playground.plugins.Command.Command.__init__(self, "install", rationale, usage)
 
