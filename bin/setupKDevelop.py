@@ -28,9 +28,36 @@
 import os
 import sys
 import shutil
+import re
+import unittest
+import os
 
 #We assume username@maildomain as E-Mail address
 maildomain = "comnets.rwth-aachen.de"
+
+class FilePatcher:
+
+    def __init__(self, filename, search, replace):
+        self.search = search
+        self.replaceWith = replace
+        self.filename = filename
+
+    def replaceAll(self):
+        f = open(self.filename, 'r')
+
+        output = ""
+        for l in f:
+            l = l.replace(self.search, self.replaceWith)
+            output += l
+
+        # close file
+        f.close()
+
+        # re-write new file
+        fc = open(self.filename, 'w')
+        fc.write(output)
+        fc.close()
+
 
 def searchPathToSDK(path):
     rootSign = ".thisIsTheRootOfWNS"
@@ -47,10 +74,9 @@ if pathToSDK == None:
     print "Error! You are note within an openWNS-SDK. Giving up"
     exit(1)
 
-sys.path.append(os.path.join(pathToSDK, 'framework/buildSupport'))
+sys.path.append(os.path.join(pathToSDK, 'sandbox/default/lib/python2.4/site-packages/'))
 import wnsbase.RCS
-import FilePatcher
-sys.path.remove(os.path.join(pathToSDK, 'framework/buildSupport'))
+sys.path.remove(os.path.join(pathToSDK, 'sandbox/default/lib/python2.4/site-packages/'))
 
 class Dict2Class:
     def __init__(self, dictionary):
@@ -91,9 +117,15 @@ def setupFileList():
 	projects = readProjectsConfig()
 	allFiles = []
 	for project in projects.all:
-		if project.getExe() in ['lib', 'bin']:
-			allFiles = allFiles + getProjectFiles(project)
-
+            if project.getExe() in ['lib', 'bin']:
+                print "Searching for files in %s" % project.getDir()
+                allFiles = allFiles + getProjectFiles(project)
+            
+                if project.hasAddOns():
+                    for addOn in project.getAddOns():
+                        print "Searching for files in %s" % addOn.getDir()
+                        allFiles = allFiles + getProjectFiles(addOn)
+                
 	allFiles = [f.replace(pathToSDK + "/", "") for f in allFiles]
 
 	# Write to file
@@ -113,9 +145,9 @@ def setupProjectFile():
 	tmp = pwd.getpwnam(username)
 	authorname = tmp[4]
 	email = username + "@" + maildomain
-	FilePatcher.FilePatcher(projectFile, "___AUTHORNAME___", authorname).replaceAll()
-	FilePatcher.FilePatcher(projectFile, "___EMAILADDRESS___", email).replaceAll()
-	FilePatcher.FilePatcher(projectFile, "___PATHTOWNS___", pathToSDK).replaceAll()
+	FilePatcher(projectFile, "___AUTHORNAME___", authorname).replaceAll()
+	FilePatcher(projectFile, "___EMAILADDRESS___", email).replaceAll()
+	FilePatcher(projectFile, "___PATHTOWNS___", pathToSDK).replaceAll()
 
 setupFileList()
 setupProjectFile()
