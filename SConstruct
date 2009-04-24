@@ -60,6 +60,22 @@ dbgenv.Append(CXXFLAGS = ['-g', '-O0', '-fno-inline'])
 dbgenv.flavour = 'dbg'
 environments.append(dbgenv)
 
+# Create the environment for dbgsmartptrenv
+dbgsmartptrenv = Environment(options = opts)
+dbgsmartptrenv.Append(CXXFLAGS = ['-g', '-O0', '-fno-inline'], CPPDEFINES= {'WNS_SMARTPTR_DEBUGGING': '1'})
+
+dbgsmartptrenv.flavour = 'dbgsmartptr'
+environments.append(dbgsmartptrenv)
+
+# Create the environment for dbgsmartptrenv
+optassuremsgenv = Environment(options = opts)
+optassuremsgenv.Append(CXXFLAGS = ['-O3',
+                          '-fno-strict-aliasing',
+                          '-Wno-unused-variable',
+                          '-Wno-unused-parameter'])
+
+optassuremsgenv.flavour = 'optassuremsg'
+environments.append(optassuremsgenv)
 
 # Create the opt Environment
 optenv = Environment(options = opts, CPPDEFINES= {'NDEBUG': '1',

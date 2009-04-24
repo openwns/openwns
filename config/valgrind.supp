@@ -24,6 +24,60 @@
 
 {
    ADDRESS_IN_RANGE/Invalid read of size 4
+   Memcheck:Addr4
+   fun:dlopen
+   fun:wns::module::Base::load
+}
+
+{
+   Python_LoadDynamicModule
+   Memcheck:Addr4
+   obj:/lib/ld-2.7.so
+   obj:/lib/tls/i686/cmov/libdl-2.7.so
+   fun:dlopen
+   fun:_PyImport_GetDynLoadFunc
+   fun:_PyImport_LoadDynamicModule
+   fun:load_module
+   fun:import_submodule
+   fun:load_next
+   fun:import_module_level
+   fun:PyImport_ImportModuleLevel
+   fun:builtin___import__
+   fun:PyCFunction_Call
+   fun:PyObject_Call
+}
+
+{
+   ADDRESS_IN_RANGE/Invalid read of size 4
+   Memcheck:Value4
+   fun:dlopen
+   fun:_PyImport_GetDynLoadFunc
+   fun:_PyImport_LoadDynamicModule
+}
+
+{
+   wnsSimulatorIApplicationInit
+   Memcheck:Addr4
+   fun:dlopen
+   fun:_ZN3wns6module4Base4loadERKSsbbb
+   fun:_ZN3wns9simulator11Application11loadModulesEv
+   fun:_ZN3wns9simulator11Application6doInitEv
+   fun:_ZN3wns9simulator12IApplication4initEv
+   fun:_ZN3wns9simulator4MainINS0_11ApplicationEE6doInitEv
+   fun:_ZN3wns9simulator12IApplication4initEv
+   fun:main
+}
+
+{
+   ADDRESS_IN_RANGE/Invalid read of size 4
+   Memcheck:Value4
+   fun:dlopen
+   fun:wns::module::Base::load
+   fun:wns::simulator::Application::loadModules
+}
+
+{
+   ADDRESS_IN_RANGE/Invalid read of size 4
    Memcheck:Value4
    fun:Py_ADDRESS_IN_RANGE
 }
@@ -75,6 +129,14 @@
 #
 # Non-python specific leaks
 #
+
+{
+   Handle pyconfig String issue
+   Memcheck:Leak
+   fun:std::string::string
+   fun:wns::pyconfig::Object::toString
+   fun:wns::pyconfig::View::doConvert
+}
 
 {
    Handle pthread issue (possibly leaked)
