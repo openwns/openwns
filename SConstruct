@@ -160,7 +160,7 @@ pyConfigDirs = []
 
 for env in environments:
     env.Append(CPPPATH = ['#include', '/usr/include/python2.5'])
-    env.Append(LIBPATH = os.path.join('#sandbox', env.flavour, 'lib'))
+    env.Append(LIBPATH = os.path.join(env['sandboxDir'], env.flavour, 'lib'))
     env.Replace(CXX = CXX)
     env.installDir = os.path.join(env['sandboxDir'], env.flavour)
     env.includeDir = includeDir
