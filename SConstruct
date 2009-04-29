@@ -60,14 +60,7 @@ dbgenv.Append(CXXFLAGS = ['-g', '-O0', '-fno-inline'])
 dbgenv.flavour = 'dbg'
 environments.append(dbgenv)
 
-# Create the environment for dbgsmartptrenv
-dbgsmartptrenv = Environment(options = opts)
-dbgsmartptrenv.Append(CXXFLAGS = ['-g', '-O0', '-fno-inline'], CPPDEFINES= {'WNS_SMARTPTR_DEBUGGING': '1'})
-
-dbgsmartptrenv.flavour = 'dbgsmartptr'
-environments.append(dbgsmartptrenv)
-
-# Create the environment for dbgsmartptrenv
+# Create the environment for optassuremsg
 optassuremsgenv = Environment(options = opts)
 optassuremsgenv.Append(CXXFLAGS = ['-O3',
                           '-fno-strict-aliasing',
@@ -176,7 +169,7 @@ pyConfigDirs = []
 
 for env in environments:
     env.Append(CPPPATH = ['#include', '/usr/include/python2.5'])
-    env.Append(LIBPATH = os.path.join('#sandbox', env.flavour, 'lib'))
+    env.Append(LIBPATH = os.path.join(env['sandboxDir'], env.flavour, 'lib'))
     env.Replace(CXX = CXX)
     env.installDir = os.path.join(env['sandboxDir'], env.flavour)
     env.includeDir = includeDir
