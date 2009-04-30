@@ -47,7 +47,6 @@ to the sandbox. Use --flavour=FLAVOUR to select a build flavour. Choose one of t
 dbg (default) : Build with debug symbols
 opt           : Build optimized version without debug symbols and assures
 optassuremsg  : like opt, but with all logging and assures enabled
-dbgsmartptr   : Like dbg, but wns::SmartPtr debugging is enabled. Output is shown at the end of the simulation
 callgrind     : Optimized version with debugging symbols for use with valgrind --tool=callgrind
               :   Starts and stops callgrind instrumentalisation just before and after main event loop
               :   Use 'valgrind --tool=callgrind --instr-atstart=no wns-core' to only trace main event loop
