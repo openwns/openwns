@@ -22,4 +22,4 @@ recipients = [(".*@bazaar.launchpad.net/~comnets.*",
               (".*@bazaar.comnets.rwth-aachen.de/KKS.*",
                "kks@comnets.rwth-aachen.de"),
               (".*bazaar.comnets.rwth-aachen.de/AOZ.*",
-               "aoz@comnets.rwth-aachen.de rs@comnets.rwth-aachen.de cmr@comnets.rwth-aachen.de")]
+               "aoz@comnets.rwth-aachen.de rs@comnets.rwth-aachen.de dbn@comnets.rwth-aachen.de cmr@comnets.rwth-aachen.de")]

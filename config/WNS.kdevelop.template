@@ -34,20 +34,16 @@
     </build>
     <make>
       <abortonerror>true</abortonerror>
-      <numberofjobs>1</numberofjobs>
+      <numberofjobs>10</numberofjobs>
       <prio>0</prio>
       <dontact>false</dontact>
-      <makebin>___PATHTOWNS___/bin/kdevelopBuildScript.py</makebin>
-      <defaulttarget>flavour=dbg</defaulttarget>
+      <makebin>scons</makebin>
+      <defaulttarget>dbg</defaulttarget>
       <makeoptions>no-color=1 no-inf=1 no-filter=1</makeoptions>
       <selectedenvironment>default</selectedenvironment>
       <environments>
-        <default>
-          <envvar value="1" name="WNSCURRENTMODULEBUILD" />
-        </default>
-        <fullBuild>
-          <envvar value="0" name="WNSCURRENTMODULEBUILD" />
-        </fullBuild>
+        <default/>
+        <fullBuild/>
       </environments>
     </make>
   </kdevcustomproject>
