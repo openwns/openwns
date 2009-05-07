@@ -84,16 +84,20 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
         sdkLocation = core.userFeedback.askForInput("Where should the files be locate in the SDK", "./modules/dll/")
 
         maintainer = core.userFeedback.askForInput("Who is the maintainer of the module", c.get("builtin.CreateModule", "defaultMaintainer"))
+        template = core.userFeedback.askForChoice("Which template should be used?",
+                                                  {"moduleTemplate" : "moduleTemplate",
+                                                   "binaryTemplate" : "binaryTemplate"},
+                                                  "binaryTemplate")
 
         dest = os.path.join(sdkLocation, moduleName)
 
-        self._copyTemplate(dest)
+        self._copyTemplate(dest, template)
         
         self._initBranch(dest)
 
-        self._patchProject(moduleName, branchLocation, dest, maintainer)
+        self._patchProject(moduleName, branchLocation, dest, maintainer, template)
         
-        self._appendToProjectsPy(moduleName, branchLocation, dest)
+        self._appendToProjectsPy(moduleName, branchLocation, dest, template)
 
         core.projects = core.readProjectsConfig(core.projectsFile)
 
@@ -106,9 +110,9 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
             self._pushProject(dest, pushTarget)
 
 
-    def _copyTemplate(self, sdkLocation):
+    def _copyTemplate(self, sdkLocation, template):
 
-        orig = os.path.join(core.getPathToSDK(), "wnsbase", "playground", "builtins", "CreateModule", "moduleTemplate")
+        orig = os.path.join(core.getPathToSDK(), "wnsbase", "playground", "builtins", "CreateModule", template)
 
         shutil.copytree(orig, sdkLocation)
 
@@ -118,8 +122,11 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
 
         os.chdir(destination)
 
-        os.symlink(os.path.join(core.getPathToSDK(), 'SConscript'),
-                   'SConscript')
+        try:
+            os.symlink(os.path.join(core.getPathToSDK(), 'SConscript'),
+                       'SConscript')
+        except OSError:
+            pass
 
         subprocess.check_call(["bzr", "init"])
 
@@ -129,7 +136,40 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
 
         os.chdir(curdir)
 
-    def _patchProject(self, moduleName, branchLocation, dest, maintainer):
+    def _patchProject(self, moduleName, branchLocation, dest, maintainer, template):
+
+        if template == "moduleTemplate":
+            self._patchModuleTemplate(moduleName, branchLocation, dest, maintainer)
+
+        if template == "binaryTemplate":
+            self._patchBinaryTemplate(moduleName, branchLocation, dest, maintainer)
+
+    def _patchBinaryTemplate(self, moduleName, branchLocation, dest, maintainer):
+
+        p = FilePatcher.FilePatcher(os.path.join(dest, "MAINTAINER"), "John Doe <jdoe@doh.no>", maintainer).replaceAll()
+
+        filesToPatch = [os.path.join(dest, "README"),
+                        os.path.join(dest, "SConscript"),]
+
+        for filename in filesToPatch:
+
+            p = FilePatcher.FilePatcher(filename,
+                                        "projname",
+                                        moduleName.lower(),
+                                        ignoreCase=False
+                                        ).replaceAll()
+
+        curdir = os.getcwd()
+
+        os.chdir(dest)
+        
+        subprocess.check_call(["bzr", "ignore", ".objs", ".sconsign.dblite", "build", "include", "config/private.py", "config/pushMailRecipients.py"])
+ 
+        subprocess.check_call(["bzr", "commit", "-m", "'Applied your settings to the template'"])
+
+        os.chdir(curdir)
+
+    def _patchModuleTemplate(self, moduleName, branchLocation, dest, maintainer):
 
         p = FilePatcher.FilePatcher(os.path.join(dest, "MAINTAINER"), "John Doe <jdoe@doh.no>", maintainer).replaceAll()
 
@@ -179,13 +219,19 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
         os.chdir(curdir)
 
 
-    def _appendToProjectsPy(self, moduleName, branchLocation, destination):
+    def _appendToProjectsPy(self, moduleName, branchLocation, destination, template):
+
+        kind = ""
+        if template == "moduleTemplate":
+            kind = "Library"
+
+        if template == "binaryTemplate":
+            kind = "Binary"
 
         entry =  "\n"
-        entry += "%s = Library('%s','%s', '%s',\n" % (moduleName, destination, moduleName, branchLocation)
+        entry += "%s = %s('%s','%s', '%s',\n" % (moduleName, kind, destination, moduleName, branchLocation)
         entry += "                 RCS.Bazaar('%s',\n" % (destination)
-        entry += "                            '%s', '%s', '%s'),\n" % ( moduleName, 'deprecated', 'deprecated' )
-        entry += "%s           [ library ], '%s')\n" % (" " * len(moduleName), moduleName.upper())
+        entry += "                            '%s', '%s', '%s'))\n" % ( moduleName, 'deprecated', 'deprecated' )
 
         sourceName = os.path.join(core.getPathToSDK(), 'config', 'projects.py')
         origPPy = open(sourceName, "a")

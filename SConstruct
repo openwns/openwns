@@ -60,6 +60,15 @@ dbgenv.Append(CXXFLAGS = ['-g', '-O0', '-fno-inline'])
 dbgenv.flavour = 'dbg'
 environments.append(dbgenv)
 
+# Create the environment for optassuremsg
+optassuremsgenv = Environment(options = opts)
+optassuremsgenv.Append(CXXFLAGS = ['-O3',
+                          '-fno-strict-aliasing',
+                          '-Wno-unused-variable',
+                          '-Wno-unused-parameter'])
+
+optassuremsgenv.flavour = 'optassuremsg'
+environments.append(optassuremsgenv)
 
 # Create the opt Environment
 optenv = Environment(options = opts, CPPDEFINES= {'NDEBUG': '1',
@@ -86,6 +95,12 @@ callgrindenv.Append(CXXFLAGS = ['-O3',
 callgrindenv.flavour = 'callgrind'
 environments.append(callgrindenv)
 
+smartptrdbgenv = Environment(options = opts)
+smartptrdbgenv.Append(CXXFLAGS = ['-g', '-O0', '-fno-inline'],
+                      CPPDEFINES = {'WNS_SMARTPTR_DEBUGGING' : '1'})
+
+smartptrdbgenv.flavour = 'smartptrdbg'
+environments.append(smartptrdbgenv)
 
 # We use the debug environment to generate the help text for the options.
 Help( """
@@ -154,7 +169,7 @@ pyConfigDirs = []
 
 for env in environments:
     env.Append(CPPPATH = ['#include', '/usr/include/python2.5'])
-    env.Append(LIBPATH = os.path.join('#sandbox', env.flavour, 'lib'))
+    env.Append(LIBPATH = os.path.join(env['sandboxDir'], env.flavour, 'lib'))
     env.Replace(CXX = CXX)
     env.installDir = os.path.join(env['sandboxDir'], env.flavour)
     env.includeDir = includeDir
