@@ -35,7 +35,6 @@ class Project(object):
                   rcsSubDir,
                   rcsBaseUrl,
                   rcs,
-                  dependencies,
                   executable,
                   generateDoc = True,
                   alias = None):
@@ -51,8 +50,6 @@ class Project(object):
 
         self.rcs = rcs
 
-        self.dependencies = dependencies
-
         self.executable = executable
 
         self.alias = alias
@@ -60,8 +57,6 @@ class Project(object):
         self.generateDoc = generateDoc
 
         self.addOns = []
-
-        self.__buildDependencies()
 
         self.includeBaseName = None
 
@@ -86,15 +81,6 @@ class Project(object):
     def getRCSUrl(self):
         return self.rcsUrl
 
-    def addDependingProject(self, project):
-        self.dependingProjects.append(project)
-
-    def __buildDependencies(self):
-        self.dependingProjects = []
-        for project in self.dependencies:
-            project.addDependingProject(self)
-
-
     def registerAddOn(self, addonProject):
         self.addOns.append(addonProject)
 
@@ -105,12 +91,11 @@ class Project(object):
         return self.addOns
 
 class Library(Project):
-    def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, dependencies = [], includeBaseName = None):
+    def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, includeBaseName = None):
         super(Library, self).__init__(directory = directory,
                                       rcsSubDir = rcsSubDir,
                                       rcsBaseUrl = rcsBaseUrl,
                                       rcs = rcs,
-                                      dependencies = dependencies,
                                       executable = 'lib')
         self.includeBaseName = includeBaseName
         
@@ -119,8 +104,7 @@ class AddOn(Library):
         super(AddOn, self).__init__(os.path.join(baseProject.getDir(), addOnDir),
                                     rcsSubDir = rcsSubDir,
                                     rcsBaseUrl = rcsBaseUrl,
-				    rcs = rcs,
-                                    dependencies = baseProject.dependencies + [baseProject])
+				    rcs = rcs)
         # handled by the "master" project
         self.executable = None
         # handled by the "master" project
@@ -131,12 +115,11 @@ class AddOn(Library):
         self.includeBaseName = baseProject.includeBaseName
 
 class Binary(Project):
-    def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs, dependencies= []):
+    def __init__(self, directory, rcsSubDir, rcsBaseUrl, rcs):
         super(Binary, self).__init__(directory = directory,
                                      rcsSubDir = rcsSubDir,
                                      rcsBaseUrl = rcsBaseUrl,
                                      rcs = rcs,
-                                     dependencies = dependencies,
                                      executable = 'bin')
 
 class Python(Project):
@@ -146,7 +129,6 @@ class Python(Project):
                                      rcsBaseUrl = rcsBaseUrl,
                                      rcs = rcs,
                                      alias = alias,
-                                     dependencies = [],
                                      executable = 'python',
                                      generateDoc = generateDoc)
 
@@ -156,7 +138,6 @@ class SystemTest(Project):
                                          rcsSubDir = rcsSubDir,
                                          rcsBaseUrl = rcsBaseUrl,
                                          rcs = rcs,
-                                         dependencies = [],
                                          executable = None,
                                          generateDoc = False)
 
@@ -167,7 +148,6 @@ class Generic(Project):
                                       rcsBaseUrl = rcsBaseUrl,
                                       rcs = rcs,
                                       alias = alias,
-                                      dependencies = [],
                                       executable = None,
                                       generateDoc = False)
 

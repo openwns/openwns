@@ -28,7 +28,7 @@
 import os
 import shutil
 import subprocess
-import FilePatcher
+from wnsbase import FilePatcher
 
 #from wnsbase.playground.Tools import *
 

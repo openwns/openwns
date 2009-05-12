@@ -41,10 +41,8 @@ class UpdateCommand(wnsbase.playground.plugins.Command.Command):
 
         usage += """
 
-Updates the following projects and rereads the project configuration
-afterwards:
-  1. openWNS--main--1.0  : Master located at ./
-  2. cn-scons--main--1.0 : Build support located at ./framework/cn-scons--main--1.0
+Updates the SDK and rereads the project configuration
+afterwards
 """
         wnsbase.playground.plugins.Command.Command.__init__(self, "update", rationale, usage)
 
@@ -69,23 +67,6 @@ afterwards:
             except wnsbase.rcs.Bazaar.BzrMergeNeededException, e:
                 if (not core.userFeedback.askForReject("These branches have diverged! Do you want me to merge?")):
                     myProject.getRCS().merge(fromRepository=myProject.getRCSUrl()).realtimePrint()
-        else:
-            print "None"
-
-        sys.stdout.write("Checking for new patches in: %s ... " % ("./framework/buildSupport"))
-        sys.stdout.flush()
-        missing = str(projects.buildSupport.getRCS().missing(projects.buildSupport.getRCSUrl(), {"-s":""}))
-        if(missing != ""):
-            print "Found:"
-            print missing
-            checkForConflictsAndExit("./framework/buildSupport")
-            print "\nRetrieving new patches for './framework/buildSupport/' ..."
-            try:
-                projects.buildSupport.getRCS().update(projects.buildSupport.getRCSUrl()).realtimePrint()
-                checkForConflictsAndExit("./framework/buildSupport")
-            except wnsbase.rcs.Bazaar.BzrMergeNeededException, e:
-                if (not core.userFeedback.askForReject("These branches have diverged! Do you want me to merge?")):
-                    projects.buildSupport.getRCS().merge(fromRepository=projects.buildSupport.getRCSUrl()).realtimePrint()
         else:
             print "None"
 

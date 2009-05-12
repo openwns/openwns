@@ -39,12 +39,6 @@ unitTests = Generic('./tests/unit',
                 RCS.Bazaar('./tests/unit', 
                     'unittest', 'main', '1.0'))
 
-buildSupport = Generic('./framework/buildSupport',
-                "openwns-buildsupport/buildsupport--main--1.0", 
-                bzrBaseURL,
-                RCS.Bazaar('./framework/buildSupport', 
-                    'buildsupport', 'main', '1.0'))
-
 documentation = MasterDocumentation('./documentation', 
                 'openwns-documentation/documentation--main--1.0', 
                 bzrBaseURL,
@@ -56,14 +50,14 @@ library = Library('./framework/library',
                 bzrBaseURL,
                 RCS.Bazaar('framework/library', 
                     'library', 'main', '1.0'),
-                [], 'WNS')
+                'WNS')
 
 application = Binary('./framework/application', 
                 "openwns-application/application--main--1.0", 
                 bzrBaseURL,
                 RCS.Bazaar('framework/application', 
                     'application', 'main', '1.0'),
-                dependencies = [])
+                )
 
 pywns = Python("./framework/pywns", 
                 "openwns-pywns/pywns--main--1.0", 
@@ -76,49 +70,49 @@ rise = Library('./framework/rise',
                 bzrBaseURL,
                 RCS.Bazaar('./framework/rise',
                     'rise', 'main', '1.0'),
-                [], 'RISE')
+                'RISE')
 
 dllbase = Library('./framework/dllbase', 
                 'openwns-dllbase/dllbase--main--1.0', 
                 bzrBaseURL,
                 RCS.Bazaar('./framework/dllbase',
                     'dllbase', 'main', '1.0'),
-                [], 'DLL')
+                'DLL')
 
 constanze = Library('./modules/loadgen/constanze', 
                 'openwns-constanze/constanze--main--1.0', 
                 bzrBaseURL,
                 RCS.Bazaar('./modules/loadgen/constanze',
                     'constanze', 'main', '1.0'),
-                [], 'CONSTANZE')
+                'CONSTANZE')
 
 simpleTL = Library('./modules/mock/simpletl', 
                 'openwns-simpletl/simpletl--main--1.0', 
                 bzrBaseURL,
                 RCS.Bazaar('./modules/mock/simpletl',
                     'simpletl', 'main', '1.0'),
-                [], 'SIMPLETL')
+                'SIMPLETL')
 
 ofdmaphy = Library('./modules/phy/ofdmaphy', 
                 'openwns-ofdmaphy/ofdmaphy--main--1.0', 
                 bzrBaseURL,
                 RCS.Bazaar('./modules/phy/ofdmaphy',
                     'ofdmaphy', 'main', '1.0'),
-                [], 'OFDMAPHY')
+                'OFDMAPHY')
 
 wifimac = Library('./modules/dll/wifimac', 
                 "openwns-wifimac/wifimac--main--1.0", 
                 bzrBaseURL,
                 RCS.Bazaar('./modules/dll/wifimac',
                     'wifimac', 'main', '1.0'),
-                [], 'WIFIMAC')
+                'WIFIMAC')
 
 ip = Library('./modules/nl/ip', 
                 'openwns-ip/ip--main--1.0', 
                 bzrBaseURL,
                 RCS.Bazaar('./modules/nl/ip',
                     'ip', 'main', '1.0'),
-                [], 'IP')
+                'IP')
                       
 simpletl_test = SystemTest('./tests/system/simpletl-tests',
                 'openwns-systemtest-simpletl/systemtest-simpletl--main--1.0', 
@@ -149,7 +143,6 @@ wifimac_test = SystemTest('./tests/system/wifimac-tests',
 all = [
     root,
     unitTests,
-    buildSupport,
     documentation,
     library,
     application,
