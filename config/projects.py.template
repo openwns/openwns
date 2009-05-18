@@ -107,6 +107,14 @@ wifimac = Library('./modules/dll/wifimac',
                     'wifimac', 'main', '1.0'),
                 'WIFIMAC')
 
+wimac = Library('./modules/dll/wimac',
+                "openwns-wimac/wimac--main--1.0",
+                bzrBaseURL,
+                RCS.Bazaar('./modules/dll/wimac',
+                    'wimac', 'main', '1.0'),
+                'WIMAC')
+
+
 ip = Library('./modules/nl/ip', 
                 'openwns-ip/ip--main--1.0', 
                 bzrBaseURL,
@@ -139,6 +147,12 @@ wifimac_test = SystemTest('./tests/system/wifimac-tests',
                 RCS.Bazaar('./tests/system/wifimac-tests',
                     'wifimac-tests', 'main', '1.0'))
 
+wimac_test = SystemTest('./tests/system/wimac-tests',
+                'openwns-systemtest-wimac/systemtest-wimac--main--1.0',
+                bzrBaseURL,
+                RCS.Bazaar('./tests/system/wimac-tests',
+                    'wimac-tests', 'main', '1.0'))
+
 
 all = [
     root,
@@ -154,12 +168,14 @@ all = [
     simpleTL,
     ofdmaphy,
     wifimac,
+    wimac,
     ip,
 
     simpletl_test,
     libwns_test,
     ofdma_test,
-    wifimac_test
+    wifimac_test,
+    wimac_test
     ]
 
 # commands to prepare the sandbox for playground.py
