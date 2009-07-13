@@ -8,6 +8,8 @@ sys.path.remove('config')
 
 SetOption('num_jobs', os.sysconf('SC_NPROCESSORS_ONLN'))
 SetOption('implicit_cache', True)
+SourceSignatures('timestamp')
+TargetSignatures('timestamp')
 
 # Load options from file and from command line
 optionFile = os.path.join('config','options.py')
