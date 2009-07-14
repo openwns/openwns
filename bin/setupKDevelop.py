@@ -149,5 +149,12 @@ def setupProjectFile():
 	FilePatcher(projectFile, "___EMAILADDRESS___", email).replaceAll()
 	FilePatcher(projectFile, "___PATHTOWNS___", pathToSDK).replaceAll()
 
+def setupDevsesFile():
+	template = os.path.join(pathToSDK, "config/WNS.kdevses.template")
+	projectFile = os.path.join(pathToSDK, "WNS.kdevses")
+	shutil.copy (template, projectFile)
+
 setupFileList()
 setupProjectFile()
+setupDevsesFile()
+

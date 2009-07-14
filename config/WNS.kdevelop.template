@@ -16,7 +16,7 @@
   </general>
   <kdevcustomproject>
     <run>
-      <mainprogram>___PATHTOWNS___/tests/system/ip-Tests--main--1.0/wns-core</mainprogram>
+      <mainprogram>___PATHTOWNS___/tests/system/ip-Tests--main--1.0/openwns</mainprogram>
       <directoryradio>executable</directoryradio>
       <programargs>|less</programargs>
       <globaldebugarguments/>
@@ -26,7 +26,9 @@
       <autocompile>false</autocompile>
       <autoinstall>false</autoinstall>
       <autokdesu>false</autokdesu>
-      <envvars/>
+      <envvars>
+        <envvar value="1" name="LD_BIND_NOW" />
+      </envvars>
     </run>
     <build>
       <buildtool>make</buildtool>
@@ -151,6 +153,8 @@
       <usePermanentCaching>true</usePermanentCaching>
       <alwaysIncludeNamespaces>true</alwaysIncludeNamespaces>
       <includePaths>.;</includePaths>
+      <parseMissingHeadersExperimental>false</parseMissingHeadersExperimental>
+      <resolveIncludePathsUsingMakeExperimental>false</resolveIncludePathsUsingMakeExperimental>
     </codecompletion>
     <creategettersetter>
       <prefixGet/>
