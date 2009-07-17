@@ -174,7 +174,9 @@ class Core:
         for preCommand, sourcePath in self.getProjects().prereqCommands:
             savedDir = os.getcwd()
             os.chdir(sourcePath)
-            stdin, stdout = os.popen4(preCommand)
+
+            p = subprocess.Popen(preCommand, shell=True,stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+            (stdin, stdout) = (p.stdin, p.stdout)
             line = stdout.readline()
             while line:
                 line = stdout.readline()
