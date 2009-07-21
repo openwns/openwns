@@ -125,13 +125,37 @@ def CheckICECCBuilder(context):
     result = context.TryCompile('int main (int, char**){return 0;}', '.cpp')
     context.Result(result)
     return result
-
 CXX = dbgenv['CXX']
 confenv = dbgenv.Clone()
 confenv.Replace(CXX ='icecc')
 conf = Configure(confenv, custom_tests ={'CheckICECCBuilder': CheckICECCBuilder})
+
 if conf.CheckICECCBuilder():
     CXX = 'icecc'
+
+# Check for external libraries
+externalLIBS = []
+for lib in ['cppunit', 'python2.5']:
+    if conf.CheckLib(lib):
+        externalLIBS.append(lib)
+    else:
+        print lib+ ' library missing'
+        Exit(1)
+
+
+for lib,alt in [('boost_program_options-mt', 'boost_program_options'),
+                ('boost_signals-mt', 'boost_signals'),
+                ('boost_date_time-mt', 'boost_date_time'),
+                ('boost_filesystem-mt', 'boost_filesystem')]:
+    if conf.CheckLib(lib):
+        externalLIBS.append(lib)
+    else:
+        if conf.CheckLib(alt):
+            externalLIBS.append(alt)
+        else:
+            print lib, ' and ', alt,' missing. At least one of them must be available.'
+            Exit(1)
+
 confenv = conf.Finish()
 
 # Overwrite compiler from command line, if available
@@ -176,6 +200,7 @@ for env in environments:
     env.installDir = os.path.join(env['sandboxDir'], env.flavour)
     env.includeDir = includeDir
     env['libraries'] = libraries
+    env['externalLIBS'] = externalLIBS
     if env['cacheDir']:
         env.CacheDir(env['cacheDir'])
     installDirs[env.flavour] = Dir(env.installDir)
