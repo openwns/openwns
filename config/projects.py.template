@@ -28,87 +28,87 @@
 from wnsbase.playground.Project import *
 import wnsbase.RCS as RCS
 
-bzrBaseURL = "https://launchpad.net/~comnets/"
+bzrBaseURL = "https://launchpad.net/"
 
-root = Root('./',"openwns-sdk/sdk--main--1.0", bzrBaseURL,
+root = Root('./',"openwns-sdk", bzrBaseURL,
             RCS.Bazaar('.', 'sdk', 'main', '1.0'))
 
 unitTests = Generic('./tests/unit', 
-                'openwns-unittest/unittest--main--1.0', 
+                'openwns-unittest', 
                 bzrBaseURL,
                 RCS.Bazaar('./tests/unit', 
                     'unittest', 'main', '1.0'))
 
 documentation = MasterDocumentation('./documentation', 
-                'openwns-documentation/documentation--main--1.0', 
+                'openwns-documentation', 
                 bzrBaseURL,
                 RCS.Bazaar('./documentation', 
                     'documentation', 'main', '1.0'))
 
 library = Library('./framework/library',
-                "openwns-library/library--main--1.0", 
+                "openwns-library", 
                 bzrBaseURL,
                 RCS.Bazaar('framework/library', 
                     'library', 'main', '1.0'),
                 'WNS')
 
 application = Binary('./framework/application', 
-                "openwns-application/application--main--1.0", 
+                "openwns-application", 
                 bzrBaseURL,
                 RCS.Bazaar('framework/application', 
                     'application', 'main', '1.0'),
                 )
 
 pywns = Python("./framework/pywns", 
-                "openwns-pywns/pywns--main--1.0", 
+                "openwns-pywns", 
                 bzrBaseURL,
                 RCS.Bazaar('framework/pywns', 
                     "pywns", "main", "1.0"))
 
 rise = Library('./framework/rise', 
-                'openwns-rise/rise--main--1.0', 
+                'openwns-rise', 
                 bzrBaseURL,
                 RCS.Bazaar('./framework/rise',
                     'rise', 'main', '1.0'),
                 'RISE')
 
 dllbase = Library('./framework/dllbase', 
-                'openwns-dllbase/dllbase--main--1.0', 
+                'openwns-dllbase', 
                 bzrBaseURL,
                 RCS.Bazaar('./framework/dllbase',
                     'dllbase', 'main', '1.0'),
                 'DLL')
 
 constanze = Library('./modules/loadgen/constanze', 
-                'openwns-constanze/constanze--main--1.0', 
+                'openwns-constanze', 
                 bzrBaseURL,
                 RCS.Bazaar('./modules/loadgen/constanze',
                     'constanze', 'main', '1.0'),
                 'CONSTANZE')
 
 simpleTL = Library('./modules/mock/simpletl', 
-                'openwns-simpletl/simpletl--main--1.0', 
+                'openwns-simpletl', 
                 bzrBaseURL,
                 RCS.Bazaar('./modules/mock/simpletl',
                     'simpletl', 'main', '1.0'),
                 'SIMPLETL')
 
 ofdmaphy = Library('./modules/phy/ofdmaphy', 
-                'openwns-ofdmaphy/ofdmaphy--main--1.0', 
+                'openwns-ofdmaphy', 
                 bzrBaseURL,
                 RCS.Bazaar('./modules/phy/ofdmaphy',
                     'ofdmaphy', 'main', '1.0'),
                 'OFDMAPHY')
 
 wifimac = Library('./modules/dll/wifimac', 
-                "openwns-wifimac/wifimac--main--1.0", 
+                "openwns-wifimac", 
                 bzrBaseURL,
                 RCS.Bazaar('./modules/dll/wifimac',
                     'wifimac', 'main', '1.0'),
                 'WIFIMAC')
 
 wimac = Library('./modules/dll/wimac',
-                "openwns-wimac/wimac--main--1.0",
+                "openwns-wimac",
                 bzrBaseURL,
                 RCS.Bazaar('./modules/dll/wimac',
                     'wimac', 'main', '1.0'),
@@ -116,42 +116,48 @@ wimac = Library('./modules/dll/wimac',
 
 
 ip = Library('./modules/nl/ip', 
-                'openwns-ip/ip--main--1.0', 
+                'openwns-ip', 
                 bzrBaseURL,
                 RCS.Bazaar('./modules/nl/ip',
                     'ip', 'main', '1.0'),
                 'IP')
                       
 simpletl_test = SystemTest('./tests/system/simpletl-tests',
-                'openwns-systemtest-simpletl/systemtest-simpletl--main--1.0', 
+                'openwns-systemtest-simpletl', 
                 bzrBaseURL,
                 RCS.Bazaar('./tests/system/simpletl-tests',
                     'simpletl-tests', 'main', '1.0'))
 
 libwns_test = SystemTest('./tests/system/libwns-tests', 
-                'openwns-systemtest-library/systemtest-library--main--1.0', 
+                'openwns-systemtest-library', 
                 bzrBaseURL,
                 RCS.Bazaar('./tests/system/libwns-tests',
                     'library-tests', 'main', '1.0'))
 
 ofdma_test = SystemTest('./tests/system/ofdma-tests',
-                'openwns-systemtest-ofdmascanner/systemtest-ofdmascanner--main--1.0', 
+                'openwns-systemtest-ofdmascanner', 
                 bzrBaseURL,
                 RCS.Bazaar('./tests/system/ofdma-tests',
                     'ofdma-test', 'main', '1.0'))
 
 
 wifimac_test = SystemTest('./tests/system/wifimac-tests', 
-                'openwns-systemtest-wifimac/systemtest-wifimac--main--1.0', 
+                'openwns-systemtest-wifimac', 
                 bzrBaseURL,
                 RCS.Bazaar('./tests/system/wifimac-tests',
                     'wifimac-tests', 'main', '1.0'))
 
 wimac_test = SystemTest('./tests/system/wimac-tests',
-                'openwns-systemtest-wimac/systemtest-wimac--main--1.0',
+                'openwns-systemtest-wimac',
                 bzrBaseURL,
                 RCS.Bazaar('./tests/system/wimac-tests',
                     'wimac-tests', 'main', '1.0'))
+
+wifi_wimac_coexist_test = SystemTest('./tests/system/wifi-wimac-coexist-tests',
+                'openwns-systemtest-wifi-wimac-coexist',
+                bzrBaseURL,
+                RCS.Bazaar('./tests/system/wifi-wimac-coexist-tests',
+                    'wifi-wimac-coexist-tests', 'main', '1.0'))
 
 
 all = [
@@ -175,7 +181,8 @@ all = [
     libwns_test,
     ofdma_test,
     wifimac_test,
-    wimac_test
+    wimac_test,
+    wifi_wimac_coexist_test
     ]
 
 # commands to prepare the sandbox for playground.py
