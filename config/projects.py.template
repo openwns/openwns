@@ -140,6 +140,12 @@ ofdma_test = SystemTest('./tests/system/ofdma-tests',
                 RCS.Bazaar('./tests/system/ofdma-tests',
                     'ofdma-test', 'main', '1.0'))
 
+mobility_test = SystemTest('./tests/system/mobility-tests',
+                'openwns-systemtest-mobility', 
+                bzrBaseURL,
+                RCS.Bazaar('./tests/system/mobility-tests',
+                    'mobility-test', 'main', '1.0'))
+
 
 wifimac_test = SystemTest('./tests/system/wifimac-tests', 
                 'openwns-systemtest-wifimac', 
@@ -180,6 +186,7 @@ all = [
     simpletl_test,
     libwns_test,
     ofdma_test,
+    mobility_test,
     wifimac_test,
     wimac_test,
     wifi_wimac_coexist_test
