@@ -49,3 +49,4 @@ include
 config/options.py
 config.log
 .sconf_temp
+tags

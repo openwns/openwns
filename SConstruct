@@ -162,7 +162,7 @@ confenv = conf.Finish()
 if ARGUMENTS.get('CXX'):
     CXX = ARGUMENTS.get('CXX')
 
-
+allHeaders = []
 includeDir = os.path.join(os.getcwd(),'include')
 libraries = []
 for project in projects.all:
@@ -188,6 +188,7 @@ for project in projects.all:
         headertargets = [header.replace('src/', '') for header in headers]
         InstallAs([os.path.join(includeDir, project.includeBaseName ,target) for target in headertargets],\
                   [os.path.join(project.getDir(), header) for header in headers])
+        allHeaders += [os.path.join(project.getDir(), header) for header in headers]
 
 # remove duplicates
 libraries = list(set(libraries))
@@ -221,3 +222,5 @@ for env in environments:
 Alias('default', os.path.join(env['sandboxDir'], 'default'))
 Default(installDirs['dbg'])
 Alias('pyconfig', pyConfigDirs)
+
+Command('tags', allHeaders , 'etags -o $TARGET $SOURCES')
