@@ -30,7 +30,8 @@ import os
 import subprocess
 import optparse
 import re
-import sets
+if sys.version_info < (2, 4):
+    from sets import Set as set
 import exceptions
 import ConfigParser
 
@@ -530,7 +531,7 @@ class Core:
 
         token = re.split('\W+', self.ifExpr)
         token = [it for it in token if it not in ('and', 'or', 'not', '')]
-        token = sets.Set(token)
+        token = set(token)
 
         context = {}
         for testName in token:
