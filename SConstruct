@@ -49,6 +49,8 @@ opts = Options(os.path.join('config','options.py'))
 opts.Add(BoolOption('static', 'Set to build the static version', False))
 opts.Add(PathOption('buildDir', 'Path to the build directory',  os.path.join(os.getcwd(), '.build'), PathOption.PathIsDirCreate))
 opts.Add(BoolOption('profile', 'Set to enable profiling support', False))
+opts.Add(BoolOption('smartPtrDBG', 'Set to enable smart pointer debugging', False))
+opts.Add(BoolOption('callgrind', 'Set to enable callgrind profiler', False))
 opts.Add(PathOption('sandboxDir', 'Path to the sandbox', os.path.join(os.getcwd(), 'sandbox'), PathOption.PathIsDirCreate))
 opts.Add(PackageOption('cacheDir', 'Path to the object cache', False))
 environments = []
@@ -84,25 +86,7 @@ optenv.Append(CXXFLAGS = ['-O3',
 optenv.flavour = 'opt'
 environments.append(optenv)
 
-# Create the callgrind environment
-callgrindenv = Environment(options = opts, CPPDEFINES = {'NDEBUG': '1',
-                                                         'WNS_NDEBUG' : '1',
-                                                         'WNS_NO_LOGGING': '1',
-                                                         'CALLGRIND': '1'})
-callgrindenv.Append(CXXFLAGS = ['-O3',
-                                '-fno-strict-aliasing',
-                                '-Wno-unused-variable',
-                                '-Wno-unused-parameter',
-                                '-g'])
-callgrindenv.flavour = 'callgrind'
-environments.append(callgrindenv)
 
-smartptrdbgenv = Environment(options = opts)
-smartptrdbgenv.Append(CXXFLAGS = ['-g', '-O0', '-fno-inline'],
-                      CPPDEFINES = {'WNS_SMARTPTR_DEBUGGING' : '1'})
-
-smartptrdbgenv.flavour = 'smartptrdbg'
-environments.append(smartptrdbgenv)
 
 # We use the debug environment to generate the help text for the options.
 Help( """
@@ -125,26 +109,50 @@ def CheckICECCBuilder(context):
     result = context.TryCompile('int main (int, char**){return 0;}', '.cpp')
     context.Result(result)
     return result
-
 CXX = dbgenv['CXX']
 confenv = dbgenv.Clone()
 confenv.Replace(CXX ='icecc')
 conf = Configure(confenv, custom_tests ={'CheckICECCBuilder': CheckICECCBuilder})
+
 if conf.CheckICECCBuilder():
     CXX = 'icecc'
+
+# Check for external libraries
+externalLIBS = []
+for lib in ['cppunit', 'python2.5', 'gslcblas', 'gsl']:
+    if conf.CheckLib(lib):
+        externalLIBS.append(lib)
+    else:
+        print lib+ ' library missing'
+        Exit(1)
+
+
+for lib,alt in [('boost_program_options-mt', 'boost_program_options'),
+                ('boost_signals-mt', 'boost_signals'),
+                ('boost_date_time-mt', 'boost_date_time'),
+                ('boost_filesystem-mt', 'boost_filesystem')]:
+    if conf.CheckLib(lib):
+        externalLIBS.append(lib)
+    else:
+        if conf.CheckLib(alt):
+            externalLIBS.append(alt)
+        else:
+            print lib, ' and ', alt,' missing. At least one of them must be available.'
+            Exit(1)
+
 confenv = conf.Finish()
 
 # Overwrite compiler from command line, if available
 if ARGUMENTS.get('CXX'):
     CXX = ARGUMENTS.get('CXX')
 
-
+allHeaders = []
 includeDir = os.path.join(os.getcwd(),'include')
 libraries = []
 for project in projects.all:
     if isinstance(project, (wnsbase.playground.Project.Root, wnsbase.playground.Project.SystemTest, wnsbase.playground.Project.Generic)):
         continue
-    if isinstance(project, wnsbase.playground.Project.Library):
+    if isinstance(project, wnsbase.playground.Project.Library) and not isinstance(project, wnsbase.playground.Project.AddOn):
         libname,srcFiles,headers,pyconfigs,dependencies = SConscript(os.path.join(project.getDir(), 'config', 'libfiles.py'))
         if len(srcFiles) != 0:
             libraries.append(libname)
@@ -164,6 +172,7 @@ for project in projects.all:
         headertargets = [header.replace('src/', '') for header in headers]
         InstallAs([os.path.join(includeDir, project.includeBaseName ,target) for target in headertargets],\
                   [os.path.join(project.getDir(), header) for header in headers])
+        allHeaders += [os.path.join(project.getDir(), header) for header in headers]
 
 # remove duplicates
 libraries = list(set(libraries))
@@ -176,6 +185,7 @@ for env in environments:
     env.installDir = os.path.join(env['sandboxDir'], env.flavour)
     env.includeDir = includeDir
     env['libraries'] = libraries
+    env['externalLIBS'] = externalLIBS
     if env['cacheDir']:
         env.CacheDir(env['cacheDir'])
     installDirs[env.flavour] = Dir(env.installDir)
@@ -183,8 +193,12 @@ for env in environments:
     pyConfigDirs.append(Alias(env.flavour + 'PyConfig', Dir(os.path.join(env.installDir, 'lib', 'PyConfig'))))
 
     if env['profile']:
-        env.Append(CXXFLAGS = '-pg')
+        env.Append(CXXFLAGS = ['-pg', '-g'])
         env.Append(LINKFLAGS = '-pg')
+    if env['smartPtrDBG']:
+        env.Append(CPPDEFINES = {'WNS_SMARTPTR_DEBUGGING' : '1'})
+    if env['callgrind']:
+        env.Append(CPPDEFINES = {'CALLGRIND': '1'})
 
     for project in projects.all:
         if isinstance(project, (wnsbase.playground.Project.Root, wnsbase.playground.Project.SystemTest, wnsbase.playground.Project.Generic, wnsbase.playground.Project.AddOn, wnsbase.playground.Project.Python)):
@@ -196,3 +210,5 @@ for env in environments:
 Alias('default', os.path.join(env['sandboxDir'], 'default'))
 Default(installDirs['dbg'])
 Alias('pyconfig', pyConfigDirs)
+
+Command('tags', allHeaders , 'etags -o $TARGET $SOURCES')
