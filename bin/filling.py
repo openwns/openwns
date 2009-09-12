@@ -289,11 +289,6 @@ class FillingTree(wx.TreeCtrl):
             text += "# find the most important configuration entries.\n"
             text += "############################################################\n\n"
 
-        text += "Inheritance Graph\n"
-        text +="-----------------\n\n"
-        text += self.getClassTreeString(type(obj).mro(), "   ")
-        text += "\n"
-
         text += "\n\nInformation from PyTreeVisitor\n"
         text += "------------------------------\n\n"
 
@@ -303,6 +298,11 @@ class FillingTree(wx.TreeCtrl):
         if s == "":
             s = "No PyTreeVistor found for this object. You can implement one of your own. See openwns.toolsupport.pytreevisitors.simulator for an example.\n"
         text += s
+
+        text += "\n\nInheritance Graph\n"
+        text +="-----------------\n\n"
+        text += self.getClassTreeString(type(obj).mro(), "   ")
+        text += "\n"
 
         text += "\n\nLow level information\n"
         text += "---------------------"
