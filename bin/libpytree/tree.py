@@ -1,64 +1,11 @@
-"""Filling is the gui tree control through which a user can navigate
-the local namespace or any object."""
-
-__author__ = "Original author Patrick K. O'Brien <pobrien@orbtech.com>, Modifications by Daniel Bueltmann <me@daniel-bueltmann.de>"
-__cvsid__ = "$Id: filling.py 37633 2006-02-18 21:40:57Z RD $"
-__revision__ = "$Revision: 37633 $"[11:-2]
+import typecategories
 
 import wx
-
-import wx.py.dispatcher as dispatcher
-import wx.py.editwindow as editwindow
-import wx.html
-import inspect
 import wx.py.introspect as introspect
-import keyword
-import os
-import sys
+import wx.py.dispatcher as dispatcher
+
 import types
-import imp
 import cgi
-from wx.py.version import VERSION
-
-from wx.html import HtmlEasyPrinting
-
-class Printer(HtmlEasyPrinting):
-    def __init__(self):
-        HtmlEasyPrinting.__init__(self)
-
-    def GetHtmlText(self,text):
-        "Simple conversion of text.  Use a more powerful version"
-        html_text = text.replace('\n\n','<P>')
-        html_text = text.replace('\n', '<BR>')
-        return html_text
-
-    def Print(self, text, doc_name):
-        self.SetHeader(doc_name)
-        self.SetFooter("<center>Page @PAGENUM@/@PAGESCNT@ - Created by <em><font color=\"#FF6600\">open</font></em><font color=\"#333333\">WNS</font> PyTree on @DATE@</center>")
-        self.PrintText(self.GetHtmlText(text),doc_name)
-
-    def PreviewText(self, text, doc_name):
-        self.SetHeader(doc_name)
-        HtmlEasyPrinting.PreviewText(self, self.GetHtmlText(text))
-
-COMMONTYPES = [getattr(types, t) for t in dir(types) \
-               if not t.startswith('_') \
-               and t not in ('ClassType', 'InstanceType', 'ModuleType')]
-
-DOCTYPES = ('BuiltinFunctionType', 'BuiltinMethodType', 'ClassType',
-            'FunctionType', 'GeneratorType', 'InstanceType',
-            'LambdaType', 'MethodType', 'ModuleType',
-            'UnboundMethodType', 'method-wrapper')
-
-SIMPLETYPES = [getattr(types, t) for t in dir(types) \
-               if not t.startswith('_') and t not in DOCTYPES]
-
-del t
-
-try:
-    COMMONTYPES.append(type(''.__repr__))  # Method-wrapper in version 2.2.x.
-except AttributeError:
-    pass
 
 class PyTreeFavourites:
     """ This class is only used to provide some quick navigation links in PyTree"""
@@ -66,9 +13,8 @@ class PyTreeFavourites:
 
 class FillingTree(wx.TreeCtrl):
     """FillingTree based on TreeCtrl."""
-    
+
     name = 'Filling Tree'
-    revision = __revision__
 
     def __init__(self, parent, id=-1, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=wx.TR_DEFAULT_STYLE,
@@ -190,7 +136,7 @@ class FillingTree(wx.TreeCtrl):
             for n in range(len(obj)):
                 key = '[' + str(n) + ']'
                 d[key] = obj[n]
-        if otype not in COMMONTYPES:
+        if otype not in typecategories.COMMONTYPES:
             for key in introspect.getAttributeNames(obj):
                 # Believe it or not, some attributes can disappear,
                 # such as the exc_traceback attribute of the sys
@@ -398,7 +344,7 @@ class FillingTree(wx.TreeCtrl):
         if otype is types.StringType or otype is types.UnicodeType:
             value = repr(obj)
         text += '<p>Value: ' + value + "</p>"
-        if otype not in SIMPLETYPES:
+        if otype not in typecategories.SIMPLETYPES:
             try:
                 text += '<br>Docstring:<br><br><pre>"""' + \
                         inspect.getdoc(obj).strip() + '"""</pre>'
@@ -456,195 +402,3 @@ class FillingTree(wx.TreeCtrl):
         # This method will likely be replaced by the enclosing app to
         # do something more interesting, like write to a status bar.
         print text
-
-
-class FillingText(wx.html.HtmlWindow):
-    """FillingText based on StyledTextCtrl."""
-
-    name = 'Filling Text'
-    revision = __revision__
-
-    def __init__(self, parent, id=-1, pos=wx.DefaultPosition,
-                 size=wx.DefaultSize, style=wx.CLIP_CHILDREN,
-                 static=False, tree=None):
-        """Create FillingText instance."""
-        wx.html.HtmlWindow.__init__(self, parent, id, pos, size, style)
-        if not static:
-            dispatcher.connect(receiver=self.push, signal='Interpreter.push')
-
-        self.tree = tree
-        self.currentHTML = ""
-
-    def push(self, command, more):
-        """Receiver for Interpreter.push signal."""
-        self.Refresh()
-
-    def OnLinkClicked(self, linkinfo):
-        href = linkinfo.GetHref()
-        if href.startswith("_pytree_object_id#"):
-            theId = href.split("#")[1]
-            self.tree.navigateTo(theId)
-        else:
-            wx.html.HtmlWindow.OnLinkClicked(self,linkinfo)
-
-    def SetText(self, string):
-        self.SetPage("<html><body>"+ string + "</body></html>")
-        self.currentHTML = "<html><body>"+ string + "</body></html>"
-
-    def getHTML(self):
-        return self.currentHTML
-
-class Filling(wx.SplitterWindow):
-    """Filling based on wxSplitterWindow."""
-
-    name = 'Filling'
-    revision = __revision__
-
-    def __init__(self, parent, id=-1, pos=wx.DefaultPosition,
-                 size=wx.DefaultSize, style=wx.SP_3D|wx.SP_LIVE_UPDATE,
-                 name='Filling Window', rootObject=None,
-                 rootLabel=None, rootIsNamespace=False, static=False):
-        """Create a Filling instance."""
-        wx.SplitterWindow.__init__(self, parent, id, pos, size, style, name)
-
-        self.tree = FillingTree(parent=self, rootObject=rootObject,
-                                rootLabel=rootLabel,
-                                rootIsNamespace=rootIsNamespace,
-                                static=static)
-        self.text = FillingText(parent=self, static=static, tree=self.tree)
-        
-        wx.FutureCall(1, self.SplitVertically, self.tree, self.text, 200)
-        
-        self.SetMinimumPaneSize(1)
-
-        # Override the filling so that descriptions go to FillingText.
-        self.tree.setText = self.text.SetText
-
-        # Display the root item.
-        self.tree.SelectItem(self.tree.root)
-        self.tree.display()
-
-        self.Bind(wx.EVT_SPLITTER_SASH_POS_CHANGED, self.OnChanged)
-
-    def OnChanged(self, event):
-        #this is important: do not evaluate this event=> otherwise, splitterwindow behaves strange
-        #event.Skip()
-        pass
-
-
-    def LoadSettings(self, config):
-        pos = config.ReadInt('Sash/FillingPos', 200)
-        wx.FutureCall(250, self.SetSashPosition, pos)
-        zoom = config.ReadInt('View/Zoom/Filling', -99)
-        if zoom != -99:
-            self.text.SetZoom(zoom)
-
-    def SaveSettings(self, config):
-        config.WriteInt('Sash/FillingPos', self.GetSashPosition())
-        config.WriteInt('View/Zoom/Filling', self.text.GetZoom())
-
-
-
-class FillingFrame(wx.Frame):
-    """Frame containing the namespace tree component."""
-
-    name = 'Filling Frame'
-    revision = __revision__
-
-    def __init__(self, parent=None, id=-1, title='PyTree - The openWNS Configuration Browser',
-                 pos=(0,0), size=(600, 400),
-                 style=wx.DEFAULT_FRAME_STYLE, rootObject=None,
-                 rootLabel=None, filename="Unknown Filename", rootIsNamespace=False, static=False):
-        """Create FillingFrame instance."""
-
-        wx.Frame.__init__(self, parent, id, title, pos, wx.DisplaySize(), style)
-        intro = 'PyTree - The openWNS Configuration Browser'
-        self.CreateStatusBar()
-        self.SetStatusText(intro)
-        #import wx.py.images
-        #self.SetIcon(wx.py.images.getPyIcon())
-        self.filling = Filling(parent=self, rootObject=rootObject,
-                               rootLabel=rootLabel,
-                               rootIsNamespace=rootIsNamespace,
-                               static=static)
-        # Override so that status messages go to the status bar.
-        self.filling.tree.setStatusText = self.SetStatusText
-        self.printer = Printer()
-        self.filename = filename
-
-        menubar = wx.MenuBar()
-        file = wx.Menu()
-        view = wx.Menu()
-
-        # File
-        file.Append(101, '&Open', 'Open a new document')
-        file.Append(102, '&Save Page', 'Save the current page')
-        file.Append(103, '&Print Page', 'Print the current page')
-        file.AppendSeparator()
-
-        quit = wx.MenuItem(file, 104, '&Quit\tCtrl+Q', 'Quit the Application')
-        #quit.SetBitmap(wx.Image('stock_exit-16.png',wx.BITMAP_TYPE_PNG).ConvertToBitmap())
-        file.AppendItem(quit)
-
-        # View
-        view.Append(201, 'Show &Private Members\tCtrl+P', "Show Private Members", wx.ITEM_CHECK)
-        view.Append(202, 'Show &Modules\tCtrl+M', "Show Python Modules", wx.ITEM_CHECK)
-        view.Append(203, 'Show C&lasses\tCtrl+L', "Show Python Classes", wx.ITEM_CHECK)
-        view.Append(204, 'Show &Types\tCtrl+T', "Show Python Types", wx.ITEM_CHECK)
-        view.Append(205, 'Show Meth&ods\tCtrl+O', "Show Python Methods", wx.ITEM_CHECK)
-
-        menubar.Append(file, '&File')
-        menubar.Append(view, '&View')
-        self.SetMenuBar(menubar)
-
-
-        wx.EVT_MENU(self, 101, self.OnOpenFile )
-        wx.EVT_MENU(self, 102, self.OnSaveFile )
-        wx.EVT_MENU(self, 103, self.OnPrint )
-        wx.EVT_MENU(self, 104, self.OnQuit )
-        wx.EVT_MENU(self, 201, self.filling.tree.toggleShowPrivate )
-        wx.EVT_MENU(self, 202, self.filling.tree.toggleShowModules )
-        wx.EVT_MENU(self, 203, self.filling.tree.toggleShowClasses )
-        wx.EVT_MENU(self, 204, self.filling.tree.toggleShowTypes )
-        wx.EVT_MENU(self, 205, self.filling.tree.toggleShowMethods )
-
-    def OnOpenFile(self, event):
-       dlg = wx.FileDialog(self, "Choose a file", os.getcwd(), "", "*.py", wx.OPEN)
-       if dlg.ShowModal() == wx.ID_OK:
-                path = dlg.GetPath()
-                mypath = os.path.basename(path)
-                self.SetStatusText("You selected: %s" % mypath)
-       dlg.Destroy()
-
-    def OnQuit(self, event):
-        self.Close()
-
-    def OnSaveFile(self, event):
-        dlg = wx.FileDialog(self, "Save File", os.getcwd(), "", "*.html", wx.SAVE)
-        if dlg.ShowModal() == wx.ID_OK:
-                path = dlg.GetPath()
-                mypath = os.path.basename(path)
-                self.SetStatusText("You selected: %s" % path)
-                f = open(path, "w")
-                f.write(self.filling.text.getHTML())
-                f.close()
-
-        dlg.Destroy()
-
-    def OnPrint(self, event):
-        self.printer.Print(self.filling.text.getHTML(), self.filename)
-
-class App(wx.App):
-    """PyFilling standalone application."""
-
-    def __init__(self, **kwargs):
-        self.kwargs = kwargs
-        wx.App.__init__(self)
-
-
-    def OnInit(self):
-        wx.InitAllImageHandlers()
-        self.fillingFrame = FillingFrame(**self.kwargs)
-        self.fillingFrame.Show(True)
-        self.SetTopWindow(self.fillingFrame)
-        return True

@@ -44,7 +44,7 @@ class PyTree:
             self.ignorePaths += options.ignorePaths.split(':')
 
         if options.sandboxFlavour:
-	    pathToSDK = searchPathToSDK(os.path.abspath(os.path.dirname(sys.argv[0])))
+            pathToSDK = searchPathToSDK(os.path.abspath(os.path.dirname(sys.argv[0])))
 
 	    if pathToSDK is None:
                 print "Error! You are not within an openWNS-SDK. Giving up"
@@ -151,7 +151,7 @@ def addPath(option, opt, value, parser):
 
 parser = optparse.OptionParser(usage = "pytree [OPTIONS] <CONFIGFILE.PY>")
 parser.add_option('-p', '--path', type='string', action='callback', callback=addPath, help='Path to sandbox PyConfig (e.g. ../../../sandbox/dbg/lib/PyConfig)')
-parser.add_option('-g', '--gui', default=False, action='store_true', dest='gui')
+parser.add_option('-c', '--console', default=True, action='store_false', dest='gui')
 parser.add_option('-i', '--ignore', type='string', action='store', dest='ignorePaths')
 parser.add_option('-f', '--flavour', type='string', default='dbg', action='store', dest='sandboxFlavour')
 
@@ -167,14 +167,14 @@ sys.path = ["."] + sys.path
 tree = PyTree(options)
 
 import wx
-import filling
+import libpytree.filling
 
 if options.gui == True:
     WNSConfiguration = imp.load_module('mainconfig', file(args[0]), 'mainconfig', ('.py', 'r', imp.PY_SOURCE))
-    app = filling.App(rootObject=WNSConfiguration,
-                      rootLabel = str(args[0]),
-                      filename = os.path.abspath(args[0]),
-                      title='PyTree - The openWNS Configuration Browser [%s]' % str(args[0]))
+    app = libpytree.filling.App(rootObject=WNSConfiguration,
+                                rootLabel = str(args[0]),
+                                filename = os.path.abspath(args[0]),
+                                title='PyTree - The openWNS Configuration Browser [%s]' % str(args[0]))
 
     # some cleanup to have nicer namepsace viewer
     del args
