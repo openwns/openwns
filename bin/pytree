@@ -173,6 +173,7 @@ if options.gui == True:
     WNSConfiguration = imp.load_module('mainconfig', file(args[0]), 'mainconfig', ('.py', 'r', imp.PY_SOURCE))
     app = filling.App(rootObject=WNSConfiguration,
                       rootLabel = str(args[0]),
+                      filename = os.path.abspath(args[0]),
                       title='PyTree - The openWNS Configuration Browser [%s]' % str(args[0]))
 
     # some cleanup to have nicer namepsace viewer
