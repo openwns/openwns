@@ -86,14 +86,15 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
         maintainer = core.userFeedback.askForInput("Who is the maintainer of the module", c.get("builtin.CreateModule", "defaultMaintainer"))
         template = core.userFeedback.askForChoice("Which template should be used?",
                                                   {"moduleTemplate" : "moduleTemplate",
-                                                   "binaryTemplate" : "binaryTemplate"},
+                                                   "binaryTemplate" : "binaryTemplate",
+                                                   "systemTestTemplate" : "systemTestTemplate"},
                                                   "binaryTemplate")
 
         dest = os.path.join(sdkLocation, moduleName)
 
         self._copyTemplate(dest, template)
         
-        self._initBranch(dest)
+        self._initBranch(dest, template)
 
         self._patchProject(moduleName, branchLocation, dest, maintainer, template)
         
@@ -116,15 +117,21 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
 
         shutil.copytree(orig, sdkLocation)
 
-    def _initBranch(self, destination):
+    def _initBranch(self, destination, template):
 
         curdir = os.getcwd()
 
         os.chdir(destination)
 
         try:
-            os.symlink(os.path.join(core.getPathToSDK(), 'SConscript'),
-                       'SConscript')
+            if template == "systemTestTemplate":
+                os.symlink(os.path.join(core.getPathToSDK(), 'sandbox', 'dbg', 'bin', 'openwns'),
+                           'openwns')
+                os.symlink(os.path.join(core.getPathToSDK(), 'sandbox', 'opt', 'bin', 'openwns'),
+                           'fast-openwns')
+            else:
+                os.symlink(os.path.join(core.getPathToSDK(), 'SConscript'),
+                           'SConscript')
         except OSError:
             pass
 
@@ -228,6 +235,14 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
         if template == "binaryTemplate":
             kind = "Binary"
 
+        if template == "systemTestTemplate":
+            kind = "SystemTest"
+
+        tmp = ""
+        for ch in moduleName:
+            if ch.isalnum():
+                tmp += ch
+        moduleName = tmp
         entry =  "\n"
         entry += "%s = %s('%s','%s', '%s',\n" % (moduleName, kind, destination, moduleName, branchLocation)
         entry += "                 RCS.Bazaar('%s',\n" % (destination)
