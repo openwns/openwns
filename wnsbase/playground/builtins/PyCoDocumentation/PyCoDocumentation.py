@@ -85,8 +85,7 @@ Note: EpyDoc currently produces a lot of warnings.
         if os.path.exists(destination):
 
             shutil.rmtree(destination)
-
-            os.makedirs(destination)
+        os.makedirs(destination)
 
         command = "PYTHONPATH=$PYTHONPATH:%s epydoc -o %s --html --show-sourcecode --simple-term --name=openWNS --graph=all %s" % (package, destination, package)
         result = runCommand(command)
