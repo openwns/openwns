@@ -24,4 +24,4 @@ recipients = [(".*@bazaar.launchpad.net/~comnets.*",
               (".*bazaar.comnets.rwth-aachen.de/AOZ.*",
                "aoz@comnets.rwth-aachen.de rs@comnets.rwth-aachen.de dbn@comnets.rwth-aachen.de"),
               (".*bazaar.comnets.rwth-aachen.de/DBN/openWNS/reorder.*",
-               "dbn@comnets.rwth-aachen.de rs@comnets.rwth-aachen.de")]
+               "dbn@comnets.rwth-aachen.de rs@comnets.rwth-aachen.de mue@comnets.rwth-aachen.de fei@comnets.rwth-aachen.de bmw@comnets.rwth-aachen.de")]
