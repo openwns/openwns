@@ -121,6 +121,27 @@ ip = Library('./modules/nl/ip',
                 RCS.Bazaar('./modules/nl/ip',
                     'ip', 'main', '1.0'),
                 'IP')
+
+glue = Library('./modules/dll/glue', 
+                'openwns-glue', 
+                bzrBaseURL,
+                RCS.Bazaar('./modules/dll/glue',
+                    'glue', 'main', '1.0'),
+                'GLUE')
+
+copper = Library('./modules/phy/copper', 
+                'openwns-copper', 
+                bzrBaseURL,
+                RCS.Bazaar('./modules/phy/copper',
+                    'copper', 'main', '1.0'),
+                'COPPER')
+
+tcp = Library('./modules/tl/tcp', 
+                'openwns-tcp', 
+                bzrBaseURL,
+                RCS.Bazaar('./modules/tl/tcp',
+                    'tcp', 'main', '1.0'),
+                'TCP')
                       
 simpletl_test = SystemTest('./tests/system/simpletl-tests',
                 'openwns-systemtest-simpletl', 
@@ -146,6 +167,29 @@ mobility_test = SystemTest('./tests/system/mobility-tests',
                 RCS.Bazaar('./tests/system/mobility-tests',
                     'mobility-test', 'main', '1.0'))
 
+ip_test = SystemTest('./tests/system/ip-tests',
+                'openwns-systemtest-ip', 
+                bzrBaseURL,
+                RCS.Bazaar('./tests/system/ip-tests',
+                    'ip-test', 'main', '1.0'))
+
+glue_test = SystemTest('./tests/system/glue-tests',
+                'openwns-systemtest-glue', 
+                bzrBaseURL,
+                RCS.Bazaar('./tests/system/glue-tests',
+                    'glue-test', 'main', '1.0'))
+
+tcp_test = SystemTest('./tests/system/tcp-tests',
+                'openwns-systemtest-tcp', 
+                bzrBaseURL,
+                RCS.Bazaar('./tests/system/tcp-tests',
+                    'tcp-test', 'main', '1.0'))
+
+constanze_test = SystemTest('./tests/system/constanze-tests',
+                'openwns-systemtest-constanze', 
+                bzrBaseURL,
+                RCS.Bazaar('./tests/system/constanze-tests',
+                    'constanze-test', 'main', '1.0'))
 
 wifimac_test = SystemTest('./tests/system/wifimac-tests', 
                 'openwns-systemtest-wifimac', 
@@ -182,11 +226,18 @@ all = [
     wifimac,
     wimac,
     ip,
+    glue,
+    copper,
+    tcp,
 
     simpletl_test,
     libwns_test,
     ofdma_test,
     mobility_test,
+    ip_test,
+    glue_test,
+    tcp_test,
+    constanze_test,
     wifimac_test,
     wimac_test,
     wifi_wimac_coexist_test
