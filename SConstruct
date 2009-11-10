@@ -119,7 +119,7 @@ if conf.CheckICECCBuilder():
 
 # Check for external libraries
 externalLIBS = []
-for lib in ['cppunit', 'python2.5', 'gslcblas', 'gsl']:
+for lib in ['cppunit', 'python2.5']:
     if conf.CheckLib(lib):
         externalLIBS.append(lib)
     else:
