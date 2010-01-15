@@ -47,12 +47,6 @@ to the sandbox. Use --flavour=FLAVOUR to select a build flavour. Choose one of t
 dbg (default) : Build with debug symbols
 opt           : Build optimized version without debug symbols and assures
 optassuremsg  : like opt, but with all logging and assures enabled
-callgrind     : Optimized version with debugging symbols for use with valgrind --tool=callgrind
-              :   Starts and stops callgrind instrumentalisation just before and after main event loop
-              :   Use 'valgrind --tool=callgrind --instr-atstart=no wns-core' to only trace main event loop
-              :   Use 'valgrind --tool=callgrind wns-core' to trace all
-              :   Use kcachegrind to view tracing results
-smartptrdbg   : Enable SmartPtr Debugging
 """
         wnsbase.playground.plugins.Command.Command.__init__(self, "install", rationale, usage)
 
@@ -62,7 +56,7 @@ smartptrdbg   : Enable SmartPtr Debugging
 
         self.optParser.add_option("", "--flavour",
                                   type="string", dest = "flavour", metavar = "TYPE", default = "dbg",
-                                  help = "choose a flavour (TYPE=[dbg|opt|callgrind|...]) to operate with.")
+                                  help = "choose a flavour (TYPE=[dbg|opt|optassuremsg]) to operate with.")
 
         self.optParser.add_option("", "--static",
                                   dest = "static", default = False,
@@ -71,7 +65,7 @@ smartptrdbg   : Enable SmartPtr Debugging
 
         self.optParser.add_option("", "--scons",
                                   dest = "scons", default = "",
-                                  help="options forwarded to scons.")
+                                  help="options forwarded to scons.(e.g. --scons=callgrind=True)")
 
         self.optParser.add_option("", "--sandboxDir",
                                   type = "string", dest = "sandboxDir", metavar = "DIRECTORY", default = "",
