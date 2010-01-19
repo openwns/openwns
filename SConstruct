@@ -119,7 +119,7 @@ if conf.CheckICECCBuilder():
 
 # Check for external libraries
 externalLIBS = []
-for lib in ['cppunit', 'python2.5']:
+for lib in ['cppunit']:
     if conf.CheckLib(lib):
         externalLIBS.append(lib)
     else:
@@ -179,13 +179,16 @@ libraries = list(set(libraries))
 pyConfigDirs = []
 
 for env in environments:
-    env.Append(CPPPATH = ['#include', '/usr/include/python2.5'])
+    env.Append(CPPPATH = ['#include'])
     env.Append(LIBPATH = os.path.join(env['sandboxDir'], env.flavour, 'lib'))
+    env.ParseConfig("python-config --includes")
     env.Replace(CXX = CXX)
     env.installDir = os.path.join(env['sandboxDir'], env.flavour)
     env.includeDir = includeDir
     env['libraries'] = libraries
     env['externalLIBS'] = externalLIBS
+    pylibs = env.ParseFlags(env.backtick('python-config --libs'))
+    env['externalLIBS'] += pylibs['LIBS']
     if env['cacheDir']:
         env.CacheDir(env['cacheDir'])
     installDirs[env.flavour] = Dir(env.installDir)
