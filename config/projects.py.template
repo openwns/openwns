@@ -73,7 +73,7 @@ rise = Library('./framework/rise',
                 'RISE')
 
 scenarios = Library('./framework/scenarios',
-                'scenarios', 
+                'openwns-scenarios', 
                 bzrBaseURL,
                 RCS.Bazaar('./framework/scenarios', 
                     'scenarios', 'deprecated', 'deprecated'))
