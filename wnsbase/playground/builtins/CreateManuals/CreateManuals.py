@@ -121,67 +121,39 @@ and PDF output can be found in ./sandbox/default/doc.
         cur = os.getcwd()
         os.chdir(masterDocumentationProject.getDir())
 
-        print "Cleaning..."
-        retcode = subprocess.call("make -f MakefileDevelopersGuide clean", shell=True)
+        makefiles = [n for n in glob.glob("./Makefile*") if not n.endswith("~")]
 
-        if retcode != 0:
-            print "\n\nThere were errors during cleanup\n\n"
-            exit(1)
+        for makefile in makefiles:
+            os.chdir(masterDocumentationProject.getDir())
+            print "Cleaning..."
+            print "make -f %s clean" % makefile
+            retcode = subprocess.call("make -f %s clean" % makefile, shell=True)
 
-        retcode = subprocess.call("make -f MakefileUsersGuide clean", shell=True)
+            if retcode != 0:
+                print "\n\nThere were errors during cleanup\n\n"
+                exit(1)
 
-        if retcode != 0:
-            print "\n\nThere were errors during cleanup\n\n"
-            exit(1)
+            print "Generating HTML for %s" % makefile
+            retcode = subprocess.call("make -f %s html" % makefile, shell=True)
 
-        print "Generating HTML Developers Guide"
-        retcode = subprocess.call("make -f MakefileDevelopersGuide html", shell=True)
+            if retcode != 0:
+                print "\n\nThere were errors during processing of documentation\n\n"
+                exit(1)
 
-        if retcode != 0:
-            print "\n\nThere were errors during processing of documentation\n\n"
-            exit(1)
+            print "Generating PDF for %s" % makefile
+            retcode = subprocess.call("make -f %s latex" % makefile, shell=True)
 
-        print "Generating PDF Developers Guide"
-        retcode = subprocess.call("make -f MakefileDevelopersGuide latex", shell=True)
+            if retcode != 0:
+                print "\n\nThere were errors during processing of documentation\n\n"
+                exit(1)
 
-        if retcode != 0:
-            print "\n\nThere were errors during processing of documentation\n\n"
-            exit(1)
+            os.chdir(os.path.join(masterDocumentationProject.getDir(), makefile.replace("Makefile", "build"), "latex"))
 
-        os.chdir(os.path.join(masterDocumentationProject.getDir(), "buildDevelopersGuide", "latex"))
+            retcode = subprocess.call("make all-pdf", shell=True)
 
-        retcode = subprocess.call("make all-pdf", shell=True)
-
-        if retcode != 0:
-            print "\n\nThere were errors when executin latex\n\n"
-            exit(1)
-
-        os.chdir(cur)
-
-
-        os.chdir(masterDocumentationProject.getDir())
-
-        print "Generating HTML Users Guide"
-        retcode = subprocess.call("make -f MakefileUsersGuide html", shell=True)
-
-        if retcode != 0:
-            print "\n\nThere were errors during processing of documentation\n\n"
-            exit(1)
-
-        print "Generating PDF Users Guide"
-        retcode = subprocess.call("make -f MakefileUsersGuide latex", shell=True)
-
-        if retcode != 0:
-            print "\n\nThere were errors during processing of documentation\n\n"
-            exit(1)
-
-        os.chdir(os.path.join(masterDocumentationProject.getDir(), "buildUsersGuide", "latex"))
-
-        retcode = subprocess.call("make all-pdf", shell=True)
-
-        if retcode != 0:
-            print "\n\nThere were errors when executin latex\n\n"
-            exit(1)
+            if retcode != 0:
+                print "\n\nThere were errors when executin latex\n\n"
+                exit(1)
 
         os.chdir(cur)
 
@@ -189,7 +161,7 @@ and PDF output can be found in ./sandbox/default/doc.
             os.makedirs("sandbox/default/doc")
 
         containedFiles = glob.glob("sandbox/default/doc/*") + glob.glob("sandbox/default/doc/.*")
-        # Do not touch the api subdirectory. This is managed by CPPDocuementation command
+        # Do not touch the api subdirectory. This is managed by CPPDocumentation command
         toBeDeleted = [f for f in containedFiles if not f.endswith("api")]
 
         for file in toBeDeleted:
@@ -198,36 +170,29 @@ and PDF output can be found in ./sandbox/default/doc.
             else:
                 os.remove(file)
 
-        # Install the developers guide to the root of the sandbox's documentation directory
-        source = os.path.join(masterDocumentationProject.getDir(), "buildDevelopersGuide", "html")
-        toBeCopied = glob.glob(source + "/*") + glob.glob(source + "/.*")
-        for file in toBeCopied:
-            if os.path.isdir(file):
-                subdirname = os.path.basename(file)
-                shutil.copytree(file, "sandbox/default/doc" + "/" + subdirname)
-            else:
-                shutil.copy(file, "sandbox/default/doc")
+        for makefile in makefiles:
+            builddir = makefile.replace("Makefile", "build")
 
-        source = os.path.join(masterDocumentationProject.getDir(), "buildDevelopersGuide", "latex")
-        pdfFiles = glob.glob(source + "/*.pdf")
-        for pdf in pdfFiles:
-            shutil.copy(pdf, "sandbox/default/doc/")
+            suffix = makefile.replace("Makefile", "").replace("./","")
+            if suffix == "DevelopersGuide":
+                suffix = ""
 
-        # Install the users guide to the usersGuide subdirectory in the sandbox's documentation directory
-        os.mkdir("sandbox/default/doc/usersGuide")
-        source = os.path.join(masterDocumentationProject.getDir(), "buildUsersGuide", "html")
-        toBeCopied = glob.glob(source + "/*") + glob.glob(source + "/.*")
-        for file in toBeCopied:
-            if os.path.isdir(file):
-                subdirname = os.path.basename(file)
-                shutil.copytree(file, "sandbox/default/doc/usersGuide" + "/" + subdirname)
-            else:
-                shutil.copy(file, "sandbox/default/doc/usersGuide")
+            if not os.path.exists("sandbox/default/doc/%s" % suffix):
+                os.makedirs("sandbox/default/doc/%s" % suffix)
+            # Install the guide to the sandbox's documentation directory
+            source = os.path.join(masterDocumentationProject.getDir(), builddir, "html")
+            toBeCopied = glob.glob(source + "/*") + glob.glob(source + "/.*")
+            for file in toBeCopied:
+                if os.path.isdir(file):
+                    subdirname = os.path.basename(file)
+                    shutil.copytree(file, "sandbox/default/doc/%s" % suffix + "/" + subdirname)
+                else:
+                    shutil.copy(file, "sandbox/default/doc/%s" % suffix)
 
-        source = os.path.join(masterDocumentationProject.getDir(), "buildUsersGuide", "latex")
-        pdfFiles = glob.glob(source + "/*.pdf")
-        for pdf in pdfFiles:
-            shutil.copy(pdf, "sandbox/default/doc/usersGuide")
+            source = os.path.join(masterDocumentationProject.getDir(), builddir, "latex")
+            pdfFiles = glob.glob(source + "/*.pdf")
+            for pdf in pdfFiles:
+                shutil.copy(pdf, "sandbox/default/doc/%s" % suffix)
 
 def processFile(parser, path, fileName):
     curr = os.getcwd()

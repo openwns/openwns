@@ -72,6 +72,12 @@ rise = Library('./framework/rise',
                     'rise', 'main', '1.0'),
                 'RISE')
 
+scenarios = Library('./framework/scenarios',
+                'scenarios', 
+                bzrBaseURL,
+                RCS.Bazaar('./framework/scenarios', 
+                    'scenarios', 'deprecated', 'deprecated'))
+
 dllbase = Library('./framework/dllbase', 
                 'openwns-dllbase', 
                 bzrBaseURL,
@@ -218,6 +224,7 @@ all = [
     application,
     pywns,
     rise,
+    scenarios,
     dllbase,
 
     constanze,

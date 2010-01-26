@@ -1,42 +1,11 @@
-"""Filling is the gui tree control through which a user can navigate
-the local namespace or any object."""
-
-__author__ = "Original author Patrick K. O'Brien <pobrien@orbtech.com>, Modifications by Daniel Bueltmann <me@daniel-bueltmann.de>"
-__cvsid__ = "$Id: filling.py 37633 2006-02-18 21:40:57Z RD $"
-__revision__ = "$Revision: 37633 $"[11:-2]
+import typecategories
 
 import wx
-
-import wx.py.dispatcher as dispatcher
-import wx.py.editwindow as editwindow
-import inspect
 import wx.py.introspect as introspect
-import keyword
-import os
-import sys
+import wx.py.dispatcher as dispatcher
+
 import types
-import imp
-from wx.py.version import VERSION
-
-
-COMMONTYPES = [getattr(types, t) for t in dir(types) \
-               if not t.startswith('_') \
-               and t not in ('ClassType', 'InstanceType', 'ModuleType')]
-
-DOCTYPES = ('BuiltinFunctionType', 'BuiltinMethodType', 'ClassType',
-            'FunctionType', 'GeneratorType', 'InstanceType',
-            'LambdaType', 'MethodType', 'ModuleType',
-            'UnboundMethodType', 'method-wrapper')
-
-SIMPLETYPES = [getattr(types, t) for t in dir(types) \
-               if not t.startswith('_') and t not in DOCTYPES]
-
-del t
-
-try:
-    COMMONTYPES.append(type(''.__repr__))  # Method-wrapper in version 2.2.x.
-except AttributeError:
-    pass
+import cgi
 
 class PyTreeFavourites:
     """ This class is only used to provide some quick navigation links in PyTree"""
@@ -44,9 +13,8 @@ class PyTreeFavourites:
 
 class FillingTree(wx.TreeCtrl):
     """FillingTree based on TreeCtrl."""
-    
+
     name = 'Filling Tree'
-    revision = __revision__
 
     def __init__(self, parent, id=-1, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=wx.TR_DEFAULT_STYLE,
@@ -122,6 +90,7 @@ class FillingTree(wx.TreeCtrl):
         item = event.GetItem()
         if self.IsExpanded(item):
             return
+
         self.addChildren(item)
 #        self.SelectItem(item)
 
@@ -167,7 +136,7 @@ class FillingTree(wx.TreeCtrl):
             for n in range(len(obj)):
                 key = '[' + str(n) + ']'
                 d[key] = obj[n]
-        if otype not in COMMONTYPES:
+        if otype not in typecategories.COMMONTYPES:
             for key in introspect.getAttributeNames(obj):
                 # Believe it or not, some attributes can disappear,
                 # such as the exc_traceback attribute of the sys
@@ -227,8 +196,8 @@ class FillingTree(wx.TreeCtrl):
             # Show list objects with number and classname of child
             if type (obj) is types.ListType:
                 import openwns.toolsupport
-                v = openwns.toolsupport.PyTreeVisitorFactory.getVisitor(children[key])
-                s = v.renderShortText(children[key])
+                s = openwns.toolsupport.renderLinkFromObject(children[key])
+
                 if s=="":
                     s = str(children[key])
 
@@ -256,12 +225,77 @@ class FillingTree(wx.TreeCtrl):
         if len(mrolist) == 0:
             return ""
 
-        myName = mrolist[-1].__module__ + "." + mrolist[-1].__name__ + "\n"
+        myName = mrolist[-1].__module__ + "." + mrolist[-1].__name__ + "<br>"
 
         # __builtin__ should not be displayed
         myName = myName.replace("__builtin__.", "")
 
-        return indent + myName + self.getClassTreeString(mrolist[0:-1], indent=indent.replace("+---", "    ") +"+---")
+        return indent + myName + self.getClassTreeString(mrolist[0:-1], indent=indent.replace("+---", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;") +"+---")
+
+    def getNavigationString(self, item):
+        import re
+        p=re.compile('\([\w\.]*\)')
+        result=p.sub("", self.getFullName(item))
+        result = result.replace(" ","")
+        return result
+
+    def navigateTo(self, navigationString):
+        self.CollapseAll()
+        path = navigationString.split(".")[2:]
+        self.Expand(self.root)
+
+        currentNode = self.root
+
+        for subpath in path:
+            if "[" in subpath:
+                base = subpath.split("[")[0]
+                index = subpath.split("[")[1].rstrip("]")
+
+                subItem = self.GetFirstChild(currentNode)[0]
+                while subItem.IsOk():
+                    if self.GetItemText(subItem) == base:
+                        if isinstance(self.GetPyData(subItem), dict):
+                            try:
+                                index = "'"+self.GetPyData(subItem).keys()[int(index)]+"'"
+                            except:
+                                pass
+
+                        currentNode = subItem
+                        self.Expand(currentNode)
+                        indexItem = self.GetFirstChild(currentNode)[0]
+                        while indexItem.IsOk():
+                            obj = self.GetPyData(indexItem)
+
+                            if self.GetItemText(indexItem).startswith("[%s]" % index) or self.GetItemText(indexItem)==index:
+                                currentNode = indexItem
+                                self.Expand(currentNode)
+                                break
+                            indexItem = self.GetNextSibling(indexItem)
+                        break
+                    subItem = self.GetNextSibling(subItem)
+            else:
+                subItem = self.GetFirstChild(currentNode)[0]
+                while subItem.IsOk():
+                    if self.GetItemText(subItem) == subpath:
+                        currentNode = subItem
+                        self.Expand(currentNode)
+                        break
+                    subItem = self.GetNextSibling(subItem)
+        self.SelectItem(currentNode)
+
+    def breadCrumbs(self, item):
+        full = self.getNavigationString(item).split(".")[1:]
+        full[0] = "Root"
+        parent = ""
+        result = ""
+        delimit = "&nbsp;&raquo;&nbsp;"
+        for ii in xrange(len(full)):
+            if ii == len(full)-1:
+                delimit = ""
+            result += "<a href=\"_pytree_object_id#%s\">%s</a>%s" % (cgi.escape(parent + "." + full[ii]), cgi.escape(full[ii]), delimit)
+            parent += "." + full[ii]
+
+        return result
 
     def display(self):
         item = self.item
@@ -280,32 +314,28 @@ class FillingTree(wx.TreeCtrl):
         #DisplayFactory.render(obj)
 
         #text = ''
-        text = self.getFullName(item) + " (%s.%s)\n\n" % (obj.__class__.__module__,obj.__class__.__name__)
+        text = "<a name=\"top\"><center><h1>%s.%s</h1></center><br>"% (obj.__class__.__module__,obj.__class__.__name__)
+        text += "<center>" + self.breadCrumbs(item) + "</center>"
 
+        text += "<hr><a href=\"#top\">[Top]</a>&nbsp;&nbsp;<a href=\"#visitor\">[Visitor]</a>&nbsp;&nbsp;<a href=\"#inheritance\">[Inheritance Graph]</a><hr>"
         if item == self.root:
-            text += "############################################################\n"
-            text += "# Navigate on the left. Start by expanding the config file\n"
-            text += "# and then extending the FAVOURITES subtree. There you can\n"
-            text += "# find the most important configuration entries.\n"
-            text += "############################################################\n\n"
-
-        text += "Inheritance Graph\n"
-        text +="-----------------\n\n"
-        text += self.getClassTreeString(type(obj).mro(), "   ")
-        text += "\n"
-
-        text += "\n\nInformation from PyTreeVisitor\n"
-        text += "------------------------------\n\n"
+            text += "<p><font size=\"+2\"><b>"
+            text += "Navigate on the left. Start by expanding the config file "
+            text += "and then extending the FAVOURITES subtree. There you can "
+            text += "find the most important configuration entries.</b></font></p>"
 
         import openwns.toolsupport
+        text += "<a name=\"visitor\">"
         v = openwns.toolsupport.PyTreeVisitorFactory.getVisitor(obj)
-        s = v.renderLongText(obj)
+        s = openwns.toolsupport.renderLongFromObject(obj, self.getNavigationString(item))
         if s == "":
-            s = "No PyTreeVistor found for this object. You can implement one of your own. See openwns.toolsupport.pytreevisitors.simulator for an example.\n"
+            s = "<p>No PyTreeVistor found for this object. You can implement one of your own. See openwns.toolsupport.pytreevisitors.simulator for an example.<br></p>"
         text += s
 
-        text += "\n\nLow level information\n"
-        text += "---------------------"
+        text += "<center><h2>Inheritance Graph</h2></center><hr><a name=\"inheritance\"/>"
+        text += self.getClassTreeString(type(obj).mro(), "   ")
+
+        text += "<center><h2>Low level information</h2></center><hr>"
 
         try:
             value = str(obj)
@@ -313,25 +343,21 @@ class FillingTree(wx.TreeCtrl):
             value = ''
         if otype is types.StringType or otype is types.UnicodeType:
             value = repr(obj)
-        text += '\n\nValue: ' + value
-        if otype not in SIMPLETYPES:
+        text += '<p>Value: ' + value + "</p>"
+        if otype not in typecategories.SIMPLETYPES:
             try:
-                text += '\n\nDocstring:\n\n"""' + \
-                        inspect.getdoc(obj).strip() + '"""'
+                text += '<br>Docstring:<br><br><pre>"""' + \
+                        inspect.getdoc(obj).strip() + '"""</pre>'
             except:
                 pass
         if otype is types.InstanceType:
             try:
-                text += '\n\nClass Definition:\n\n' + \
-                        inspect.getsource(obj.__class__)
+                text += '<br><br><pre>Class Definition:<br><br>' + \
+                        inspect.getsource(obj.__class__) + "</pre>"
             except:
                 pass
-        else:
-            try:
-                text += '\n\nSource Code:\n\n' + \
-                        inspect.getsource(obj)
-            except:
-                pass
+
+        text += "<hr><a href=\"#top\">[Top]</a>&nbsp;&nbsp;<a href=\"#visitor\">[Visitor]</a>&nbsp;&nbsp;<a href=\"#inheritance\">[Inheritance Graph]</a><hr>"
         self.setText(text)
 
     def getFullName(self, item, partial=''):
@@ -376,168 +402,3 @@ class FillingTree(wx.TreeCtrl):
         # This method will likely be replaced by the enclosing app to
         # do something more interesting, like write to a status bar.
         print text
-
-
-class FillingText(editwindow.EditWindow):
-    """FillingText based on StyledTextCtrl."""
-
-    name = 'Filling Text'
-    revision = __revision__
-
-    def __init__(self, parent, id=-1, pos=wx.DefaultPosition,
-                 size=wx.DefaultSize, style=wx.CLIP_CHILDREN,
-                 static=False):
-        """Create FillingText instance."""
-        editwindow.EditWindow.__init__(self, parent, id, pos, size, style)
-        # Configure various defaults and user preferences.
-        self.SetReadOnly(True)
-        self.SetWrapMode(False)
-        self.SetMarginWidth(1, 0)
-        if not static:
-            dispatcher.connect(receiver=self.push, signal='Interpreter.push')
-
-    def push(self, command, more):
-        """Receiver for Interpreter.push signal."""
-        self.Refresh()
-
-    def SetText(self, *args, **kwds):
-        self.SetReadOnly(False)
-        editwindow.EditWindow.SetText(self, *args, **kwds)
-        self.SetReadOnly(True)
-
-
-class Filling(wx.SplitterWindow):
-    """Filling based on wxSplitterWindow."""
-
-    name = 'Filling'
-    revision = __revision__
-
-    def __init__(self, parent, id=-1, pos=wx.DefaultPosition,
-                 size=wx.DefaultSize, style=wx.SP_3D|wx.SP_LIVE_UPDATE,
-                 name='Filling Window', rootObject=None,
-                 rootLabel=None, rootIsNamespace=False, static=False):
-        """Create a Filling instance."""
-        wx.SplitterWindow.__init__(self, parent, id, pos, size, style, name)
-
-        self.tree = FillingTree(parent=self, rootObject=rootObject,
-                                rootLabel=rootLabel,
-                                rootIsNamespace=rootIsNamespace,
-                                static=static)
-        self.text = FillingText(parent=self, static=static)
-        
-        wx.FutureCall(1, self.SplitVertically, self.tree, self.text, 200)
-        
-        self.SetMinimumPaneSize(1)
-
-        # Override the filling so that descriptions go to FillingText.
-        self.tree.setText = self.text.SetText
-
-        # Display the root item.
-        self.tree.SelectItem(self.tree.root)
-        self.tree.display()
-
-        self.Bind(wx.EVT_SPLITTER_SASH_POS_CHANGED, self.OnChanged)
-
-    def OnChanged(self, event):
-        #this is important: do not evaluate this event=> otherwise, splitterwindow behaves strange
-        #event.Skip()
-        pass
-
-
-    def LoadSettings(self, config):
-        pos = config.ReadInt('Sash/FillingPos', 200)
-        wx.FutureCall(250, self.SetSashPosition, pos)
-        zoom = config.ReadInt('View/Zoom/Filling', -99)
-        if zoom != -99:
-            self.text.SetZoom(zoom)
-
-    def SaveSettings(self, config):
-        config.WriteInt('Sash/FillingPos', self.GetSashPosition())
-        config.WriteInt('View/Zoom/Filling', self.text.GetZoom())
-
-
-
-class FillingFrame(wx.Frame):
-    """Frame containing the namespace tree component."""
-
-    name = 'Filling Frame'
-    revision = __revision__
-
-    def __init__(self, parent=None, id=-1, title='PyTree - The openWNS Configuration Browser',
-                 pos=(0,0), size=(600, 400),
-                 style=wx.DEFAULT_FRAME_STYLE, rootObject=None,
-                 rootLabel=None, rootIsNamespace=False, static=False):
-        """Create FillingFrame instance."""
-
-        wx.Frame.__init__(self, parent, id, title, pos, wx.DisplaySize(), style)
-        intro = 'PyTree - The openWNS Configuration Browser'
-        self.CreateStatusBar()
-        self.SetStatusText(intro)
-        #import wx.py.images
-        #self.SetIcon(wx.py.images.getPyIcon())
-        self.filling = Filling(parent=self, rootObject=rootObject,
-                               rootLabel=rootLabel,
-                               rootIsNamespace=rootIsNamespace,
-                               static=static)
-        # Override so that status messages go to the status bar.
-        self.filling.tree.setStatusText = self.SetStatusText
-
-
-        menubar = wx.MenuBar()
-        file = wx.Menu()
-        view = wx.Menu()
-
-        # File
-        file.Append(101, '&Open', 'Open a new document')
-        file.AppendSeparator()
-
-        quit = wx.MenuItem(file, 102, '&Quit\tCtrl+Q', 'Quit the Application')
-        #quit.SetBitmap(wx.Image('stock_exit-16.png',wx.BITMAP_TYPE_PNG).ConvertToBitmap())
-        file.AppendItem(quit)
-
-        # View
-        view.Append(201, 'Show &Private Members\tCtrl+P', "Show Private Members", wx.ITEM_CHECK)
-        view.Append(202, 'Show &Modules\tCtrl+M', "Show Python Modules", wx.ITEM_CHECK)
-        view.Append(203, 'Show C&lasses\tCtrl+L', "Show Python Classes", wx.ITEM_CHECK)
-        view.Append(204, 'Show &Types\tCtrl+T', "Show Python Types", wx.ITEM_CHECK)
-        view.Append(205, 'Show Meth&ods\tCtrl+O', "Show Python Methods", wx.ITEM_CHECK)
-
-        menubar.Append(file, '&File')
-        menubar.Append(view, '&View')
-        self.SetMenuBar(menubar)
-
-
-        wx.EVT_MENU(self, 101, self.OnOpenFile )
-        wx.EVT_MENU(self, 102, self.OnQuit )
-        wx.EVT_MENU(self, 201, self.filling.tree.toggleShowPrivate )
-        wx.EVT_MENU(self, 202, self.filling.tree.toggleShowModules )
-        wx.EVT_MENU(self, 203, self.filling.tree.toggleShowClasses )
-        wx.EVT_MENU(self, 204, self.filling.tree.toggleShowTypes )
-        wx.EVT_MENU(self, 205, self.filling.tree.toggleShowMethods )
-
-    def OnOpenFile(self, event):
-       dlg = wx.FileDialog(self, "Choose a file", os.getcwd(), "", "*.py", wx.OPEN)
-       if dlg.ShowModal() == wx.ID_OK:
-                path = dlg.GetPath()
-                mypath = os.path.basename(path)
-                self.SetStatusText("You selected: %s" % mypath)
-       dlg.Destroy()
-
-    def OnQuit(self, event):
-        self.Close()
-
-class App(wx.App):
-    """PyFilling standalone application."""
-
-    def __init__(self, **kwargs):
-        self.kwargs = kwargs
-        wx.App.__init__(self)
-
-
-    def OnInit(self):
-        wx.InitAllImageHandlers()
-        self.fillingFrame = FillingFrame(**self.kwargs)
-        #self.fillingFrame = FillingFrame()
-        self.fillingFrame.Show(True)
-        self.SetTopWindow(self.fillingFrame)
-        return True
