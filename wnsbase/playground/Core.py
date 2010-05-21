@@ -42,7 +42,7 @@ from wnsbase.playground.Tools import *
 import builtins
 import plugins.Command
 import Logger
-
+import sys
 
 class Core:
     """ This the core of the openwns-sdk project tree management tool 'playground.py'.
@@ -64,6 +64,14 @@ class Core:
         self.ifExpr = None
         self.warnings = []
         self.command = None
+
+        major = int(sys.version_info[0])
+        minor = int(+sys.version_info[1])
+        if minor > 5:
+            self.addPluginPath(os.path.join("/usr","lib", "python%d.%d" % (major, minor), "dist-packages", "openwns", "wrowser", "playgroundPlugins"))
+        else:
+            self.addPluginPath(os.path.join("/usr","lib", "python%d.%d" % (major, minor), "site-packages", "openwns", "wrowser", "playgroundPlugins"))
+
 
     def startup(self):
         """ Loads builtins, plugins and configuration. Setup of the project tree.
