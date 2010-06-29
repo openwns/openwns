@@ -1,6 +1,64 @@
 import os
 import sys
 import wnsbase.playground.Project
+import subprocess
+
+class EnvInfo:
+    def __init__(self):
+        self.lsb = {}
+        self.python = {}
+
+        try:
+            f = open('/etc/lsb-release')
+            c = f.read()
+            f.close()
+            c = c.split("\n")
+            for l in c:
+                if len(l.lstrip()) == 0:
+                    continue
+                k,v = l.split("=")
+                self.lsb[k] = v
+
+        except IOError:
+            print
+            print "WARNING Cannot acces /etc/lsb-release. Unknown distribution. Trying fallback."
+            print
+            self.lsb["DISTRIB_ID"]="Unknown"
+
+        try:
+            output = subprocess.Popen(["python", "-V"], stderr=subprocess.PIPE).communicate()[1]
+            output = output.split()
+            version = output[1].split(".")
+            self.python["version_major"] = "%s.%s" % (version[0], version[1])
+            self.python["version_minor"] = "%s" % (version[2])
+        except OSError:
+            print
+            print "Error!!! Cannot find python command"
+            print
+            exit(1)
+
+        guess_python_config = "python-config"
+
+        if self.lsb["DISTRIB_ID"] == "Ubuntu" and self.lsb["DISTRIB_CODENAME"] == 'lucid':
+            guess_python_config = "python2.6-config"
+
+        try:
+            output = subprocess.Popen([guess_python_config, "--includes"], stderr=subprocess.PIPE).communicate()[1]
+            output = subprocess.Popen([guess_python_config, "--libs"], stderr=subprocess.PIPE).communicate()[1]
+        except OSError: 
+            print
+            print "ERROR!!! Cannot find python-config or python2.6-config which is needed to find correct Python paths"
+            print
+            sys.exit(1)
+
+        self.pythonConfigCmd = guess_python_config
+
+    def dump(self):
+        print self.lsb
+        print self.python
+
+
+envInfo = EnvInfo()
 
 sys.path.append('config')
 import projects
@@ -181,13 +239,15 @@ pyConfigDirs = []
 for env in environments:
     env.Append(CPPPATH = ['#include'])
     env.Append(LIBPATH = os.path.join(env['sandboxDir'], env.flavour, 'lib'))
-    env.ParseConfig("python-config --includes")
+
+    env.ParseConfig(envInfo.pythonConfigCmd + " --includes")
+
     env.Replace(CXX = CXX)
     env.installDir = os.path.join(env['sandboxDir'], env.flavour)
     env.includeDir = includeDir
     env['libraries'] = libraries
     env['externalLIBS'] = externalLIBS
-    pylibs = env.ParseFlags(env.backtick('python-config --libs'))
+    pylibs = env.ParseFlags(env.backtick(envInfo.pythonConfigCmd + ' --libs'))
     env['externalLIBS'] += pylibs['LIBS']
     if env['cacheDir']:
         env.CacheDir(env['cacheDir'])
