@@ -205,7 +205,7 @@ if ARGUMENTS.get('CXX'):
     CXX = ARGUMENTS.get('CXX')
 
 allHeaders = []
-includeDir = os.path.join(os.getcwd(),'include')
+includeDir = os.path.join(os.getcwd(),'.include')
 libraries = []
 for project in projects.all:
     if isinstance(project, (wnsbase.playground.Project.Root, wnsbase.playground.Project.SystemTest, wnsbase.playground.Project.Generic)):
@@ -237,7 +237,7 @@ libraries = list(set(libraries))
 pyConfigDirs = []
 
 for env in environments:
-    env.Append(CPPPATH = ['#include'])
+    env.Append(CPPPATH = ['#.include'])
     env.Append(LIBPATH = os.path.join(env['sandboxDir'], env.flavour, 'lib'))
 
     env.ParseConfig(envInfo.pythonConfigCmd + " --includes")
@@ -245,6 +245,7 @@ for env in environments:
     env.Replace(CXX = CXX)
     env.installDir = os.path.join(env['sandboxDir'], env.flavour)
     env.includeDir = includeDir
+    print env
     env['libraries'] = libraries
     env['externalLIBS'] = externalLIBS
     pylibs = env.ParseFlags(env.backtick(envInfo.pythonConfigCmd + ' --libs'))

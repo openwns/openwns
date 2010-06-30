@@ -40,7 +40,7 @@ config/.temp_otherProjects.py
 .build
 .createManualsWorkingDir
 config/projects.py
-include
+.include
 ./Doxyfile
 ./WNS.kdevelop
 ./WNS.kdevelop.filelist
