@@ -154,7 +154,91 @@ def setupDevsesFile():
 	projectFile = os.path.join(pathToSDK, "WNS.kdevses")
 	shutil.copy (template, projectFile)
 
-setupFileList()
-setupProjectFile()
-setupDevsesFile()
+def setupKDevelop4():
+    projfile = """
+[Project]
+Manager=KDevCustomMakeManager
+Name=openwns
+"""
+    makefile = """
+dbg:
+\tscons dbg
+
+opt:
+\tscons opt
+
+clean:
+\tscons clean
+"""
+
+    builderconf = """
+[Buildset]
+BuildItems=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x01\x00\x00\x00\x0b\x00\x00\x00\x00\x01\x00\x00\x00\x16\x00o\x00p\x00e\x00n\x00w\x00n\x00s\x00-\x00s\x00d\x00k)
+
+[MakeBuilder]
+Default Target=dbg
+Number Of Jobs=1
+"""
+
+    p = searchPathToSDK("./")
+
+    includepaths = """
+%s
+""" % (str(os.path.join(p, ".include")))
+
+    projfilename = os.path.join(p, "openwns.kdev4")
+    makefilefilename = os.path.join(p, "Makefile")
+    confdir = os.path.join(p, ".kdev4")
+    conffilename = os.path.join(confdir, "openwns.kdev4")
+    includepathfilename = os.path.join(p, ".kdev_include_paths")
+
+    f = open(projfilename, "w")
+    f.write(projfile)
+    f.close()
+
+    f = open(makefilefilename, "w")
+    f.write(makefile)
+    f.close()
+
+    try:
+        os.mkdir(confdir)
+    except OSError, e:
+        if not(e.errno == 17):
+            # Not path exists
+            raise e
+
+    f = open(conffilename, "w")
+    f.write(builderconf)
+    f.close()
+
+    f = open(includepathfilename, "w")
+    f.write(includepaths)
+    f.close()
+
+def getKDevelopVersion():
+    import subprocess
+    output = subprocess.Popen(["kdevelop", "--version"], stdout=subprocess.PIPE).communicate()[0]
+    found = None
+    for l in output.split("\n"):
+        fields = l.split(":")
+        if fields[0] == "KDevelop":
+            found = fields[1].lstrip().rstrip().split(".")
+
+    return found
+
+if __name__ == "__main__":
+
+    kdevVersion = getKDevelopVersion()
+    if kdevVersion == None:
+        print "ERROR!! I cannot find your kdevelop installation. Stopping."
+        sys.exit(1)
+    elif kdevVersion[0] == "3":
+        print "Found KDevelop3"
+
+        setupFileList()
+        setupProjectFile()
+        setupDevsesFile()
+
+    elif kdevVersion[0] == "4":
+        setupKDevelop4()
 
