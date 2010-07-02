@@ -246,8 +246,12 @@ class CreateModuleCommand(wnsbase.playground.plugins.Command.Command):
         entry =  "\n"
         entry += "%s = %s('%s','%s', '%s',\n" % (moduleName, kind, destination, moduleName, branchLocation)
         entry += "                 RCS.Bazaar('%s',\n" % (destination)
-        entry += "                            '%s', '%s', '%s'))\n" % ( moduleName, 'deprecated', 'deprecated' )
 
+        if kind == "Library":
+            entry += "                            '%s', '%s', '%s'), '%s')\n" % ( moduleName, 'deprecated', 'deprecated', moduleName.upper())
+        else:
+            entry += "                            '%s', '%s', '%s'))\n" % ( moduleName, 'deprecated', 'deprecated')
+        
         sourceName = os.path.join(core.getPathToSDK(), 'config', 'projects.py')
         origPPy = open(sourceName, "a")
 
