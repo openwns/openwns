@@ -72,6 +72,9 @@ class StatusCommand(wnsbase.playground.plugins.Command.Command):
             if line.startswith('*') or line.strip(" ") == "":
                 continue
 
+            if line.startswith("Format Repository"):
+                continue
+
             changes.append(line)
             foundChanges = True
 
