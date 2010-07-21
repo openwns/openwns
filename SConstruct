@@ -29,13 +29,18 @@ class EnvInfo:
             output = subprocess.Popen(["python", "-V"], stderr=subprocess.PIPE).communicate()[1]
             output = output.split()
             version = output[1].split(".")
-            self.python["version_major"] = "%s.%s" % (version[0], version[1])
-            self.python["version_minor"] = "%s" % (version[2])
+            self.python["version_major"] = "%s.%s" % (version[0], version[1])            
         except OSError:
             print
             print "Error!!! Cannot find python command"
             print
             exit(1)
+
+        try:
+            self.python["version_minor"] = "0"
+	    self.python["version_minor"] = "%s" % (version[2])
+	except IndexError:
+	    pass
 
         guess_python_config = "python-config"
 
