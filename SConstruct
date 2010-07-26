@@ -245,7 +245,6 @@ for env in environments:
     env.Replace(CXX = CXX)
     env.installDir = os.path.join(env['sandboxDir'], env.flavour)
     env.includeDir = includeDir
-    print env
     env['libraries'] = libraries
     env['externalLIBS'] = externalLIBS
     pylibs = env.ParseFlags(env.backtick(envInfo.pythonConfigCmd + ' --libs'))
