@@ -68,7 +68,7 @@ class Core:
         major = int(sys.version_info[0])
         minor = int(+sys.version_info[1])
         if minor > 5:
-            self.addPluginPath(os.path.join("/usr","lib", "python%d.%d" % (major, minor), "dist-packages", "openwns", "wrowser", "playgroundPlugins"))
+            self.addPluginPath(os.path.join("/usr","local","lib", "python%d.%d" % (major, minor), "dist-packages", "openwns", "wrowser", "playgroundPlugins"))
         else:
             self.addPluginPath(os.path.join("/usr","lib", "python%d.%d" % (major, minor), "site-packages", "openwns", "wrowser", "playgroundPlugins"))
 
