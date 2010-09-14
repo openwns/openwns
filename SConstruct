@@ -109,6 +109,7 @@ opts.Add(PathOption('buildDir', 'Path to the build directory',  os.path.join(os.
 opts.Add(BoolOption('profile', 'Set to enable profiling support', False))
 opts.Add(BoolOption('smartPtrDBG', 'Set to enable smart pointer debugging', False))
 opts.Add(BoolOption('callgrind', 'Set to enable callgrind profiler', False))
+opts.Add(BoolOption('arch32', 'Set to enable 32bit compiling', False))
 opts.Add(PathOption('sandboxDir', 'Path to the sandbox', os.path.join(os.getcwd(), 'sandbox'), PathOption.PathIsDirCreate))
 opts.Add(PackageOption('cacheDir', 'Path to the object cache', False))
 environments = []
@@ -262,6 +263,10 @@ for env in environments:
         env.Append(CPPDEFINES = {'WNS_SMARTPTR_DEBUGGING' : '1'})
     if env['callgrind']:
         env.Append(CPPDEFINES = {'CALLGRIND': '1'})
+    if env['arch32']:
+        env.Append(CXXFLAGS = '-m32')
+        env.Append(LINKFLAGS = '-m32')
+        env.Append(CPPDEFINES = {'__x86_32__': '1'})
 
     for project in projects.all:
         if isinstance(project, (wnsbase.playground.Project.Root, wnsbase.playground.Project.SystemTest, wnsbase.playground.Project.Generic, wnsbase.playground.Project.AddOn, wnsbase.playground.Project.Python)):
