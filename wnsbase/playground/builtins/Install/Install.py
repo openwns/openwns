@@ -63,6 +63,11 @@ optassuremsg  : like opt, but with all logging and assures enabled
                                   action = "store_true",
                                   help = "build static executable")
 
+        self.optParser.add_option("", "--arch32",
+                                  dest = "arch32", default = False,
+                                  action = "store_true",
+                                  help = "build 32bit executable")
+
         self.optParser.add_option("", "--scons",
                                   dest = "scons", default = "",
                                   help="options forwarded to scons.(e.g. --scons=callgrind=True)")
@@ -87,6 +92,8 @@ optassuremsg  : like opt, but with all logging and assures enabled
             sconsOptions += ' ' + self.options.scons
         if self.options.static:
             sconsOptions += ' static=True'
+        if self.options.arch32:
+            sconsOptions += ' arch32=True'
 
         command = 'scons ' + sconsOptions
         print 'Executing: ', command 
