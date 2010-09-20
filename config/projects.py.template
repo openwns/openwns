@@ -106,6 +106,13 @@ ofdmaphy = Library('./modules/phy/ofdmaphy',
                     'ofdmaphy', 'main', '1.0'),
                 'OFDMAPHY')
 
+lte = Library('./modules/dll/lte', 
+                "openwns-lte", 
+                bzrBaseURL,
+                RCS.Bazaar('./modules/dll/lte',
+                    'lte', 'main', '1.0'),
+                'LTE')
+
 wifimac = Library('./modules/dll/wifimac', 
                 "openwns-wifimac", 
                 bzrBaseURL,
@@ -197,6 +204,12 @@ constanze_test = SystemTest('./tests/system/constanze-tests',
                 RCS.Bazaar('./tests/system/constanze-tests',
                     'constanze-test', 'main', '1.0'))
 
+lte_test = SystemTest('./tests/system/lte-tests', 
+                'openwns-systemtest-lte', 
+                bzrBaseURL,
+                RCS.Bazaar('./tests/system/lte-tests',
+                    'lte-tests', 'main', '1.0'))
+
 wifimac_test = SystemTest('./tests/system/wifimac-tests', 
                 'openwns-systemtest-wifimac', 
                 bzrBaseURL,
@@ -230,6 +243,7 @@ all = [
     constanze,
     simpleTL,
     ofdmaphy,
+    lte,
     wifimac,
     wimac,
     ip,
@@ -245,6 +259,7 @@ all = [
     glue_test,
     tcp_test,
     constanze_test,
+    lte_test,
     wifimac_test,
     wimac_test,
     wifi_wimac_coexist_test
