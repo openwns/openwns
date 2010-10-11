@@ -103,6 +103,22 @@ if not os.path.exists(optionFile):
 # With the 'static' option set to True, all modules will be linked statically.
 # 
 # static = False
+
+# 'Set to enable smart pointer debugging'
+#
+# smartPtrDBG = False
+
+# Set to enable callgrind profiler instrumentation
+#
+# callgrind = False
+
+# Set to enable 32bit compiling
+#
+# arch32 = False
+
+# Path to the object cache, if not False
+#
+# cacheDir = False
 """
     of = open(optionFile, 'w')
     of.write(defaultoptions)
@@ -268,6 +284,7 @@ for env in environments:
         env.Append(CPPDEFINES = {'WNS_SMARTPTR_DEBUGGING' : '1'})
     if env['callgrind']:
         env.Append(CPPDEFINES = {'CALLGRIND': '1'})
+        env.Append(CXXFLAGS = ['-g'])
     if env['arch32']:
         env.Append(CXXFLAGS = '-m32')
         env.Append(LINKFLAGS = '-m32')
