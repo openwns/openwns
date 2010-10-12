@@ -128,6 +128,13 @@ wimac = Library('./modules/dll/wimac',
                 'WIMAC')
 
 
+applications = Library('./modules/loadgen/applications', 
+                       'openwns-app', 
+                       bzrBaseURL,
+                       RCS.Bazaar('./modules/loadgen/applications',
+                       'applications', 'main', '1.0'),
+                       'APPLICATIONS')
+
 ip = Library('./modules/nl/ip', 
                 'openwns-ip', 
                 bzrBaseURL,
@@ -161,6 +168,12 @@ simpletl_test = SystemTest('./tests/system/simpletl-tests',
                 bzrBaseURL,
                 RCS.Bazaar('./tests/system/simpletl-tests',
                     'simpletl-tests', 'main', '1.0'))
+
+applications_test = SystemTest('./tests/system/applications-tests',
+                'openwns-systemtest-app',
+                bzrBaseURL,
+                RCS.Bazaar('./tests/system/applications-tests',
+                    'applications-tests', 'main', '1.0'))
 
 libwns_test = SystemTest('./tests/system/libwns-tests', 
                 'openwns-systemtest-library', 
@@ -250,6 +263,7 @@ all = [
     glue,
     copper,
     tcp,
+    applications,
 
     simpletl_test,
     libwns_test,
@@ -262,6 +276,7 @@ all = [
     lte_test,
     wifimac_test,
     wimac_test,
+    applications_test,
     wifi_wimac_coexist_test
     ]
 
