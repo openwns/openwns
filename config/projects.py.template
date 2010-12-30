@@ -127,6 +127,12 @@ wimac = Library('./modules/dll/wimac',
                     'wimac', 'main', '1.0'),
                 'WIMAC')
 
+wimemac = Library('./modules/dll/wimemac',
+                "openwns-wimemac",
+                bzrBaseURL,
+                RCS.Bazaar('./modules/dll/wimemac',
+                    'wimemac', 'main', '1.0'),
+                'WIMEMAC')
 
 applications = Library('./modules/loadgen/applications', 
                        'openwns-app', 
@@ -235,6 +241,12 @@ wimac_test = SystemTest('./tests/system/wimac-tests',
                 RCS.Bazaar('./tests/system/wimac-tests',
                     'wimac-tests', 'main', '1.0'))
 
+wimemac_test = SystemTest('./tests/system/wimemac-tests',
+                'openwns-systemtest-wimemac',
+                bzrBaseURL,
+                RCS.Bazaar('./tests/system/wimemac-tests',
+                    'wimemac-tests', 'main', '1.0'))
+
 wifi_wimac_coexist_test = SystemTest('./tests/system/wifi-wimac-coexist-tests',
                 'openwns-systemtest-wifi-wimac-coexist',
                 bzrBaseURL,
@@ -259,6 +271,7 @@ all = [
     lte,
     wifimac,
     wimac,
+    wimemac,
     ip,
     glue,
     copper,
@@ -276,6 +289,7 @@ all = [
     lte_test,
     wifimac_test,
     wimac_test,
+    wimemac_test,
     applications_test,
     wifi_wimac_coexist_test
     ]
