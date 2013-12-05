@@ -22,7 +22,7 @@ if len(srcFiles) != 0:
 
         if sys.platform == 'darwin':
             linkflags.append('-Wl,-install_name,@rpath/lib%s.dylib' % (libname))
-            linkflags.append('-flat_namespace')
+            linkflags.append(['-flat_namespace', '-undefined', 'suppress'])
 
         lib = env.SharedLibrary(libname, srcFiles, LIBS = dependencies, LINKFLAGS = linkflags)
 
