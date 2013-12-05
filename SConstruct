@@ -290,6 +290,13 @@ for env in environments:
         env.Append(LINKFLAGS = '-m32')
         env.Append(CPPDEFINES = {'__x86_32__': '1'})
 
+    if sys.platform == 'darwin':
+        env.Replace(CXX ='clang++')
+
+    if os.environ.has_key('EPREFIX'):
+        env.Append(LINKFLAGS = '-L%s/usr/lib' % (os.environ['EPREFIX']))
+
+
     for project in projects.all:
         if isinstance(project, (wnsbase.playground.Project.Root, wnsbase.playground.Project.SystemTest, wnsbase.playground.Project.Generic, wnsbase.playground.Project.AddOn, wnsbase.playground.Project.Python)):
             continue

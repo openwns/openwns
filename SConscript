@@ -1,4 +1,5 @@
 import os
+import sys
 Import('env')
 libname,srcFiles,headers,pyconfigs,dependencies = SConscript(os.path.join('config','libfiles.py'))
 
@@ -17,7 +18,14 @@ if len(srcFiles) != 0:
     if env['static']:
         lib = env.StaticLibrary(libname, srcFiles)
     else:
-        lib = env.SharedLibrary(libname, srcFiles, LIBS = dependencies)
+        linkflags = ["$LINKFLAGS"]
+
+        if sys.platform == 'darwin':
+            linkflags.append('-Wl,-install_name,@rpath/lib%s.dylib' % (libname))
+            linkflags.append('-flat_namespace')
+
+        lib = env.SharedLibrary(libname, srcFiles, LIBS = dependencies, LINKFLAGS = linkflags)
+
     env.Install(os.path.join(env.installDir, 'lib'), lib )
 
 for config in pyconfigs:
