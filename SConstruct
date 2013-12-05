@@ -307,4 +307,4 @@ Alias('default', os.path.join(env['sandboxDir'], 'default'))
 Default(installDirs['dbg'])
 Alias('pyconfig', pyConfigDirs)
 
-Command('tags', allHeaders , 'etags -o $TARGET $SOURCES')
+Command('tags', allHeaders , 'ctags -o $TARGET $SOURCES')
