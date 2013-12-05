@@ -71,8 +71,7 @@ sys.path.remove('config')
 
 SetOption('num_jobs', os.sysconf('SC_NPROCESSORS_ONLN'))
 SetOption('implicit_cache', True)
-SourceSignatures('timestamp')
-TargetSignatures('timestamp')
+Decider('timestamp-match')
 
 # Load options from file and from command line
 optionFile = os.path.join('config','options.py')
@@ -124,15 +123,15 @@ if not os.path.exists(optionFile):
     of.write(defaultoptions)
     of.close
 
-opts = Options(os.path.join('config','options.py'))
-opts.Add(BoolOption('static', 'Set to build the static version', False))
-opts.Add(PathOption('buildDir', 'Path to the build directory',  os.path.join(os.getcwd(), '.build'), PathOption.PathIsDirCreate))
-opts.Add(BoolOption('profile', 'Set to enable profiling support', False))
-opts.Add(BoolOption('smartPtrDBG', 'Set to enable smart pointer debugging', False))
-opts.Add(BoolOption('callgrind', 'Set to enable callgrind profiler', False))
-opts.Add(BoolOption('arch32', 'Set to enable 32bit compiling', False))
-opts.Add(PathOption('sandboxDir', 'Path to the sandbox', os.path.join(os.getcwd(), 'sandbox'), PathOption.PathIsDirCreate))
-opts.Add(PackageOption('cacheDir', 'Path to the object cache', False))
+opts = Variables(os.path.join('config','options.py'))
+opts.Add(BoolVariable('static', 'Set to build the static version', False))
+opts.Add(PathVariable('buildDir', 'Path to the build directory',  os.path.join(os.getcwd(), '.build'), PathVariable.PathIsDirCreate))
+opts.Add(BoolVariable('profile', 'Set to enable profiling support', False))
+opts.Add(BoolVariable('smartPtrDBG', 'Set to enable smart pointer debugging', False))
+opts.Add(BoolVariable('callgrind', 'Set to enable callgrind profiler', False))
+opts.Add(BoolVariable('arch32', 'Set to enable 32bit compiling', False))
+opts.Add(PathVariable('sandboxDir', 'Path to the sandbox', os.path.join(os.getcwd(), 'sandbox'), PathVariable.PathIsDirCreate))
+opts.Add(PackageVariable('cacheDir', 'Path to the object cache', False))
 environments = []
 installDirs = {}
 
@@ -301,7 +300,7 @@ for env in environments:
         if isinstance(project, (wnsbase.playground.Project.Root, wnsbase.playground.Project.SystemTest, wnsbase.playground.Project.Generic, wnsbase.playground.Project.AddOn, wnsbase.playground.Project.Python)):
             continue
         buildDir = os.path.join(env['buildDir'], env.flavour, project.getRCSSubDir())
-        env.BuildDir(buildDir, project.getDir(), duplicate = False)
+        env.VariantDir(buildDir, project.getDir(), duplicate = False)
         env.SConscript(os.path.join(buildDir, 'SConscript'), exports='env')
     
 Alias('default', os.path.join(env['sandboxDir'], 'default'))
