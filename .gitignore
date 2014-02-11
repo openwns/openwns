@@ -1,0 +1,12 @@
+.DS_Store
+tags
+.build
+.bzr
+.include
+.sconsign.dblite
+.sconf_temp
+sandbox
+output_*py
+*.pyc
+*.m
+*.dat
