@@ -1,0 +1,9 @@
+- sandbox
+- .include
+- .bzr
+- .build
+- *.pyc
+- *.dat
+- *.scon*
+- *output_*.py*
+- config.log
