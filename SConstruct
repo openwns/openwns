@@ -291,6 +291,7 @@ for env in environments:
 
     if sys.platform == 'darwin':
         env.Replace(CXX ='clang++')
+        env.Append(CXXFLAGS = ['-stdlib=libstdc++'])
 
     if os.environ.has_key('EPREFIX'):
         env.Append(LINKFLAGS = '-L%s/usr/lib' % (os.environ['EPREFIX']))

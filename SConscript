@@ -22,9 +22,17 @@ if len(srcFiles) != 0:
 
         if sys.platform == 'darwin':
             linkflags.append('-Wl,-install_name,@rpath/lib%s.dylib' % (libname))
-            linkflags.append(['-flat_namespace', '-undefined', 'suppress'])
+            linkflags.append(['-flat_namespace', '-undefined', 'dynamic_lookup'])
+            if libname == 'wns':
+                lib = env.SharedLibrary(libname, srcFiles, LIBS = dependencies, LINKFLAGS = linkflags)
+            else:
+                lib = env.LoadableModule(libname, srcFiles,
+                        LIBS = dependencies,
+                        LINKFLAGS = linkflags,
+                        LDMODULEPREFIX='lib', LDMODULESUFFIX = '.dylib')
+        else:
+            lib = env.SharedLibrary(libname, srcFiles, LIBS = dependencies, LINKFLAGS = linkflags)
 
-        lib = env.SharedLibrary(libname, srcFiles, LIBS = dependencies, LINKFLAGS = linkflags)
 
     env.Install(os.path.join(env.installDir, 'lib'), lib )
 
