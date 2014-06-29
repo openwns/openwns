@@ -52,3 +52,48 @@
 [submodule "modules/tl/tcp"]
 	path = modules/tl/tcp
 	url = https://github.com/openwns/tcp.git
+[submodule "tests/system/applications-tests"]
+	path = tests/system/applications-tests
+	url = https://github.com/openwns/applications-tests.git
+[submodule "tests/system/constanze-tests"]
+	path = tests/system/constanze-tests
+	url = https://github.com/openwns/constanze-tests.git
+[submodule "tests/system/glue-tests"]
+	path = tests/system/glue-tests
+	url = https://github.com/openwns/glue-tests.git
+[submodule "tests/system/ip-tests"]
+	path = tests/system/ip-tests
+	url = https://github.com/openwns/ip-tests.git
+[submodule "tests/system/libwns-tests"]
+	path = tests/system/libwns-tests
+	url = https://github.com/openwns/libwns-tests.git
+[submodule "tests/system/lte-tests"]
+	path = tests/system/lte-tests
+	url = https://github.com/openwns/lte-tests.git
+[submodule "tests/system/mobility-tests"]
+	path = tests/system/mobility-tests
+	url = https://github.com/openwns/mobility-tests.git
+[submodule "tests/system/ofdma-tests"]
+	path = tests/system/ofdma-tests
+	url = https://github.com/openwns/ofdma-tests.git
+[submodule "tests/system/simpletl-tests"]
+	path = tests/system/simpletl-tests
+	url = https://github.com/openwns/simpletl-tests.git
+[submodule "tests/system/tcp-tests"]
+	path = tests/system/tcp-tests
+	url = https://github.com/openwns/tcp-tests.git
+[submodule "tests/system/umts-tests"]
+	path = tests/system/umts-tests
+	url = https://github.com/openwns/umts-tests.git
+[submodule "tests/system/wifi-wimac-coexist-tests"]
+	path = tests/system/wifi-wimac-coexist-tests
+	url = https://github.com/openwns/wifi-wimac-coexist-tests.git
+[submodule "tests/system/wifimac-tests"]
+	path = tests/system/wifimac-tests
+	url = https://github.com/openwns/wifimac-tests.git
+[submodule "tests/system/wimac-tests"]
+	path = tests/system/wimac-tests
+	url = https://github.com/openwns/wimac-tests.git
+[submodule "tests/system/wimemac-tests"]
+	path = tests/system/wimemac-tests
+	url = https://github.com/openwns/wimemac-tests.git
