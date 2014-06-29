@@ -1,3 +1,54 @@
 [submodule "framework/library"]
 	path = framework/library
-	url = https://github.com/ComNets/openwns-library.git
+	url = https://github.com/openwns/library.git
+[submodule "framework/application"]
+	path = framework/application
+	url = https://github.com/openwns/application.git
+[submodule "framework/dllbase"]
+	path = framework/dllbase
+	url = https://github.com/openwns/dllbase.git
+[submodule "framework/pywns"]
+	path = framework/pywns
+	url = https://github.com/openwns/pywns.git
+[submodule "framework/rise"]
+	path = framework/rise
+	url = https://github.com/openwns/rise.git
+[submodule "framework/scenarios"]
+	path = framework/scenarios
+	url = https://github.com/openwns/scenarios.git
+[submodule "modules/dll/glue"]
+	path = modules/dll/glue
+	url = https://github.com/openwns/glue.git
+[submodule "modules/dll/lte"]
+	path = modules/dll/lte
+	url = https://github.com/openwns/lte.git
+[submodule "modules/dll/wifimac"]
+	path = modules/dll/wifimac
+	url = https://github.com/openwns/wifimac.git
+[submodule "modules/dll/wimac"]
+	path = modules/dll/wimac
+	url = https://github.com/openwns/wimac.git
+[submodule "modules/dll/wimemac"]
+	path = modules/dll/wimemac
+	url = https://github.com/openwns/wimemac.git
+[submodule "modules/loadgen/applications"]
+	path = modules/loadgen/applications
+	url = https://github.com/openwns/applications-loadgen.git
+[submodule "modules/loadgen/constanze"]
+	path = modules/loadgen/constanze
+	url = https://github.com/openwns/constanze.git
+[submodule "modules/mock/simpletl"]
+	path = modules/mock/simpletl
+	url = https://github.com/openwns/simpletl.git
+[submodule "modules/nl/ip"]
+	path = modules/nl/ip
+	url = https://github.com/openwns/ip.git
+[submodule "modules/phy/copper"]
+	path = modules/phy/copper
+	url = https://github.com/openwns/coppy.git
+[submodule "modules/phy/ofdmaphy"]
+	path = modules/phy/ofdmaphy
+	url = https://github.com/openwns/ofdmaphy.git
+[submodule "modules/tl/tcp"]
+	path = modules/tl/tcp
+	url = https://github.com/openwns/tcp.git
