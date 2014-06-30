@@ -94,3 +94,9 @@
 [submodule "tests/system/wimemac-tests"]
 	path = tests/system/wimemac-tests
 	url = https://github.com/openwns/wimemac-tests.git
+[submodule "documentation"]
+	path = documentation
+	url = https://github.com/openwns/documentation.git
+[submodule "tests/unit"]
+	path = tests/unit
+	url = https://github.com/openwns/unittest.git
