@@ -45,7 +45,7 @@
 	url = https://github.com/openwns/ip.git
 [submodule "modules/phy/copper"]
 	path = modules/phy/copper
-	url = https://github.com/openwns/coppy.git
+	url = https://github.com/openwns/copper.git
 [submodule "modules/phy/ofdmaphy"]
 	path = modules/phy/ofdmaphy
 	url = https://github.com/openwns/ofdmaphy.git
@@ -82,9 +82,6 @@
 [submodule "tests/system/tcp-tests"]
 	path = tests/system/tcp-tests
 	url = https://github.com/openwns/tcp-tests.git
-[submodule "tests/system/umts-tests"]
-	path = tests/system/umts-tests
-	url = https://github.com/openwns/umts-tests.git
 [submodule "tests/system/wifi-wimac-coexist-tests"]
 	path = tests/system/wifi-wimac-coexist-tests
 	url = https://github.com/openwns/wifi-wimac-coexist-tests.git
